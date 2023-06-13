@@ -1,4 +1,6 @@
-test: generate-mocks lint test-internal
+dev-test: generate-mocks lint test-internal
+
+test: generate-mocks test-internal
 
 build:
 	go build -o ./bin/zion ./cmd/zion/main.go
