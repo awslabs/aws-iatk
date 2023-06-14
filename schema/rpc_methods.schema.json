@@ -1,0 +1,36 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "RPC Methods",
+    "type": "object",
+    "properties": {
+        "methods": {
+            "description": "The list of available methods via Zion Binary",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/method"
+            }
+        }
+    },
+    "definitions": {
+        "method": {
+            "properties": {
+                "name": {
+                    "description": "name of the method",
+                    "type": "string"
+                },
+                "parameters": {
+                    "type": "object"
+                },
+                "returns": {
+                    "type": "object"
+                }
+            },
+            "required": [
+                "name",
+                "parameters",
+                "returns"
+            ],
+            "additionalProperties": false
+        }
+    }
+}
