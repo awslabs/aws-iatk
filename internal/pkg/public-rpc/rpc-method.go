@@ -13,7 +13,6 @@ type Method interface {
 	ReflectOutput() reflect.Value
 }
 
-//go:generate go run ../../../cmd/rpcspecs/main.go -n methodMap
 var MethodMap = map[string]Method{}
 
 func init() {
