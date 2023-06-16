@@ -16,6 +16,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build:
+    name: build / ${{ matrix.os }} / x86_64
+    if: github.repository_owner == 'awslabs'
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.20"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.7"
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Zion Python Client
+        run: |
+          cd python-client
+          pip install build
+          make copy-service-source-for-sdist
+          make init
+
+      - name: Test
+        run: |
+          ls -la ./dist
+          python -c "import zion; from zion import Zion; z = Zion()"
+
   test:
     if: github.repository_owner == 'awslabs'
     runs-on: ubuntu-latest
