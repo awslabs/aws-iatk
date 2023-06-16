@@ -16,8 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: build / ${{ matrix.os }} / x86_64
+  build-python:
+    name: build-python / ${{ matrix.os }} / x86_64
     if: github.repository_owner == 'awslabs'
     strategy:
       fail-fast: false
@@ -26,6 +26,12 @@ jobs:
           - macos-latest
           - ubuntu-latest
           - windows-latest
+        python:
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.11"
+
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set up Go
@@ -36,7 +42,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.7"
+          python-version: ${{ matrix.python }}
 
       - name: Check out code
         uses: actions/checkout@v2
@@ -50,7 +56,8 @@ jobs:
 
       - name: Test
         run: |
-          ls -la ./python-client/dist
+          ZION_VERSION=$(python -c "import pkg_resources;print(pkg_resources.get_distribution('zion').version)")
+          [ -f ./python-client/dist/zion-${ZION_VERSION}.tar.gz ]
           python -c "import zion; from zion import Zion; z = Zion()"
 
   test:
