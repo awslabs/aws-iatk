@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build-python:
-    name: build-python / ${{ matrix.os }} / x86_64
+    name: build-python / x86_64 / ${{ matrix.os }} / Python${{ matrix.python }}
     if: github.repository_owner == 'awslabs'
     strategy:
       fail-fast: false
@@ -55,6 +55,7 @@ jobs:
           make init
 
       - name: Test
+        shell: bash
         run: |
           ZION_VERSION=$(python -c "import pkg_resources;print(pkg_resources.get_distribution('zion').version)")
           [ -f ./python-client/dist/zion-${ZION_VERSION}.tar.gz ]
