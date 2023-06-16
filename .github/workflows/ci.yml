@@ -85,18 +85,8 @@ jobs:
         run: make integ-test
 
   python_client_contract_test:
-    name: python_client_contract_test / ${{ matrix.python }}
     if: github.repository_owner == 'awslabs'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python:
-          - "3.7"
-          - "3.8"
-          - "3.9"
-          - "3.10"
-          - "3.11"
     steps:
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -106,7 +96,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python }}
+          python-version: "3.10" # min Python version to run the contract test
 
       - name: Check out code
         uses: actions/checkout@v2
@@ -135,7 +125,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python }}
+          python-version: "3.7"
 
       - name: Check out code
         uses: actions/checkout@v2
