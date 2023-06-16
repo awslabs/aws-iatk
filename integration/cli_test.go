@@ -66,7 +66,7 @@ func TestCliGetPhysicalIdErrCases(t *testing.T) {
 		"no creds": {
 			env:    []string{"AWS_REGION=us-east-1"},
 			input:  `{"jsonrpc": "2.0","id": "42","method": "get_physical_id","params": {"LogicalResourceId": "HelloWorldFunction", "StackName": "ZionDoesntExistStack"}}`,
-			expect: `{"jsonrpc":"2.0","id":"42","error":{"code":10,"message":"failed to call service: CloudFormation, operation: DescribeStackResource, error: https response error StatusCode: 403, RequestID: [a-z0-9_-]{36}, api error ExpiredToken: The security token included in the request is expired"}}`,
+			expect: `{"jsonrpc":"2.0","id":"42","error":{"code":10,"message":"failed to call service: CloudFormation, operation: DescribeStackResource, error: .*"}}`, // Note(jfuss): depending on setup errors will range. Setting this broad to capture this
 		},
 		"no creds or region": {
 			env:    []string{},
