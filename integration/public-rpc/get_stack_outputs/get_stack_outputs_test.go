@@ -25,7 +25,6 @@ func TestGetStackOutputs(t *testing.T) {
 	s := &GetStackOutputsSuite{
 		stackName: "test-stack-" + uuid.NewString(),
 		region:    "us-west-2",
-		profile:   "default",
 	}
 	suite.Run(t, s)
 }
@@ -34,12 +33,11 @@ type GetStackOutputsSuite struct {
 	suite.Suite
 	stackName string
 	region    string
-	profile   string
 	cfg       aws.Config
 }
 
 func (s *GetStackOutputsSuite) setAWSConfig() {
-	cfg, err := config.GetAWSConfig(context.TODO(), s.region, s.profile)
+	cfg, err := config.GetAWSConfig(context.TODO(), s.region, "")
 	if err != nil {
 		s.T().Fatalf("failed to get aws config: %v", err)
 	}
@@ -127,7 +125,6 @@ func (s *GetStackOutputsSuite) TestGetStackOutputs() {
 						"StackName":   s.stackName,
 						"OutputNames": outputs,
 						"Region":      s.region,
-						"Profile":     s.profile,
 					},
 				}
 				out, _ := json.Marshal(rJson)
@@ -145,7 +142,6 @@ func (s *GetStackOutputsSuite) TestGetStackOutputs() {
 						"StackName":   s.stackName,
 						"OutputNames": outputs,
 						"Region":      s.region,
-						"Profile":     s.profile,
 					},
 				}
 				out, _ := json.Marshal(rJson)
@@ -163,7 +159,6 @@ func (s *GetStackOutputsSuite) TestGetStackOutputs() {
 						"StackName":   s.stackName,
 						"OutputNames": outputs,
 						"Region":      s.region,
-						"Profile":     s.profile,
 					},
 				}
 				out, _ := json.Marshal(rJson)
@@ -181,7 +176,6 @@ func (s *GetStackOutputsSuite) TestGetStackOutputs() {
 						"StackName":   s.stackName,
 						"OutputNames": outputs,
 						"Region":      s.region,
-						"Profile":     s.profile,
 					},
 				}
 				out, _ := json.Marshal(rJson)
@@ -230,7 +224,6 @@ func (s *GetStackOutputsSuite) TestErrGetStackOutputs() {
 						"StackName":   s.stackName,
 						"OutputNames": outputs,
 						"Region":      s.region,
-						"Profile":     s.profile,
 					},
 				}
 				out, _ := json.Marshal(rJson)

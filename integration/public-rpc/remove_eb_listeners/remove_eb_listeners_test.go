@@ -22,11 +22,10 @@ import (
 
 const test_method = "test_harness.eventbridge.remove_listeners"
 
-func TestDestroyTestingResources(t *testing.T) {
+func TestRemoveListeners(t *testing.T) {
 	s := &EventBusDestroyTestingResourcesSuite{
 		eventBusName: uuid.NewString(),
 		region:       "us-west-2",
-		profile:      "default",
 	}
 	s.setAWSConfig()
 	suite.Run(t, s)
@@ -36,7 +35,6 @@ type EventBusDestroyTestingResourcesSuite struct {
 	suite.Suite
 	eventBusName string
 	region       string
-	profile      string
 	cfg          aws.Config
 }
 
@@ -64,7 +62,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TearDownSuite() {
 	deleteEventBus(s.T(), ebClient, s.eventBusName)
 }
 
-func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByResourceGroupIDs() {
+func (s *EventBusDestroyTestingResourcesSuite) TestRemoveListenersByResourceGroupIDs() {
 	cases := map[string]struct {
 		numResourceGroups    int
 		createResourceGroups func(num int) []string
@@ -77,7 +75,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByReso
 			createResourceGroups: func(count int) []string {
 				resourceGroupIDs := []string{}
 				for i := 0; i < count; i++ {
-					rgid := createTestingResources(s.T(), s.cfg, s.eventBusName, `{"source":[{"prefix":"com.test"}]}`, s.region, s.profile, nil)
+					rgid := createTestingResources(s.T(), s.cfg, s.eventBusName, `{"source":[{"prefix":"com.test"}]}`, s.region, nil)
 					resourceGroupIDs = append(resourceGroupIDs, rgid)
 				}
 				return resourceGroupIDs
@@ -88,9 +86,8 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByReso
 					"id":      "42",
 					"method":  test_method,
 					"params": map[string]interface{}{
-						"IDs":     resourceGroupIDs,
-						"Region":  s.region,
-						"Profile": s.profile,
+						"Ids":    resourceGroupIDs,
+						"Region": s.region,
 					},
 				}
 				out, _ := json.Marshal(rJson)
@@ -109,9 +106,8 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByReso
 					"id":      "42",
 					"method":  test_method,
 					"params": map[string]interface{}{
-						"IDs":     []string{},
-						"Region":  s.region,
-						"Profile": s.profile,
+						"Ids":    []string{},
+						"Region": s.region,
 					},
 				}
 				out, _ := json.Marshal(rJson)
@@ -124,7 +120,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByReso
 			createResourceGroups: func(count int) []string {
 				resourceGroupIDs := []string{}
 				for i := 0; i < count; i++ {
-					rgid := createTestingResources(s.T(), s.cfg, s.eventBusName, `{"source":[{"prefix":"com.test"}]}`, s.region, s.profile, nil)
+					rgid := createTestingResources(s.T(), s.cfg, s.eventBusName, `{"source":[{"prefix":"com.test"}]}`, s.region, nil)
 					resourceGroupIDs = append(resourceGroupIDs, rgid)
 				}
 				return resourceGroupIDs
@@ -138,9 +134,8 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByReso
 					"id":      "42",
 					"method":  test_method,
 					"params": map[string]interface{}{
-						"IDs":     dups,
-						"Region":  s.region,
-						"Profile": s.profile,
+						"Ids":    dups,
+						"Region": s.region,
 					},
 				}
 				out, _ := json.Marshal(rJson)
@@ -159,11 +154,10 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByReso
 					"id":      "42",
 					"method":  test_method,
 					"params": map[string]interface{}{
-						"IDs": []string{
+						"Ids": []string{
 							"eb-ffffffff-ffff-ffff-ffff-ffffffffffff",
 						},
-						"Region":  s.region,
-						"Profile": s.profile,
+						"Region": s.region,
 					},
 				}
 				out, _ := json.Marshal(rJson)
@@ -193,7 +187,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByReso
 	}
 }
 
-func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByTagFilters() {
+func (s *EventBusDestroyTestingResourcesSuite) TestRemoveListenersByTagFilters() {
 	cases := map[string]struct {
 		createResourceGroups func() []string
 		tagFilters           []types.TagFilter
@@ -209,7 +203,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByTagF
 				count := 5
 				resourceGroupIDs := []string{}
 				for i := 0; i < count; i++ {
-					rgid := createTestingResources(s.T(), s.cfg, s.eventBusName, `{"source":[{"prefix":"com.test"}]}`, s.region, s.profile, map[string]string{
+					rgid := createTestingResources(s.T(), s.cfg, s.eventBusName, `{"source":[{"prefix":"com.test"}]}`, s.region, map[string]string{
 						"foo": "bar",
 					})
 					resourceGroupIDs = append(resourceGroupIDs, rgid)
@@ -224,7 +218,6 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByTagF
 					"params": map[string]interface{}{
 						"TagFilters": tagFilters,
 						"Region":     s.region,
-						"Profile":    s.profile,
 					},
 				}
 				out, _ := json.Marshal(rJson)
@@ -255,7 +248,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByTagF
 	}
 }
 
-func createTestingResources(t *testing.T, cfg aws.Config, eventBusName, eventPattern, region, profile string, tags map[string]string) string {
+func createTestingResources(t *testing.T, cfg aws.Config, eventBusName, eventPattern, region string, tags map[string]string) string {
 	rJson := map[string]interface{}{
 		"jsonrpc": "2.0",
 		"id":      "42",
@@ -264,7 +257,6 @@ func createTestingResources(t *testing.T, cfg aws.Config, eventBusName, eventPat
 			"EventBusName": eventBusName,
 			"EventPattern": eventPattern,
 			"Region":       region,
-			"Profile":      profile,
 			"Tags":         tags,
 		},
 	}

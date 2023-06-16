@@ -397,7 +397,7 @@ func (s *PollEventsSuite) addListener(params map[string]any) string {
 	res := s.invoke([]byte(req))
 	s.Require().Nilf(res.Error, "failed to add listener: %v", res.Error)
 	output := res.Result.(map[string]any)["output"].(map[string]any)
-	id := output["ID"].(string)
+	id := output["Id"].(string)
 	return id
 }
 
@@ -407,7 +407,7 @@ func (s *PollEventsSuite) removeListeners() {
 		"id":      "42",
 		"method":  remove_listeners_method,
 		"params": map[string]any{
-			"IDs":    s.listenerIDs,
+			"Ids":    s.listenerIDs,
 			"Region": s.region,
 		},
 	}
