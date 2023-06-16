@@ -112,7 +112,8 @@ jobs:
 
       - name: Set up Zion Python Client
         run: |
-          copy-service-source-for-sdist
+          cd python-client
+          make copy-service-source-for-sdist
           make init
 
       - name: Run contract test
