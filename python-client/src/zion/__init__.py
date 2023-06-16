@@ -163,12 +163,13 @@ class Zion:
         events:PutTargets
         events:DeleteRule
         events:RemoveTargets
+        events:TagResource
 
         sqs:CreateQueue
         sqs:GetQueueAttributes
         sqs:GetQueueUrl
         sqs:DeleteQueue
-        
+        sqs:TagQueue
 
         Parameters
         ----------
@@ -204,9 +205,13 @@ class Zion:
         tag:GetResources
         
         sqs:DeleteQueue
+        sqs:GetQueueUrl
+        sqs:GetQueueAttributes
+        sqs:ListQueueTags
 
         events:DeleteRule
         events:RemoveTargets
+        events:ListTargetsByRule
         
         Parameters
         ----------
@@ -242,7 +247,8 @@ class Zion:
         sqs:GetQueueUrl
         sqs:ListQueueTags
         sqs:ReceiveMessage
-        sqs:DeleteMessageBatch
+        sqs:DeleteMessage
+        sqs:GetQueueAttributes
 
         events:DescribeRule
 
@@ -280,7 +286,8 @@ class Zion:
         sqs:GetQueueUrl
         sqs:ListQueueTags
         sqs:ReceiveMessage
-        sqs:DeleteMessageBatch
+        sqs:DeleteMessage
+        sqs:GetQueueAttributes
 
         events:DescribeRule
         
