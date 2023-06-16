@@ -7,6 +7,9 @@ init: build-client
 integ-test: build-client
 	pytest -vvv tests/integration
 
+contract-test:
+	pytest -vvv tests/contract
+
 build-client:
 	python -m build
 	pip3 install -e .
