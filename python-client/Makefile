@@ -4,7 +4,7 @@ build-zion-service:
 init: build-client
 	pip install -e '.[test]'
 
-integ-test: build-client
+integ-test:
 	pytest -vvv tests/integration
 
 contract-test:
