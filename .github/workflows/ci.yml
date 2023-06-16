@@ -50,7 +50,7 @@ jobs:
 
       - name: Test
         run: |
-          ls -la ./dist
+          ls -la ./python-client/dist
           python -c "import zion; from zion import Zion; z = Zion()"
 
   test:
