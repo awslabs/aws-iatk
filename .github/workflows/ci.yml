@@ -7,7 +7,7 @@ on:
       - edited
       - synchronize
   merge_group:
-    types: [ checks_requested ]
+    types: [checks_requested]
     branches:
       - develop
 
@@ -23,11 +23,11 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.20'
+          go-version: "1.20"
 
       - name: Check out code
         uses: actions/checkout@v2
-      
+
       - name: Install Mockery
         run: go install github.com/vektra/mockery/v2@v2.30.1
 
@@ -41,18 +41,42 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.20'
-  
+          go-version: "1.20"
+
       - name: Check out code
         uses: actions/checkout@v2
 
       - name: Install Mockery
         run: go install github.com/vektra/mockery/v2@v2.30.1
-  
+
       - name: Generate Mocks
         run: make generate-mocks
-  
+
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.51.2
+
+  integration_test:
+    if: github.repository_owner == 'awslabs'
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: "us-east-1"
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.20"
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.GHA_INTEG_TESTS_IAM_ROLE }}
+          role-session-name: ci
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run integration tests
+        run: make integ-test
