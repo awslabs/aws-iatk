@@ -22,11 +22,10 @@ import (
 
 const test_method = "test_harness.eventbridge.remove_listeners"
 
-func TestDestroyTestingResources(t *testing.T) {
+func TestRemoveListeners(t *testing.T) {
 	s := &EventBusDestroyTestingResourcesSuite{
 		eventBusName: uuid.NewString(),
 		region:       "us-west-2",
-		profile:      "default",
 	}
 	s.setAWSConfig()
 	suite.Run(t, s)
@@ -64,7 +63,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TearDownSuite() {
 	deleteEventBus(s.T(), ebClient, s.eventBusName)
 }
 
-func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByResourceGroupIDs() {
+func (s *EventBusDestroyTestingResourcesSuite) TestRemoveListenersByResourceGroupIDs() {
 	cases := map[string]struct {
 		numResourceGroups    int
 		createResourceGroups func(num int) []string
@@ -88,7 +87,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByReso
 					"id":      "42",
 					"method":  test_method,
 					"params": map[string]interface{}{
-						"IDs":     resourceGroupIDs,
+						"Ids":     resourceGroupIDs,
 						"Region":  s.region,
 						"Profile": s.profile,
 					},
@@ -109,7 +108,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByReso
 					"id":      "42",
 					"method":  test_method,
 					"params": map[string]interface{}{
-						"IDs":     []string{},
+						"Ids":     []string{},
 						"Region":  s.region,
 						"Profile": s.profile,
 					},
@@ -138,7 +137,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByReso
 					"id":      "42",
 					"method":  test_method,
 					"params": map[string]interface{}{
-						"IDs":     dups,
+						"Ids":     dups,
 						"Region":  s.region,
 						"Profile": s.profile,
 					},
@@ -159,7 +158,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByReso
 					"id":      "42",
 					"method":  test_method,
 					"params": map[string]interface{}{
-						"IDs": []string{
+						"Ids": []string{
 							"eb-ffffffff-ffff-ffff-ffff-ffffffffffff",
 						},
 						"Region":  s.region,
@@ -193,7 +192,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByReso
 	}
 }
 
-func (s *EventBusDestroyTestingResourcesSuite) TestDestroyTestingResourcesByTagFilters() {
+func (s *EventBusDestroyTestingResourcesSuite) TestRemoveListenersByTagFilters() {
 	cases := map[string]struct {
 		createResourceGroups func() []string
 		tagFilters           []types.TagFilter

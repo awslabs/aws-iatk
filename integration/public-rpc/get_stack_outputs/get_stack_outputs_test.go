@@ -25,7 +25,6 @@ func TestGetStackOutputs(t *testing.T) {
 	s := &GetStackOutputsSuite{
 		stackName: "test-stack-" + uuid.NewString(),
 		region:    "us-west-2",
-		profile:   "default",
 	}
 	suite.Run(t, s)
 }
