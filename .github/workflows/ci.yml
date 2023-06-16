@@ -113,6 +113,7 @@ jobs:
       - name: Set up Zion Python Client
         run: |
           cd python-client
+          pip install build
           make copy-service-source-for-sdist
           make init
 
