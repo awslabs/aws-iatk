@@ -75,7 +75,7 @@ class AddEbListenerOutput:
         jsonrpc_data = jsonrpc_data_bytes.decode("utf-8")
         data_dict = json.loads(jsonrpc_data.strip())
         output = data_dict.get("result", {}).get("output", {})
-        self.id = output.get("ID", "")
+        self.id = output.get("Id", "")
         self.target_under_test = AddEbListener_Resource(
             output.get("TargetUnderTest", {})
         )
