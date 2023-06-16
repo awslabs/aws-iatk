@@ -90,6 +90,10 @@ class Zion:
         """
         Fetch a Phsyical Id from a Logical Id within an AWS CloudFormation stack
 
+        IAM Permissions Needed
+        ----------------------
+        cloudformation:DescribeStackResources
+
         Parameters
         ----------
         params : PhysicalIdFromStackParams
@@ -117,6 +121,10 @@ class Zion:
     def get_stack_outputs(self, params: GetStackOutputsParams) -> GetStackOutputsOutput:
         """
         Fetch Stack Outputs from an AWS CloudFormation stack
+
+        IAM Permissions Needed
+        ----------------------
+        cloudformation:DescribeStacks
 
         Parameters
         ----------
@@ -147,6 +155,21 @@ class Zion:
         """
         Add Listener Resource to an AWS Event Bridge Bus to enable testing
 
+        IAM Permissions Needed
+        ----------------------
+        events:DescribeEventBus
+        events:DescribeRule
+        events:PutRule
+        events:PutTargets
+        events:DeleteRule
+        events:RemoveTargets
+
+        sqs:CreateQueue
+        sqs:GetQueueAttributes
+        sqs:GetQueueUrl
+        sqs:DeleteQueue
+        
+
         Parameters
         ----------
         params : AddEbListenerParams
@@ -176,6 +199,15 @@ class Zion:
         """
         Remove Listener Resource(s) from an AWS Event Bridge Bus
 
+        IAM Permissions Needed
+        ----------------------
+        tag:GetResources
+        
+        sqs:DeleteQueue
+
+        events:DeleteRule
+        events:RemoveTargets
+        
         Parameters
         ----------
         params : RemoveListenersParams
@@ -204,6 +236,15 @@ class Zion:
     def poll_events(self, params: PollEventsParams) -> PollEventsOutput:
         """
         Poll Events from a specific Listener
+
+        IAM Permissions Needed
+        ----------------------
+        sqs:GetQueueUrl
+        sqs:ListQueueTags
+        sqs:ReceiveMessage
+        sqs:DeleteMessageBatch
+
+        events:DescribeRule
 
         Parameters
         ----------
@@ -234,6 +275,15 @@ class Zion:
         """
         Poll Events on a given Listener until a match is found or timeout met.
 
+        IAM Permissions Needed
+        ----------------------
+        sqs:GetQueueUrl
+        sqs:ListQueueTags
+        sqs:ReceiveMessage
+        sqs:DeleteMessageBatch
+
+        events:DescribeRule
+        
         Parameters
         ----------
         params : WaitUntilEventMatchedParams
