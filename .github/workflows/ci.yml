@@ -108,6 +108,11 @@ jobs:
           make copy-service-source-for-sdist
           make init
 
+      - name: Generate RPC specs
+        run: |
+          rm schema/rpc-specs.json
+          make generate-rpc-spec
+
       - name: Run contract test
         run: |
           cd python-client
