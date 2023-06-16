@@ -71,6 +71,11 @@ jobs:
         with:
           go-version: "1.20"
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.7"
+
       - name: Check out code
         uses: actions/checkout@v2
 
@@ -78,8 +83,54 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.CI_IAM_ROLE_ARN }}
-          role-session-name: ci
+          role-session-name: CiIntegTests
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Run integration tests
         run: make integ-test
+
+      - name: Set up Zion Python Client
+        run: |
+          cd python-client
+          pip install build
+          make copy-service-source-for-sdist
+          make init
+
+      - name: Run Python Client integration test
+        run: |
+          cd python-client
+          make integ-test
+
+  python_client_contract_test:
+    if: github.repository_owner == 'awslabs'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.20"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10" # min Python version to run the contract test
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Zion Python Client
+        run: |
+          cd python-client
+          pip install build
+          make copy-service-source-for-sdist
+          make init
+
+      - name: Generate RPC specs
+        run: |
+          rm schema/rpc-specs.json
+          make generate-rpc-spec
+
+      - name: Run contract test
+        run: |
+          cd python-client
+          make contract-test
