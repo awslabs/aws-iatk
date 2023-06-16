@@ -78,7 +78,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.CI_IAM_ROLE_ARN }}
-          role-session-name: ci
+          role-session-name: ServiceIntegTests
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Run integration tests
@@ -148,7 +148,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.CI_IAM_ROLE_ARN }}
-          role-session-name: ci
+          role-session-name: PythonClientIntegTests
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Run Python Client integration test
