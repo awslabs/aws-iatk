@@ -53,7 +53,7 @@ class PollEventsParams:
             "method": self._rpc_method,
             "params": {},
         }
-        jsonrpc_data["params"]["ListenerID"] = self.listener_id
+        jsonrpc_data["params"]["ListenerId"] = self.listener_id
         if self.wait_time_seconds is not None:
             jsonrpc_data["params"]["WaitTimeSeconds"] = self.wait_time_seconds
         if self.max_number_of_messages is not None:

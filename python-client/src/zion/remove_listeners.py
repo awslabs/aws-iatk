@@ -65,7 +65,7 @@ class RemoveListenersParams:
             "params": {},
         }
         if self.ids:
-            jsonrpc_data["params"]["IDs"] = self.ids
+            jsonrpc_data["params"]["Ids"] = self.ids
         if self.tag_filters:
             jsonrpc_data["params"]["TagFilters"] = self.tag_filters
         if region:
