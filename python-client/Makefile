@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 build-zion-service:
 	go build -o src/zion_service/ ../cmd/zion
 
