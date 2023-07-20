@@ -19,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
+	ebtypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	sqstypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
 )
@@ -37,7 +38,10 @@ type Options struct {
 	sqsClient sqsClient
 
 	// funcs
-	getEventBus              getEventBusFunc
+	getEventBus getEventBusFunc
+
+	listTargetsByRule
+
 	createQueue              createQueueFunc
 	createRule               createRuleFunc
 	putQueueTarget           putQueueTargetFunc
@@ -54,6 +58,7 @@ func NewOptions(cfg aws.Config) Options {
 		sqsClient: sqs.NewFromConfig(cfg),
 
 		getEventBus:              eventbus.Get,
+		listTargetsByRule:        eventrule.ListTargetsByRule,
 		createQueue:              queue.Create,
 		createRule:               eventrule.Create,
 		putQueueTarget:           eventrule.PutQueueTarget,
@@ -71,11 +76,7 @@ type Listener struct {
 	eventPattern string
 	customTags   map[string]string
 
-	// TODO (hawflau): pass-thru these params to Deploy
-	// Parameters for Input transformation - https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-transform-target-input.html
-	input            string
-	inputPath        string
-	inputTransformer *eventrule.InputTransformer
+	target *ebtypes.Target
 
 	// target
 	eventBus *eventbus.EventBus
@@ -156,7 +157,7 @@ func (lr *Listener) Deploy(ctx context.Context) error {
 	}
 	lr.queue = q
 
-	err = lr.opts.putQueueTarget(ctx, lr.opts.ebClient, lr.ID(), lr.queue, lr.rule, lr.input, lr.inputPath, lr.inputTransformer)
+	err = lr.opts.putQueueTarget(ctx, lr.opts.ebClient, lr.ID(), lr.queue, lr.rule, lr.target)
 	if err != nil {
 		return fmt.Errorf("failed to deploy eb listener %v: %w", lr.ID(), err)
 	}
@@ -265,6 +266,7 @@ func (qp *queuePolicy) String() string {
 //go:generate mockery --name ebClient
 type ebClient interface {
 	eventbus.DescribeEventBusAPI
+	eventrule.EbListTargetsByRuleAPI
 	eventrule.EbPutRuleAPI
 	eventrule.EbDeleteRuleAPI
 	eventrule.EbDescribeRuleAPI
@@ -284,6 +286,8 @@ type sqsClient interface {
 //go:generate mockery --name getEventBusFunc
 type getEventBusFunc func(ctx context.Context, api eventbus.DescribeEventBusAPI, eventBusName string) (*eventbus.EventBus, error)
 
+type listTargetsByRule func(ctx context.Context, api eventrule.EbListTargetsByRuleAPI, targetId, ruleName string, eventBusName string) (*ebtypes.Target, error)
+
 //go:generate mockery --name createQueueFunc
 type createQueueFunc func(ctx context.Context, api queue.CreateQueueAPI, name string, tags map[string]string, opts queue.Options) (*queue.Queue, error)
 
@@ -291,7 +295,7 @@ type createQueueFunc func(ctx context.Context, api queue.CreateQueueAPI, name st
 type createRuleFunc func(ctx context.Context, api eventrule.EbPutRuleAPI, ruleName, eventBusName, eventPattern, description string, tags map[string]string) (*eventrule.Rule, error)
 
 //go:generate mockery --name putQueueTargetFunc
-type putQueueTargetFunc func(ctx context.Context, api eventrule.EbPutTargetsAPI, listenerID string, qu *queue.Queue, ru *eventrule.Rule, input, inputPath string, inputTransformer *eventrule.InputTransformer) error
+type putQueueTargetFunc func(ctx context.Context, api eventrule.EbPutTargetsAPI, listenerID string, qu *queue.Queue, ru *eventrule.Rule, target *ebtypes.Target) error
 
 //go:generate mockery --name deleteQueueFunc
 type deleteQueueFunc func(ctx context.Context, api queue.DeleteQueueAPI, queueURL string) error
