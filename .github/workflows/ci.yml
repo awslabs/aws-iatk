@@ -105,6 +105,7 @@ jobs:
   integration_test:
     if: github.repository_owner == 'awslabs'
     runs-on: ubuntu-latest
+    environment: pull_request_env
     permissions:
       id-token: write
       contents: read
