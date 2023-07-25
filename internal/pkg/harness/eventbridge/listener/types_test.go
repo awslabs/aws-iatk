@@ -16,6 +16,7 @@ import (
 	"zion/internal/pkg/harness/resource/queue"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	ebtypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	sqstypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/rs/xid"
@@ -100,13 +101,13 @@ func TestListener_Deploy(t *testing.T) {
 				id:           xid.New().String(),
 				eventBus:     &eventbus.EventBus{Name: "my-event-bus"},
 				eventPattern: "{}",
-				input:        "",
-				inputPath:    "",
-				inputTransformer: &eventrule.InputTransformer{
-					InputTemplate: "<instance> is in state <status>",
-					InputPathsMap: map[string]string{
-						"instance": "$.detail.instance",
-						"status":   "$.detail.status",
+				target: &ebtypes.Target{
+					InputTransformer: &ebtypes.InputTransformer{
+						InputTemplate: aws.String("<instance> is in state <status>"),
+						InputPathsMap: map[string]string{
+							"instance": "$.detail.instance",
+							"status":   "$.detail.status",
+						},
 					},
 				},
 				opts: Options{
@@ -130,7 +131,7 @@ func TestListener_Deploy(t *testing.T) {
 			mockPutQueueTarget: func(ctx context.Context, lr *Listener, queue *queue.Queue, rule *eventrule.Rule) *mockPutQueueTargetFunc {
 				m := newMockPutQueueTargetFunc(t)
 				m.EXPECT().
-					Execute(ctx, lr.opts.ebClient, lr.ID(), queue, rule, lr.input, lr.inputPath, lr.inputTransformer).
+					Execute(ctx, lr.opts.ebClient, lr.ID(), queue, rule, lr.target).
 					Return(nil)
 				return m
 			},
@@ -143,13 +144,13 @@ func TestListener_Deploy(t *testing.T) {
 				id:           xid.New().String(),
 				eventBus:     &eventbus.EventBus{Name: "my-event-bus"},
 				eventPattern: "{}",
-				input:        "",
-				inputPath:    "",
-				inputTransformer: &eventrule.InputTransformer{
-					InputTemplate: "<instance> is in state <status>",
-					InputPathsMap: map[string]string{
-						"instance": "$.detail.instance",
-						"status":   "$.detail.status",
+				target: &ebtypes.Target{
+					InputTransformer: &ebtypes.InputTransformer{
+						InputTemplate: aws.String("<instance> is in state <status>"),
+						InputPathsMap: map[string]string{
+							"instance": "$.detail.instance",
+							"status":   "$.detail.status",
+						},
 					},
 				},
 				opts: Options{
@@ -187,13 +188,13 @@ func TestListener_Deploy(t *testing.T) {
 				id:           xid.New().String(),
 				eventBus:     &eventbus.EventBus{Name: "my-event-bus"},
 				eventPattern: "{}",
-				input:        "",
-				inputPath:    "",
-				inputTransformer: &eventrule.InputTransformer{
-					InputTemplate: "<instance> is in state <status>",
-					InputPathsMap: map[string]string{
-						"instance": "$.detail.instance",
-						"status":   "$.detail.status",
+				target: &ebtypes.Target{
+					InputTransformer: &ebtypes.InputTransformer{
+						InputTemplate: aws.String("<instance> is in state <status>"),
+						InputPathsMap: map[string]string{
+							"instance": "$.detail.instance",
+							"status":   "$.detail.status",
+						},
 					},
 				},
 				opts: Options{
@@ -231,13 +232,13 @@ func TestListener_Deploy(t *testing.T) {
 				id:           xid.New().String(),
 				eventBus:     &eventbus.EventBus{Name: "my-event-bus"},
 				eventPattern: "{}",
-				input:        "",
-				inputPath:    "",
-				inputTransformer: &eventrule.InputTransformer{
-					InputTemplate: "<instance> is in state <status>",
-					InputPathsMap: map[string]string{
-						"instance": "$.detail.instance",
-						"status":   "$.detail.status",
+				target: &ebtypes.Target{
+					InputTransformer: &ebtypes.InputTransformer{
+						InputTemplate: aws.String("<instance> is in state <status>"),
+						InputPathsMap: map[string]string{
+							"instance": "$.detail.instance",
+							"status":   "$.detail.status",
+						},
 					},
 				},
 				opts: Options{
@@ -263,7 +264,7 @@ func TestListener_Deploy(t *testing.T) {
 			mockPutQueueTarget: func(ctx context.Context, lr *Listener, queue *queue.Queue, rule *eventrule.Rule) *mockPutQueueTargetFunc {
 				m := newMockPutQueueTargetFunc(t)
 				m.EXPECT().
-					Execute(ctx, lr.opts.ebClient, lr.ID(), queue, rule, lr.input, lr.inputPath, lr.inputTransformer).
+					Execute(ctx, lr.opts.ebClient, lr.ID(), queue, rule, lr.target).
 					Return(errors.New("put rule target failed"))
 				return m
 			},

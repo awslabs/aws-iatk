@@ -38,10 +38,8 @@ type Options struct {
 	sqsClient sqsClient
 
 	// funcs
-	getEventBus getEventBusFunc
-
-	listTargetsByRule
-
+	getEventBus              getEventBusFunc
+	listTargetsByRule        listTargetsByRuleFunc
 	createQueue              createQueueFunc
 	createRule               createRuleFunc
 	putQueueTarget           putQueueTargetFunc
@@ -286,7 +284,8 @@ type sqsClient interface {
 //go:generate mockery --name getEventBusFunc
 type getEventBusFunc func(ctx context.Context, api eventbus.DescribeEventBusAPI, eventBusName string) (*eventbus.EventBus, error)
 
-type listTargetsByRule func(ctx context.Context, api eventrule.EbListTargetsByRuleAPI, targetId, ruleName string, eventBusName string) (*ebtypes.Target, error)
+//go:generate mockery --name listTargetsByRuleFunc
+type listTargetsByRuleFunc func(ctx context.Context, api eventrule.EbListTargetsByRuleAPI, targetId, ruleName string, eventBusName string) (*ebtypes.Target, error)
 
 //go:generate mockery --name createQueueFunc
 type createQueueFunc func(ctx context.Context, api queue.CreateQueueAPI, name string, tags map[string]string, opts queue.Options) (*queue.Queue, error)

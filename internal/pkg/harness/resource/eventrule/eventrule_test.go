@@ -102,16 +102,177 @@ func TestCreate(t *testing.T) {
 	}
 }
 
+func TestListTargetsByRule(t *testing.T) {
+	cases := map[string]struct {
+		targetId     string
+		ruleName     string
+		eventBusName string
+		expectErr    error
+		expect       *ebtypes.Target
+		mockAPI      func(ctx context.Context, targetId string, ruleName string, eventBusName string) *MockEbListTargetsByRuleAPI
+	}{
+		"should return if no target or rule": {
+			targetId:     "",
+			ruleName:     "",
+			eventBusName: testEventBusName,
+			expectErr:    nil,
+			expect:       nil,
+			mockAPI: func(ctx context.Context, targetId string, ruleName string, eventBusName string) *MockEbListTargetsByRuleAPI {
+				api := NewMockEbListTargetsByRuleAPI(t)
+				return api
+			},
+		},
+		"should return if no target": {
+			targetId:     "",
+			ruleName:     "myrule",
+			eventBusName: testEventBusName,
+			expectErr:    nil,
+			expect:       nil,
+			mockAPI: func(ctx context.Context, targetId string, ruleName string, eventBusName string) *MockEbListTargetsByRuleAPI {
+				api := NewMockEbListTargetsByRuleAPI(t)
+				return api
+			},
+		},
+		"should return if no rule": {
+			targetId:     "mytarget",
+			ruleName:     "",
+			eventBusName: testEventBusName,
+			expectErr:    nil,
+			expect:       nil,
+			mockAPI: func(ctx context.Context, targetId string, ruleName string, eventBusName string) *MockEbListTargetsByRuleAPI {
+				api := NewMockEbListTargetsByRuleAPI(t)
+				return api
+			},
+		},
+		"no Targets returned by ListTargetsByRule": {
+			targetId:     "mytarget",
+			ruleName:     "myrule",
+			eventBusName: testEventBusName,
+			expectErr:    fmt.Errorf("TargetId was provided but not found on Rule: myrule"),
+			expect:       nil,
+			mockAPI: func(ctx context.Context, targetId string, ruleName string, eventBusName string) *MockEbListTargetsByRuleAPI {
+				api := NewMockEbListTargetsByRuleAPI(t)
+				api.EXPECT().
+					ListTargetsByRule(ctx, &eventbridge.ListTargetsByRuleInput{
+						Rule:         aws.String(ruleName),
+						EventBusName: aws.String(eventBusName),
+					}).
+					Return(&eventbridge.ListTargetsByRuleOutput{
+						Targets: []ebtypes.Target{},
+					}, nil)
+				return api
+			},
+		},
+		"ListTargetsByRule failed": {
+			targetId:     "mytarget",
+			ruleName:     "myrule",
+			eventBusName: testEventBusName,
+			expectErr:    fmt.Errorf("ListTargetsByRule for Rule: \"myrule\" failed: api ListTargetsByRule failed"),
+			expect:       nil,
+			mockAPI: func(ctx context.Context, targetId string, ruleName string, eventBusName string) *MockEbListTargetsByRuleAPI {
+				api := NewMockEbListTargetsByRuleAPI(t)
+				api.EXPECT().
+					ListTargetsByRule(ctx, &eventbridge.ListTargetsByRuleInput{
+						Rule:         aws.String(ruleName),
+						EventBusName: aws.String(eventBusName),
+					}).
+					Return(nil, errors.New("api ListTargetsByRule failed"))
+				return api
+			},
+		},
+		"Target Not found": {
+			targetId:     "mytarget",
+			ruleName:     "myrule",
+			eventBusName: testEventBusName,
+			expectErr:    fmt.Errorf("TagetId: mytarget was not found on myrule Rule"),
+			expect:       nil,
+			mockAPI: func(ctx context.Context, targetId string, ruleName string, eventBusName string) *MockEbListTargetsByRuleAPI {
+				api := NewMockEbListTargetsByRuleAPI(t)
+				api.EXPECT().
+					ListTargetsByRule(ctx, &eventbridge.ListTargetsByRuleInput{
+						Rule:         aws.String(ruleName),
+						EventBusName: aws.String(eventBusName),
+					}).
+					Return(&eventbridge.ListTargetsByRuleOutput{
+						Targets: []ebtypes.Target{{Id: aws.String("mytarget2")}},
+					}, nil)
+				return api
+			},
+		},
+		"Target found": {
+			targetId:     "mytarget",
+			ruleName:     "myrule",
+			eventBusName: testEventBusName,
+			expectErr:    nil,
+			expect:       &ebtypes.Target{Id: aws.String("mytarget"), Input: aws.String("my input")},
+			mockAPI: func(ctx context.Context, targetId string, ruleName string, eventBusName string) *MockEbListTargetsByRuleAPI {
+				api := NewMockEbListTargetsByRuleAPI(t)
+				api.EXPECT().
+					ListTargetsByRule(ctx, &eventbridge.ListTargetsByRuleInput{
+						Rule:         aws.String(ruleName),
+						EventBusName: aws.String(eventBusName),
+					}).
+					Return(&eventbridge.ListTargetsByRuleOutput{
+						Targets: []ebtypes.Target{{Id: aws.String("mytarget2")}, {Id: aws.String("mytarget"), Input: aws.String("my input")}},
+					}, nil)
+				return api
+			},
+		},
+		"Target found through pagination": {
+			targetId:     "mytarget",
+			ruleName:     "myrule",
+			eventBusName: testEventBusName,
+			expectErr:    nil,
+			expect:       &ebtypes.Target{Id: aws.String("mytarget"), Input: aws.String("my input")},
+			mockAPI: func(ctx context.Context, targetId string, ruleName string, eventBusName string) *MockEbListTargetsByRuleAPI {
+				api := NewMockEbListTargetsByRuleAPI(t)
+				api.EXPECT().
+					ListTargetsByRule(ctx, &eventbridge.ListTargetsByRuleInput{
+						Rule:         aws.String(ruleName),
+						EventBusName: aws.String(eventBusName),
+					}).
+					Return(&eventbridge.ListTargetsByRuleOutput{
+						NextToken: aws.String("aaaaa"),
+						Targets:   []ebtypes.Target{{Id: aws.String("mytarget2")}},
+					}, nil)
+
+				api.EXPECT().
+					ListTargetsByRule(ctx, &eventbridge.ListTargetsByRuleInput{
+						Rule:         aws.String(ruleName),
+						EventBusName: aws.String(eventBusName),
+						NextToken:    aws.String("aaaaa"),
+					}).
+					Return(&eventbridge.ListTargetsByRuleOutput{
+						Targets: []ebtypes.Target{{Id: aws.String("mytarget"), Input: aws.String("my input")}},
+					}, nil)
+				return api
+			},
+		},
+	}
+
+	for name, tt := range cases {
+		t.Run(name, func(t *testing.T) {
+			ctx := context.TODO()
+			api := tt.mockAPI(ctx, tt.targetId, tt.ruleName, tt.eventBusName)
+			result, err := ListTargetsByRule(ctx, api, tt.targetId, tt.ruleName, tt.eventBusName)
+			if tt.expectErr != nil {
+				assert.EqualError(t, err, tt.expectErr.Error())
+			} else {
+				assert.Equal(t, tt.expect, result)
+			}
+			api.AssertExpectations(t)
+		})
+	}
+}
+
 func TestPutQueueTarget(t *testing.T) {
 	cases := map[string]struct {
-		resourceGroupID  string
-		queue            *queue.Queue
-		rule             *Rule
-		input            string
-		inputPath        string
-		inputTransformer *InputTransformer
-		expectErr        error
-		mockAPI          func(ctx context.Context, resourceGroupID string, rule *Rule, queue *queue.Queue, input, inputPath string, inputTransformer *InputTransformer) *MockEbPutTargetsAPI
+		resourceGroupID string
+		queue           *queue.Queue
+		rule            *Rule
+		target          *ebtypes.Target
+		expectErr       error
+		mockAPI         func(ctx context.Context, resourceGroupID string, rule *Rule, queue *queue.Queue, target *ebtypes.Target) *MockEbPutTargetsAPI
 	}{
 		"should put target": {
 			resourceGroupID: "my-resource-group-id",
@@ -130,17 +291,17 @@ func TestPutQueueTarget(t *testing.T) {
 				Name:         testRuleName,
 				EventBusName: testEventBusName,
 			},
-			input:     "",
-			inputPath: "",
-			inputTransformer: &InputTransformer{
-				InputTemplate: "<instance> is in state <status>",
-				InputPathsMap: map[string]string{
-					"instance": "$.detail.instance",
-					"status":   "$.detail.status",
+			target: &ebtypes.Target{
+				InputTransformer: &ebtypes.InputTransformer{
+					InputTemplate: aws.String("<instance> is in state <status>"),
+					InputPathsMap: map[string]string{
+						"instance": "$.detail.instance",
+						"status":   "$.detail.status",
+					},
 				},
 			},
 			expectErr: nil,
-			mockAPI: func(ctx context.Context, resourceGroupID string, rule *Rule, queue *queue.Queue, input, inputPath string, inputTransformer *InputTransformer) *MockEbPutTargetsAPI {
+			mockAPI: func(ctx context.Context, resourceGroupID string, rule *Rule, queue *queue.Queue, target *ebtypes.Target) *MockEbPutTargetsAPI {
 				api := NewMockEbPutTargetsAPI(t)
 				api.On("PutTargets", ctx, &eventbridge.PutTargetsInput{
 					Rule:         aws.String(rule.Name),
@@ -150,8 +311,8 @@ func TestPutQueueTarget(t *testing.T) {
 							Arn: aws.String(queue.ARN.String()),
 							Id:  aws.String(resourceGroupID),
 							InputTransformer: &ebtypes.InputTransformer{
-								InputTemplate: aws.String(inputTransformer.InputTemplate),
-								InputPathsMap: inputTransformer.InputPathsMap,
+								InputTemplate: target.InputTransformer.InputTemplate,
+								InputPathsMap: target.InputTransformer.InputPathsMap,
 							},
 						},
 					},
@@ -176,17 +337,17 @@ func TestPutQueueTarget(t *testing.T) {
 				Name:         testRuleName,
 				EventBusName: testEventBusName,
 			},
-			input:     "",
-			inputPath: "",
-			inputTransformer: &InputTransformer{
-				InputTemplate: "<instance> is in state <status>",
-				InputPathsMap: map[string]string{
-					"instance": "$.detail.instance",
-					"status":   "$.detail.status",
+			target: &ebtypes.Target{
+				InputTransformer: &ebtypes.InputTransformer{
+					InputTemplate: aws.String("<instance> is in state <status>"),
+					InputPathsMap: map[string]string{
+						"instance": "$.detail.instance",
+						"status":   "$.detail.status",
+					},
 				},
 			},
 			expectErr: errors.New("put rule target failed: something failed from aws"),
-			mockAPI: func(ctx context.Context, resourceGroupID string, rule *Rule, queue *queue.Queue, input, inputPath string, inputTransformer *InputTransformer) *MockEbPutTargetsAPI {
+			mockAPI: func(ctx context.Context, resourceGroupID string, rule *Rule, queue *queue.Queue, target *ebtypes.Target) *MockEbPutTargetsAPI {
 				api := NewMockEbPutTargetsAPI(t)
 				api.On("PutTargets", ctx, &eventbridge.PutTargetsInput{
 					Rule:         aws.String(rule.Name),
@@ -196,8 +357,8 @@ func TestPutQueueTarget(t *testing.T) {
 							Arn: aws.String(queue.ARN.String()),
 							Id:  aws.String(resourceGroupID),
 							InputTransformer: &ebtypes.InputTransformer{
-								InputTemplate: aws.String(inputTransformer.InputTemplate),
-								InputPathsMap: inputTransformer.InputPathsMap,
+								InputTemplate: target.InputTransformer.InputTemplate,
+								InputPathsMap: target.InputTransformer.InputPathsMap,
 							},
 						},
 					},
@@ -210,94 +371,12 @@ func TestPutQueueTarget(t *testing.T) {
 	for name, tt := range cases {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.TODO()
-			api := tt.mockAPI(ctx, tt.resourceGroupID, tt.rule, tt.queue, tt.input, tt.inputPath, tt.inputTransformer)
-			err := PutQueueTarget(ctx, api, tt.resourceGroupID, tt.queue, tt.rule, tt.input, tt.inputPath, tt.inputTransformer)
+			api := tt.mockAPI(ctx, tt.resourceGroupID, tt.rule, tt.queue, tt.target)
+			err := PutQueueTarget(ctx, api, tt.resourceGroupID, tt.queue, tt.rule, tt.target)
 			if tt.expectErr != nil {
 				assert.EqualError(t, err, tt.expectErr.Error())
 			}
 			api.AssertExpectations(t)
-		})
-	}
-}
-
-func Test_setInputTraansformation(t *testing.T) {
-	cases := map[string]struct {
-		input            string
-		inputPath        string
-		inputTransformer *InputTransformer
-		expectErr        error
-	}{
-		"should set target with input": {
-			input:            "fixed",
-			inputPath:        "",
-			inputTransformer: nil,
-			expectErr:        nil,
-		},
-		"should set target with inputPath": {
-			input:            "",
-			inputPath:        "$detail-type",
-			inputTransformer: nil,
-			expectErr:        nil,
-		},
-		"should set target with inputTransformer": {
-			input:     "",
-			inputPath: "",
-			inputTransformer: &InputTransformer{
-				InputTemplate: "<state>",
-				InputPathsMap: map[string]string{
-					"state": "$.detail.state",
-				},
-			},
-			expectErr: nil,
-		},
-		"should fail with both input and inputPath provided": {
-			input:            "fixed",
-			inputPath:        "$.source",
-			inputTransformer: nil,
-			expectErr:        errors.New("input, inputPath, and inputTransformer are mutually exclusive"),
-		},
-		"should fail with both input and inputTransformer provided": {
-			input:     "fixed",
-			inputPath: "",
-			inputTransformer: &InputTransformer{
-				InputTemplate: "<state>",
-				InputPathsMap: map[string]string{
-					"state": "$.detail.state",
-				},
-			},
-			expectErr: errors.New("input, inputPath, and inputTransformer are mutually exclusive"),
-		},
-		"should fail with both inputPath and inputTransformer provided": {
-			input:     "",
-			inputPath: "$.source",
-			inputTransformer: &InputTransformer{
-				InputTemplate: "<state>",
-				InputPathsMap: map[string]string{
-					"state": "$.detail.state",
-				},
-			},
-			expectErr: errors.New("input, inputPath, and inputTransformer are mutually exclusive"),
-		},
-	}
-
-	for name, tt := range cases {
-		t.Run(name, func(t *testing.T) {
-			target := ebtypes.Target{}
-			err := setInputTraansformation(&target, tt.input, tt.inputPath, tt.inputTransformer)
-			if tt.expectErr != nil {
-				assert.EqualError(t, err, tt.expectErr.Error())
-			} else {
-				if tt.inputTransformer != nil {
-					assert.Equal(t, target.InputTransformer.InputTemplate, aws.String(tt.inputTransformer.InputTemplate))
-					assert.Equal(t, target.InputTransformer.InputPathsMap, tt.inputTransformer.InputPathsMap)
-				}
-				if tt.input != "" {
-					assert.Equal(t, target.Input, aws.String(tt.input))
-				}
-				if tt.inputPath != "" {
-					assert.Equal(t, target.InputPath, aws.String(tt.inputPath))
-				}
-			}
 		})
 	}
 }

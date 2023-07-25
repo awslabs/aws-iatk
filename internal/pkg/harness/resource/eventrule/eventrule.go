@@ -37,43 +37,41 @@ func (r *Rule) Resource() harness.Resource {
 }
 
 func ListTargetsByRule(ctx context.Context, api EbListTargetsByRuleAPI, targetId, ruleName string, eventBusName string) (*ebtypes.Target, error) {
-	if ruleName == "" {
+	// If no rule provided, skip
+	if ruleName == "" || targetId == "" {
 		return nil, nil
 	}
 
-	output, err := api.ListTargetsByRule(ctx, &eventbridge.ListTargetsByRuleInput{
+	input := eventbridge.ListTargetsByRuleInput{
 		Rule:         aws.String(ruleName),
 		EventBusName: aws.String(eventBusName),
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("put rule %q failed: %v", ruleName, err)
 	}
 
-	targetLen := len(output.Targets)
+	for {
+		output, err := api.ListTargetsByRule(ctx, &input)
 
-	// is this possible?
-	if targetLen == 0 {
-		return nil, nil
-	}
-
-	// is this right right behavior
-	if targetLen == 1 {
-		return &output.Targets[0], nil
-	}
-
-	// If there are more than one target and targetId was not provided, fail
-	if targetId != "" {
-		return nil, fmt.Errorf("Multiple Tagrets found but 'TargetName' not provided")
-	}
-
-	for _, t := range output.Targets {
-		if aws.ToString(t.Id) == targetId {
-			return &t, nil
+		if err != nil {
+			return nil, fmt.Errorf("ListTargetsByRule for Rule: %q failed: %v", ruleName, err)
 		}
+
+		targetLen := len(output.Targets)
+
+		if targetLen == 0 {
+			return nil, fmt.Errorf("TargetId was provided but not found on Rule: %s", ruleName)
+		}
+
+		for _, t := range output.Targets {
+			if aws.ToString(t.Id) == targetId {
+				return &t, nil
+			}
+		}
+		if aws.ToString(output.NextToken) == "" {
+			break
+		}
+		input.NextToken = output.NextToken
 	}
 
-	return nil, fmt.Errorf("Could not find Target")
+	return nil, fmt.Errorf("TagetId: %s was not found on %s Rule", targetId, ruleName)
 }
 
 func Create(ctx context.Context, api EbPutRuleAPI, ruleName, eventBusName, eventPattern, description string, tags map[string]string) (*Rule, error) {
@@ -196,6 +194,7 @@ type EbPutRuleAPI interface {
 	PutRule(ctx context.Context, params *eventbridge.PutRuleInput, optFns ...func(*eventbridge.Options)) (*eventbridge.PutRuleOutput, error)
 }
 
+//go:generate mockery --name EbListTargetsByRuleAPI
 type EbListTargetsByRuleAPI interface {
 	ListTargetsByRule(ctx context.Context, params *eventbridge.ListTargetsByRuleInput, optFns ...func(*eventbridge.Options)) (*eventbridge.ListTargetsByRuleOutput, error)
 }
