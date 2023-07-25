@@ -36,26 +36,6 @@ class AddEbListener_Resource:
 
 
 @dataclass
-class AddEbListener_InputTrasnformer:
-    """
-    zion.add_listener parameters
-
-    Parameters
-    ----------
-    input_template : str
-        Input template where you specify placeholders that will be filled with the values of the keys from InputPathsMap to customize the data sent to the target. Enclose each InputPathsMaps value in brackets: <value> 
-    input_paths_map : Dict[str, str]
-        Map of JSON paths to be extracted from the event. You can then insert these in the template in InputTemplate to produce the output you want to be sent to the target.
-
-        InputPathsMap is an array key-value pairs, where each value is a valid JSON path. You can have as many as 100 key-value pairs. You must use JSON dot notation, not bracket notation.
-
-        The keys cannot start with "AWS." 
-    """
-    input_template: str
-    input_paths_map: Dict[str, str]
-
-
-@dataclass
 class AddEbListenerOutput:
     """
     zion.add_listener output
@@ -133,7 +113,5 @@ class AddEbListenerParams:
             jsonrpc_data["params"]["Region"] = region
         if profile:
             jsonrpc_data["params"]["Profile"] = profile
-
-        print(jsonrpc_data)
 
         return bytes(json.dumps(jsonrpc_data), "utf-8")
