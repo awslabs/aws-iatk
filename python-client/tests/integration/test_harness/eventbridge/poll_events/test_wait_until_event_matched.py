@@ -23,7 +23,6 @@ from zion import (
     WaitUntilEventMatchedParams,
     ZionException,
 )
-from zion.add_eb_listener import AddEbListener_InputTrasnformer
 from zion.poll_events import InvalidParamException
 
 
@@ -81,15 +80,29 @@ def condition_func_3(received: str) -> bool:
     LOG.debug("received: %s", received)
     return received == '{"source": "com.test.3", "foo": "bar"}'
 
+@dataclass
+class EbConfiguration:
+    rule_name: str
+    target_id: str
+    event_bus_name: str
+    event_pattern: str
+    input_template: str = None
+    input_paths_map: Dict = None
+    input: str = None
+    input_path: str = None
+
 
 class TestZion_wait_until_event_matched(TestCase):
     zion = Zion()
     eb_client = boto3.client("events")
     sqs_client = boto3.client("sqs")
+    sns_client = boto3.client("sns")
     event_bus_name: str = f"eb-{uuid4()}"
+    sns_topic_name: str = f"zsns-{uuid4()}"
+    sns_topic_arn: str = None
     listener_ids: List[str] = []
     queue_urls: List[str] = []
-    add_listener_params: List[AddEbListenerParams] = []
+    test_eb_configs: List[EbConfiguration] = []
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -97,33 +110,70 @@ class TestZion_wait_until_event_matched(TestCase):
             Name=cls.event_bus_name,
         )
 
-        cls.add_listener_params = [
-            AddEbListenerParams(
+        cls.sns_topic_arn = cls.sns_client.create_topic(Name=cls.sns_topic_name).get("TopicArn", None)
+
+        cls.test_eb_configs = [
+            EbConfiguration(
+                rule_name = f"ebrn-{uuid4()}",
+                target_id = f"ebti-{uuid4()}",
                 event_bus_name=cls.event_bus_name,
                 event_pattern='{"source":[{"prefix":"com.test.0"}]}',
             ),
-            AddEbListenerParams(
+            EbConfiguration(
+                rule_name = f"ebrn-{uuid4()}",
+                target_id = f"ebti-{uuid4()}",
                 event_bus_name=cls.event_bus_name,
                 event_pattern='{"source":[{"prefix":"com.test.1"}]}',
                 input='"hello, world!"',
             ),
-            AddEbListenerParams(
+            EbConfiguration(
+                rule_name = f"ebrn-{uuid4()}",
+                target_id = f"ebti-{uuid4()}",
                 event_bus_name=cls.event_bus_name,
                 event_pattern='{"source":[{"prefix":"com.test.2"}]}',
                 input_path="$.detail-type",
             ),
-            AddEbListenerParams(
+            EbConfiguration(
+                rule_name = f"ebrn-{uuid4()}",
+                target_id = f"ebti-{uuid4()}",
                 event_bus_name=cls.event_bus_name,
                 event_pattern='{"source":[{"prefix":"com.test.3"}]}',
-                input_transformer=AddEbListener_InputTrasnformer(
-                    input_template='{"source": "<source>", "foo": "<foo>"}',
-                    input_paths_map={"foo": "$.detail.foo", "source": "$.source"},
-                ),
+                input_template='{"source": "<source>", "foo": "<foo>"}',
+                input_paths_map={"foo": "$.detail.foo", "source": "$.source"},
             ),
         ]
 
-        for params in cls.add_listener_params:
-            cls.add_listener(params)
+        for params in cls.test_eb_configs:
+            cls.eb_client.put_rule(
+                Name=params.rule_name,
+                EventPattern=params.event_pattern,
+                EventBusName=cls.event_bus_name
+            )
+
+            target = {"Id": params.target_id, "Arn": cls.sns_topic_arn}
+
+            if params.input:
+                target["Input"] = params.input 
+
+            if params.input_path:
+                target["InputPath"] = params.input_path
+            
+            if params.input_paths_map and params.input_template:
+                target["InputTransformer"] = {"InputPathsMap": params.input_paths_map, "InputTemplate": params.input_template}
+
+            cls.eb_client.put_targets(
+                Rule=params.rule_name,
+                EventBusName=cls.event_bus_name,
+                Targets=[target]
+            )
+            
+            listener_params = AddEbListenerParams(
+                event_bus_name=cls.event_bus_name, 
+                event_pattern=params.event_pattern,
+                rule_name=params.rule_name,
+                target_id=params.target_id
+            )
+            cls.add_listener(listener_params)
 
         LOG.debug("created listeners: %s", cls.listener_ids)
         LOG.debug("queue urls: %s", cls.queue_urls)
@@ -136,7 +186,21 @@ class TestZion_wait_until_event_matched(TestCase):
             LOG.debug(out)
 
         LOG.debug("delete test event bus")
+        for eb_config in cls.test_eb_configs:
+            cls.eb_client.remove_targets(
+                Rule=eb_config.rule_name,
+                EventBusName=cls.event_bus_name,
+                Ids=[eb_config.target_id],
+                Force=True
+            )
+            cls.eb_client.delete_rule(
+                Name=eb_config.rule_name,
+                EventBusName=cls.event_bus_name,
+                Force=True
+            )
+        cls.sns_client.delete_topic(TopicArn=cls.sns_topic_arn)
         cls.eb_client.delete_event_bus(Name=cls.event_bus_name)
+        
 
     @parameterized.expand(
         [
@@ -377,7 +441,6 @@ class TestZion_wait_until_event_matched(TestCase):
 
     @classmethod
     def add_listener(cls, params: AddEbListenerParams) -> str:
-        params.event_bus_name = cls.event_bus_name
         output = cls.zion.add_listener(params=params)
         cls.listener_ids.append(output.id)
         cls.queue_urls.append(output.components[0].physical_id)
