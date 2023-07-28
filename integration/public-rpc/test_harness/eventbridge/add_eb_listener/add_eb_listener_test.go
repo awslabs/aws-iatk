@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	ebtypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	sqstypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/rs/xid"
@@ -33,11 +34,17 @@ func TestAddEbListener(t *testing.T) {
 	}
 	ebClient := eventbridge.NewFromConfig(cfg)
 	sqsClient := sqs.NewFromConfig(cfg)
+	snsClient := sns.NewFromConfig(cfg)
 
 	s := new(AddEbListenerSuite)
 	s.ebClient = ebClient
 	s.sqsClient = sqsClient
+	s.snsClient = snsClient
 	s.eventBusName = "eb-" + xid.New().String()
+	s.eventBusRule = "eb-testrule"
+	s.eventBusTarget = "eb-testtarget"
+	s.targetInputPathMaps = map[string]string{"detail-type": "$.detail-type"}
+	s.targetInputTemplate = "\"This event was of <detail-type> type.\""
 	s.region = region
 
 	suite.Run(t, s)
@@ -45,19 +52,51 @@ func TestAddEbListener(t *testing.T) {
 
 type AddEbListenerSuite struct {
 	suite.Suite
-	eventBusName string
-	region       string
-	ebClient     *eventbridge.Client
-	sqsClient    *sqs.Client
-	queueURLs    []string
-	ruleNames    []string
+	eventBusName        string
+	eventBusRule        string
+	eventBusTarget      string
+	region              string
+	snsTopicArn         *string
+	targetInputTemplate string
+	targetInputPathMaps map[string]string
+	ebClient            *eventbridge.Client
+	sqsClient           *sqs.Client
+	snsClient           *sns.Client
+	queueURLs           []string
+	ruleNames           []string
 }
 
 func (s *AddEbListenerSuite) SetupSuite() {
 	s.T().Log("setup suite start")
-	_, err := s.ebClient.CreateEventBus(context.TODO(), &eventbridge.CreateEventBusInput{
+	topic, err := s.snsClient.CreateTopic(context.TODO(), &sns.CreateTopicInput{
+		Name: aws.String("MySnsTopic"),
+	})
+	s.Require().NoErrorf(err, "failed to create event bus: %v", err)
+	s.snsTopicArn = topic.TopicArn
+
+	_, err = s.ebClient.CreateEventBus(context.TODO(), &eventbridge.CreateEventBusInput{
 		Name: aws.String(s.eventBusName),
 	})
+	s.Require().NoErrorf(err, "failed to create event bus: %v", err)
+	_, err = s.ebClient.PutRule(context.TODO(), &eventbridge.PutRuleInput{
+		Name:         aws.String(s.eventBusRule),
+		EventBusName: aws.String(s.eventBusName),
+		EventPattern: aws.String("{\"detail-type\": [\"customerCreated\"], \"source\": [\"aws.events\"]}"),
+	})
+	s.Require().NoErrorf(err, "failed to create event bus: %v", err)
+
+	_, err = s.ebClient.PutTargets(context.TODO(), &eventbridge.PutTargetsInput{
+		EventBusName: aws.String(s.eventBusName),
+		Rule:         aws.String(s.eventBusRule),
+		Targets: []ebtypes.Target{{
+			Id:  aws.String(s.eventBusTarget),
+			Arn: topic.TopicArn,
+			InputTransformer: &ebtypes.InputTransformer{
+				InputPathsMap: s.targetInputPathMaps,
+				InputTemplate: aws.String(s.targetInputTemplate),
+			}}},
+	})
+
 	s.Require().NoErrorf(err, "failed to create event bus: %v", err)
 	s.T().Log("setup suite complete")
 }
@@ -75,11 +114,24 @@ func (s *AddEbListenerSuite) TearDownSuite() {
 	}
 
 	err := deleteEventBus(s.ebClient, s.eventBusName)
+	_, err = s.ebClient.RemoveTargets(context.TODO(), &eventbridge.RemoveTargetsInput{
+		Ids:          []string{s.eventBusTarget},
+		Rule:         aws.String(s.eventBusRule),
+		EventBusName: aws.String(s.eventBusName),
+	})
+	_, err = s.ebClient.DeleteRule(context.TODO(), &eventbridge.DeleteRuleInput{
+		Name:         aws.String(s.eventBusRule),
+		EventBusName: aws.String(s.eventBusName),
+	})
+
+	_, err = s.snsClient.DeleteTopic(context.TODO(), &sns.DeleteTopicInput{
+		TopicArn: s.snsTopicArn,
+	})
 	s.Require().NoErrorf(err, "failed to delete bus %v", s.eventBusName)
 	s.T().Log("tear down suite complete")
 }
 
-func (s *AddEbListenerSuite) TestAddEbListenerNoInputTransformation() {
+func (s *AddEbListenerSuite) TestAddEbListenerNoTarget() {
 	cases := []struct {
 		testname string
 		request  func(tags map[string]string) []byte
@@ -127,7 +179,6 @@ func (s *AddEbListenerSuite) TestAddEbListenerNoInputTransformation() {
 
 	for _, tt := range cases {
 		s.Run(tt.testname, func() {
-			// t := s.T()
 			req := tt.request(tt.tags)
 			res := s.invoke(req)
 			s.Require().Nilf(res.Error, "expect error to be nil, actual: %v", res.Error)
@@ -137,22 +188,19 @@ func (s *AddEbListenerSuite) TestAddEbListenerNoInputTransformation() {
 
 			s.assertQueue(queueURL, queueARN, ruleARN, expectTags)
 			s.assertRule(ruleName, s.eventBusName, expectTags)
-			s.assertRuleTarget(ruleName, s.eventBusName, "", "", nil)
+			s.assertRuleTarget(ruleName, s.eventBusName, false)
 		})
 	}
 }
 
-func (s *AddEbListenerSuite) TestAddEbListenerWithInputTransformation() {
+func (s *AddEbListenerSuite) TestAddEbListenerWithTarget() {
 	cases := []struct {
-		testname         string
-		request          func(input, inputPath string, inputTransformer map[string]any) []byte
-		input            string
-		inputPath        string
-		inputTransformer map[string]any
+		testname string
+		request  func() []byte
 	}{
 		{
-			testname: "add listener with Input",
-			request: func(input, inputPath string, inputTransformer map[string]any) []byte {
+			testname: "add listener with TargetId.InputTransformer",
+			request: func() []byte {
 				r := map[string]any{
 					"jsonrpc": "2.0",
 					"id":      "42",
@@ -160,65 +208,20 @@ func (s *AddEbListenerSuite) TestAddEbListenerWithInputTransformation() {
 					"params": map[string]any{
 						"EventBusName": s.eventBusName,
 						"EventPattern": `{"source":[{"prefix":"com.test"}]}`,
-						"Input":        input,
+						"TargetId":     s.eventBusTarget,
+						"RuleName":     s.eventBusRule,
 						"Region":       s.region,
 					},
 				}
 				out, _ := json.Marshal(r)
 				return out
-			},
-			input: `{"message": "hello, world!"}`,
-		},
-		{
-			testname: "add listener with InputPath",
-			request: func(input, inputPath string, inputTransformer map[string]any) []byte {
-				r := map[string]any{
-					"jsonrpc": "2.0",
-					"id":      "42",
-					"method":  method,
-					"params": map[string]any{
-						"EventBusName": s.eventBusName,
-						"EventPattern": `{"source":[{"prefix":"com.test"}]}`,
-						"InputPath":    inputPath,
-						"Region":       s.region,
-					},
-				}
-				out, _ := json.Marshal(r)
-				return out
-			},
-			inputPath: "$.detail.id",
-		},
-		{
-			testname: "add listener with InputTransformer",
-			request: func(input, inputPath string, inputTransformer map[string]any) []byte {
-				r := map[string]any{
-					"jsonrpc": "2.0",
-					"id":      "42",
-					"method":  method,
-					"params": map[string]any{
-						"EventBusName":     s.eventBusName,
-						"EventPattern":     `{"source":[{"prefix":"com.test"}]}`,
-						"InputTransformer": inputTransformer,
-						"Region":           s.region,
-					},
-				}
-				out, _ := json.Marshal(r)
-				return out
-			},
-			inputTransformer: map[string]any{
-				"InputTemplate": `{"id": "<id>", "foo": "<foo>"}`,
-				"InputPathsMap": map[string]string{
-					"foo": "$.detail.foo",
-					"id":  "$.detail.id",
-				},
 			},
 		},
 	}
 
 	for _, tt := range cases {
 		s.Run(tt.testname, func() {
-			// t := s.T()
-			req := tt.request(tt.input, tt.inputPath, tt.inputTransformer)
+			req := tt.request()
 			res := s.invoke(req)
 			s.Require().Nilf(res.Error, "expect error to be nil, actual: %v", res.Error)
 			queueURL, queueARN, ruleName, ruleARN, expectTags := s.assertOutput(res, nil)
@@ -227,7 +230,7 @@ func (s *AddEbListenerSuite) TestAddEbListenerWithInputTransformation() {
 
 			s.assertQueue(queueURL, queueARN, ruleARN, expectTags)
 			s.assertRule(ruleName, s.eventBusName, expectTags)
-			s.assertRuleTarget(ruleName, s.eventBusName, tt.input, tt.inputPath, tt.inputTransformer)
+			s.assertRuleTarget(ruleName, s.eventBusName, true)
 		})
 	}
 }
@@ -298,7 +301,7 @@ func (s *AddEbListenerSuite) TestErrors() {
 			expectErrMsg:  `invalid tags: reserved tag key "zion:TestHarness:Created" found in provided tags`,
 		},
 		{
-			testname: "provides both input and inputpath",
+			testname: "provides invalid targetid",
 			request: func() []byte {
 				r := map[string]any{
 					"jsonrpc": "2.0",
@@ -308,15 +311,36 @@ func (s *AddEbListenerSuite) TestErrors() {
 						"EventBusName": s.eventBusName,
 						"EventPattern": `{"source":[{"prefix":"com.test"}]}`,
 						"Region":       s.region,
-						"Input":        "{}",
-						"InputPath":    "$.detail-type",
+						"TargetId":     "DoesNotExistTarget",
+						"RuleName":     s.eventBusRule,
 					},
 				}
 				out, _ := json.Marshal(r)
 				return out
 			},
 			expectErrCode: 10,
-			expectErrMsg:  `provide only one of "Input", "InputPath" and "InputTransformer"`,
+			expectErrMsg:  `failed to locate test target: failed to create resource group: TagetId: DoesNotExistTarget was not found on eb-testrule Rule`,
+		},
+		{
+			testname: "provides invalid ruleName",
+			request: func() []byte {
+				r := map[string]any{
+					"jsonrpc": "2.0",
+					"id":      "42",
+					"method":  method,
+					"params": map[string]any{
+						"EventBusName": s.eventBusName,
+						"EventPattern": `{"source":[{"prefix":"com.test"}]}`,
+						"Region":       s.region,
+						"TargetId":     s.eventBusTarget,
+						"RuleName":     "DoesNotExistTarget",
+					},
+				}
+				out, _ := json.Marshal(r)
+				return out
+			},
+			expectErrCode: 10,
+			expectErrMsg:  `failed to locate test target: failed to create resource group: ListTargetsByRule for Rule: "DoesNotExistTarget" failed`,
 		},
 	}
 
@@ -326,17 +350,21 @@ func (s *AddEbListenerSuite) TestErrors() {
 			res := s.invoke(req)
 			s.Require().NotNil(res.Error)
 			s.Equal(tt.expectErrCode, res.Error.Code)
-			s.Contains(tt.expectErrMsg, res.Error.Message)
+			s.Contains(res.Error.Message, tt.expectErrMsg)
 		})
 	}
 }
 
 func (s *AddEbListenerSuite) invoke(req []byte) jsonrpc.Response {
 	var out strings.Builder
-	err := invoke(req, &out)
-	s.Require().NoError(err)
+	var sErr strings.Builder
+	err := invoke(req, &out, &sErr)
 
 	s.T().Logf("response: %v", out.String())
+	s.T().Logf("err: %v", sErr.String())
+
+	s.Require().NoError(err)
+
 	var res jsonrpc.Response
 	err = json.Unmarshal([]byte(out.String()), &res)
 	s.Require().NoError(err, "cannot unmarshal response")
@@ -410,7 +438,7 @@ func (s *AddEbListenerSuite) assertRule(ruleName, eventBusName string, expectTag
 	s.assertTags(expectTags, actualTags)
 }
 
-func (s *AddEbListenerSuite) assertRuleTarget(ruleName, eventBusName, input, inputPath string, inputTransformer map[string]any) {
+func (s *AddEbListenerSuite) assertRuleTarget(ruleName, eventBusName string, hasTarget bool) {
 	targets, err := s.ebClient.ListTargetsByRule(context.TODO(), &eventbridge.ListTargetsByRuleInput{
 		Rule:         aws.String(ruleName),
 		EventBusName: aws.String(eventBusName),
@@ -420,17 +448,9 @@ func (s *AddEbListenerSuite) assertRuleTarget(ruleName, eventBusName, input, inp
 	s.Len(targets.Targets, 1, "expect to have 1 target only")
 	target := targets.Targets[0]
 
-	if input != "" {
-		s.Require().Equal(input, aws.ToString(target.Input))
-	}
-
-	if inputPath != "" {
-		s.Require().Equal(inputPath, aws.ToString(target.InputPath))
-	}
-
-	if inputTransformer != nil {
-		s.Require().Equal(inputTransformer["InputTemplate"].(string), aws.ToString(target.InputTransformer.InputTemplate))
-		s.Require().Equal(inputTransformer["InputPathsMap"].(map[string]string), target.InputTransformer.InputPathsMap)
+	if hasTarget {
+		s.Require().Equal("\"This event was of <detail-type> type.\"", aws.ToString(target.InputTransformer.InputTemplate))
+		s.Require().Equal(map[string]string{"detail-type": "$.detail-type"}, target.InputTransformer.InputPathsMap)
 	}
 }
 
@@ -443,10 +463,11 @@ func (s *AddEbListenerSuite) assertTags(expectTags, actualTags map[string]string
 	}
 }
 
-func invoke(in []byte, out *strings.Builder) error {
+func invoke(in []byte, out *strings.Builder, sErr *strings.Builder) error {
 	cmd := exec.Command("../../../../../bin/zion")
 	cmd.Stdin = bytes.NewReader(in)
 	cmd.Stdout = out
+	cmd.Stderr = sErr
 	err := cmd.Run()
 	return err
 }

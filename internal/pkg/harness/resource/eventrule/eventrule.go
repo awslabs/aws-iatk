@@ -100,19 +100,22 @@ func Create(ctx context.Context, api EbPutRuleAPI, ruleName, eventBusName, event
 }
 
 func PutQueueTarget(ctx context.Context, api EbPutTargetsAPI, listenerID string, qu *queue.Queue, ru *Rule, target *ebtypes.Target) error {
-	targetOverride := ebtypes.Target{
-		Arn:              aws.String(qu.ARN.String()),
-		Id:               aws.String(listenerID),
-		Input:            target.Input,
-		InputPath:        target.InputPath,
-		InputTransformer: target.InputTransformer,
+	targetOverride := &ebtypes.Target{
+		Arn: aws.String(qu.ARN.String()),
+		Id:  aws.String(listenerID),
+	}
+
+	if target != nil {
+		targetOverride.Input = target.Input
+		targetOverride.InputPath = target.InputPath
+		targetOverride.InputTransformer = target.InputTransformer
 	}
 
 	log.Printf("put sqs queue %q as target", qu.QueueURL)
 	_, err := api.PutTargets(ctx, &eventbridge.PutTargetsInput{
 		Rule:         aws.String(ru.Name),
 		EventBusName: aws.String(ru.EventBusName),
-		Targets:      []ebtypes.Target{targetOverride},
+		Targets:      []ebtypes.Target{*targetOverride},
 	})
 
 	if err != nil {
