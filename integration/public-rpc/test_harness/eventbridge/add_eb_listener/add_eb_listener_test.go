@@ -113,20 +113,25 @@ func (s *AddEbListenerSuite) TearDownSuite() {
 		s.Require().NoErrorf(err, "failed to delete queue %v", queueURL)
 	}
 
-	err := deleteEventBus(s.ebClient, s.eventBusName)
-	_, err = s.ebClient.RemoveTargets(context.TODO(), &eventbridge.RemoveTargetsInput{
+	_, err := s.ebClient.RemoveTargets(context.TODO(), &eventbridge.RemoveTargetsInput{
 		Ids:          []string{s.eventBusTarget},
 		Rule:         aws.String(s.eventBusRule),
 		EventBusName: aws.String(s.eventBusName),
 	})
+	s.Require().NoErrorf(err, "failed to remove targets %v", s.eventBusTarget)
+
 	_, err = s.ebClient.DeleteRule(context.TODO(), &eventbridge.DeleteRuleInput{
 		Name:         aws.String(s.eventBusRule),
 		EventBusName: aws.String(s.eventBusName),
 	})
+	s.Require().NoErrorf(err, "failed to delete rule %v", s.eventBusRule)
 
 	_, err = s.snsClient.DeleteTopic(context.TODO(), &sns.DeleteTopicInput{
 		TopicArn: s.snsTopicArn,
 	})
+	s.Require().NoErrorf(err, "failed to delete sns topic %v", s.snsTopicArn)
+
+	err = deleteEventBus(s.ebClient, s.eventBusName)
 	s.Require().NoErrorf(err, "failed to delete bus %v", s.eventBusName)
 	s.T().Log("tear down suite complete")
 }
