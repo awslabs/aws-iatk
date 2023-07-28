@@ -13,7 +13,9 @@ import (
 	"zion/internal/pkg/harness/resource/eventrule"
 	"zion/internal/pkg/harness/resource/queue"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
+	ebtypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
 	"github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -60,11 +62,12 @@ func testRuleARN() arn.ARN {
 
 func TestNew(t *testing.T) {
 	cases := map[string]struct {
-		mockGetEventBus func(ctx context.Context, ebClient ebClient, eventBusName string, arn arn.ARN) *mockGetEventBusFunc
-		eventBusName    string
-		arn             arn.ARN
-		tags            map[string]string
-		expectErr       error
+		mockGetEventBus       func(ctx context.Context, ebClient ebClient, eventBusName string, arn arn.ARN) *mockGetEventBusFunc
+		mockListTargetsByRule func(ctx context.Context, ebClient ebClient, targetId, ruleName, eventBusName string) *mockListTargetsByRuleFunc
+		eventBusName          string
+		arn                   arn.ARN
+		tags                  map[string]string
+		expectErr             error
 	}{
 		"success": {
 			eventBusName: testBusName,
@@ -81,6 +84,15 @@ func TestNew(t *testing.T) {
 					}, nil)
 				return mock
 			},
+			mockListTargetsByRule: func(ctx context.Context, ebClient ebClient, targetId, ruleName, eventBusName string) *mockListTargetsByRuleFunc {
+				mock := newMockListTargetsByRuleFunc(t)
+				mock.EXPECT().
+					Execute(ctx, ebClient, targetId, ruleName, eventBusName).
+					Return(&ebtypes.Target{
+						Input: aws.String("input"),
+					}, nil)
+				return mock
+			},
 		},
 		"eventbus not found": {
 			eventBusName: testBusName,
@@ -93,6 +105,32 @@ func TestNew(t *testing.T) {
 					Return(nil, errors.New("event bus not found"))
 				return mock
 			},
+			mockListTargetsByRule: func(ctx context.Context, ebClient ebClient, targetId, ruleName, eventBusName string) *mockListTargetsByRuleFunc {
+				mock := newMockListTargetsByRuleFunc(t)
+				return mock
+			},
+		},
+		"ListTargetsByRule failed": {
+			eventBusName: testBusName,
+			arn:          testBusARN(),
+			expectErr:    errors.New("failed to create resource group: ListTargetByRule failed"),
+			mockGetEventBus: func(ctx context.Context, ebClient ebClient, eventBusName string, arn arn.ARN) *mockGetEventBusFunc {
+				mock := newMockGetEventBusFunc(t)
+				mock.EXPECT().
+					Execute(ctx, ebClient, eventBusName).
+					Return(&eventbus.EventBus{
+						Name: eventBusName,
+						ARN:  arn,
+					}, nil)
+				return mock
+			},
+			mockListTargetsByRule: func(ctx context.Context, ebClient ebClient, targetId, ruleName, eventBusName string) *mockListTargetsByRuleFunc {
+				mock := newMockListTargetsByRuleFunc(t)
+				mock.EXPECT().
+					Execute(ctx, ebClient, targetId, ruleName, eventBusName).
+					Return(nil, errors.New("ListTargetByRule failed"))
+				return mock
+			},
 		},
 	}
 
@@ -103,12 +141,14 @@ func TestNew(t *testing.T) {
 				ebClient: newMockEbClient(t),
 			}
 			getEventBus := tt.mockGetEventBus(ctx, opts.ebClient, tt.eventBusName, tt.arn)
+			listTargetsByRule := tt.mockListTargetsByRule(ctx, opts.ebClient, "", "", tt.eventBusName)
 			opts.getEventBus = getEventBus.Execute
+			opts.listTargetsByRule = listTargetsByRule.Execute
 			expectEventBus := &eventbus.EventBus{
 				Name: tt.eventBusName,
 				ARN:  tt.arn,
 			}
-			listener, err := New(ctx, tt.eventBusName, "", "", "", nil, tt.tags, opts)
+			listener, err := New(ctx, tt.eventBusName, "", "", "", tt.tags, opts)
 			if tt.expectErr != nil {
 				assert.EqualError(t, err, tt.expectErr.Error())
 			} else {

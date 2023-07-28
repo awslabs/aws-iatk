@@ -5,7 +5,6 @@ package eventrule
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"zion/internal/pkg/harness"
@@ -37,6 +36,44 @@ func (r *Rule) Resource() harness.Resource {
 	}
 }
 
+func ListTargetsByRule(ctx context.Context, api EbListTargetsByRuleAPI, targetId, ruleName string, eventBusName string) (*ebtypes.Target, error) {
+	// If no rule provided, skip
+	if ruleName == "" || targetId == "" {
+		return nil, nil
+	}
+
+	input := eventbridge.ListTargetsByRuleInput{
+		Rule:         aws.String(ruleName),
+		EventBusName: aws.String(eventBusName),
+	}
+
+	for {
+		output, err := api.ListTargetsByRule(ctx, &input)
+
+		if err != nil {
+			return nil, fmt.Errorf("ListTargetsByRule for Rule: %q failed: %v", ruleName, err)
+		}
+
+		targetLen := len(output.Targets)
+
+		if targetLen == 0 {
+			return nil, fmt.Errorf("TargetId was provided but not found on Rule: %s", ruleName)
+		}
+
+		for _, t := range output.Targets {
+			if aws.ToString(t.Id) == targetId {
+				return &t, nil
+			}
+		}
+		if aws.ToString(output.NextToken) == "" {
+			break
+		}
+		input.NextToken = output.NextToken
+	}
+
+	return nil, fmt.Errorf("TagetId: %s was not found on %s Rule", targetId, ruleName)
+}
+
 func Create(ctx context.Context, api EbPutRuleAPI, ruleName, eventBusName, eventPattern, description string, tags map[string]string) (*Rule, error) {
 
 	log.Printf("creating event rule %q", ruleName)
@@ -62,22 +99,23 @@ func Create(ctx context.Context, api EbPutRuleAPI, ruleName, eventBusName, event
 	}, nil
 }
 
-func PutQueueTarget(ctx context.Context, api EbPutTargetsAPI, listenerID string, qu *queue.Queue, ru *Rule, input, inputPath string, inputTransformer *InputTransformer) error {
-	target := ebtypes.Target{
+func PutQueueTarget(ctx context.Context, api EbPutTargetsAPI, listenerID string, qu *queue.Queue, ru *Rule, target *ebtypes.Target) error {
+	targetOverride := &ebtypes.Target{
 		Arn: aws.String(qu.ARN.String()),
 		Id:  aws.String(listenerID),
 	}
 
-	err := setInputTraansformation(&target, input, inputPath, inputTransformer)
-	if err != nil {
-		return err
+	if target != nil {
+		targetOverride.Input = target.Input
+		targetOverride.InputPath = target.InputPath
+		targetOverride.InputTransformer = target.InputTransformer
 	}
 
 	log.Printf("put sqs queue %q as target", qu.QueueURL)
-	_, err = api.PutTargets(ctx, &eventbridge.PutTargetsInput{
+	_, err := api.PutTargets(ctx, &eventbridge.PutTargetsInput{
 		Rule:         aws.String(ru.Name),
 		EventBusName: aws.String(ru.EventBusName),
-		Targets:      []ebtypes.Target{target},
+		Targets:      []ebtypes.Target{*targetOverride},
 	})
 
 	if err != nil {
@@ -85,29 +123,6 @@ func PutQueueTarget(ctx context.Context, api EbPutTargetsAPI, listenerID string,
 	}
 
 	log.Printf("put rule target complete")
-	return nil
-}
-
-func setInputTraansformation(target *ebtypes.Target, input, inputPath string, inputTransformer *InputTransformer) error {
-	if (input != "" && inputPath != "") || (input != "" && inputTransformer != nil) || (inputPath != "" && inputTransformer != nil) {
-		return errors.New("input, inputPath, and inputTransformer are mutually exclusive")
-	}
-
-	if input != "" {
-		target.Input = aws.String(input)
-	}
-
-	if inputPath != "" {
-		target.InputPath = aws.String(inputPath)
-	}
-
-	if inputTransformer != nil {
-		target.InputTransformer = &ebtypes.InputTransformer{
-			InputTemplate: aws.String(inputTransformer.InputTemplate),
-			InputPathsMap: inputTransformer.InputPathsMap,
-		}
-	}
-
 	return nil
 }
 
@@ -180,6 +195,11 @@ func tagsToEBTags(tags map[string]string) []ebtypes.Tag {
 //go:generate mockery --name EbPutRuleAPI
 type EbPutRuleAPI interface {
 	PutRule(ctx context.Context, params *eventbridge.PutRuleInput, optFns ...func(*eventbridge.Options)) (*eventbridge.PutRuleOutput, error)
+}
+
+//go:generate mockery --name EbListTargetsByRuleAPI
+type EbListTargetsByRuleAPI interface {
+	ListTargetsByRule(ctx context.Context, params *eventbridge.ListTargetsByRuleInput, optFns ...func(*eventbridge.Options)) (*eventbridge.ListTargetsByRuleOutput, error)
 }
 
 //go:generate mockery --name EbDescribeRuleAPI

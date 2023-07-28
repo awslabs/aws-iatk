@@ -36,26 +36,6 @@ class AddEbListener_Resource:
 
 
 @dataclass
-class AddEbListener_InputTrasnformer:
-    """
-    zion.add_listener parameters
-
-    Parameters
-    ----------
-    input_template : str
-        Input template where you specify placeholders that will be filled with the values of the keys from InputPathsMap to customize the data sent to the target. Enclose each InputPathsMaps value in brackets: <value> 
-    input_paths_map : Dict[str, str]
-        Map of JSON paths to be extracted from the event. You can then insert these in the template in InputTemplate to produce the output you want to be sent to the target.
-
-        InputPathsMap is an array key-value pairs, where each value is a valid JSON path. You can have as many as 100 key-value pairs. You must use JSON dot notation, not bracket notation.
-
-        The keys cannot start with "AWS." 
-    """
-    input_template: str
-    input_paths_map: Dict[str, str]
-
-
-@dataclass
 class AddEbListenerOutput:
     """
     zion.add_listener output
@@ -99,20 +79,17 @@ class AddEbListenerParams:
     event_pattern : str
         Event Pattern to filter events that arrive on the
         AWS Event Bus
-    input : str, optional
-        Valid JSON text passed to the target. In this case, nothing from the event itself is passed to the target.
-    input_path : str, optional
-        The value of the JSONPath that is used for extracting part of the matched event when passing it to the target. You may use JSON dot notation or bracket notation.
-    input_transformer : AddEbListener_InputTrasnformer, optional
-        Settings to enable you to provide custom input to a target based on certain event data. You can extract one or more key-value pairs from the event and then use that data to send customized input to the target.
+    rule_name : str, optional
+        Name of a Rule on the EventBus to replicate
+    target_id : str, optional
+        Target Id on the given rule to replicate
     tags : Dict[str, str], optional
         A key-value pair associated EventBridge rule.
     """
     event_bus_name: str
     event_pattern: str
-    input: Optional[str] = None
-    input_path: Optional[str] = None
-    input_transformer: Optional[AddEbListener_InputTrasnformer] = None
+    rule_name: Optional[str] = None
+    target_id: Optional[str] = None
     tags: Optional[Dict[str, str]] = None
 
     _rpc_method: str = "test_harness.eventbridge.add_listener"
@@ -126,15 +103,10 @@ class AddEbListenerParams:
         }
         jsonrpc_data["params"]["EventBusName"] = self.event_bus_name
         jsonrpc_data["params"]["EventPattern"] = self.event_pattern
-        if self.input:
-            jsonrpc_data["params"]["Input"] = self.input
-        if self.input_path:
-            jsonrpc_data["params"]["InputPath"] = self.input_path
-        if self.input_transformer:
-            jsonrpc_data["params"]["InputTransformer"] = {
-                "InputTemplate": self.input_transformer.input_template,
-                "InputPathsMap": self.input_transformer.input_paths_map,
-            }
+        if self.rule_name:
+            jsonrpc_data["params"]["RuleName"] = self.rule_name
+        if self.target_id:
+            jsonrpc_data["params"]["TargetId"] = self.target_id
         if self.tags:
             jsonrpc_data["params"]["Tags"] = self.tags
         if region:

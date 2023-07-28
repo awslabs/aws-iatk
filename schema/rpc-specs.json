@@ -57,31 +57,20 @@
                     "EventPattern": {
                         "type": "string"
                     },
-                    "Input": {
-                        "type": "string"
-                    },
-                    "InputPath": {
-                        "type": "string"
-                    },
-                    "InputTransformer": {
-                        "type": "object",
-                        "properties": {
-                            "InputPathsMap": {
-                                "type": "object"
-                            },
-                            "InputTemplate": {
-                                "type": "string"
-                            }
-                        }
-                    },
                     "Profile": {
                         "type": "string"
                     },
                     "Region": {
                         "type": "string"
                     },
+                    "RuleName": {
+                        "type": "string"
+                    },
                     "Tags": {
                         "type": "object"
+                    },
+                    "TargetId": {
+                        "type": "string"
                     }
                 }
             },

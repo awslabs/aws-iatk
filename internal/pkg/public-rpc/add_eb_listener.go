@@ -7,20 +7,18 @@ import (
 	"reflect"
 	"zion/internal/pkg/aws/config"
 	"zion/internal/pkg/harness/eventbridge/listener"
-	"zion/internal/pkg/harness/resource/eventrule"
 	"zion/internal/pkg/harness/tags"
 	"zion/internal/pkg/public-rpc/types"
 )
 
 type AddEbListenerParams struct {
-	EventBusName     string
-	EventPattern     string
-	Input            string
-	InputPath        string
-	InputTransformer *eventrule.InputTransformer
-	Tags             map[string]string
-	Profile          string
-	Region           string
+	EventBusName string
+	EventPattern string
+	TargetId     string
+	RuleName     string
+	Tags         map[string]string
+	Profile      string
+	Region       string
 }
 
 func (p *AddEbListenerParams) RPCMethod() (*types.Result, error) {
@@ -41,7 +39,7 @@ func (p *AddEbListenerParams) RPCMethod() (*types.Result, error) {
 		return nil, fmt.Errorf("error loading AWS config: %v", err)
 	}
 
-	lr, err := listener.New(ctx, p.EventBusName, p.EventPattern, p.Input, p.InputPath, p.InputTransformer, p.Tags, listener.NewOptions(cfg))
+	lr, err := listener.New(ctx, p.EventBusName, p.EventPattern, p.TargetId, p.RuleName, p.Tags, listener.NewOptions(cfg))
 	if err != nil {
 		return nil, fmt.Errorf("failed to locate test target: %w", err)
 	}
@@ -68,9 +66,6 @@ func (p *AddEbListenerParams) validateParams() error {
 	}
 	if p.EventPattern == "" {
 		return errors.New(`missing required param "EventPattern"`)
-	}
-	if (p.Input != "" && p.InputPath != "") || (p.InputPath != "" && p.InputTransformer != nil) || (p.Input != "" && p.InputTransformer != nil) {
-		return errors.New(`provide only one of "Input", "InputPath" and "InputTransformer"`)
 	}
 	return nil
 }

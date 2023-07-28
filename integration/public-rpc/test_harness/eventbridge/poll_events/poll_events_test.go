@@ -18,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	ebtypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/rs/xid"
 	"github.com/stretchr/testify/suite"
 )
@@ -33,21 +34,21 @@ func TestPollEvents(t *testing.T) {
 		t.Fatalf("failed to get aws config: %v", err)
 	}
 	ebClient := eventbridge.NewFromConfig(cfg)
+	snsClient := sns.NewFromConfig(cfg)
 
 	s := new(PollEventsSuite)
 	s.ebClient = ebClient
+	s.snsClient = snsClient
 	s.eventBusName = "eb-" + xid.New().String()
+	s.snsTopicName = "zsns" + xid.New().String()
 	s.region = region
-	s.listenerParams = []map[string]any{
-		{"EventPattern": `{"source":[{"prefix":"com.test.0"}]}`},
-		{"EventPattern": `{"source":[{"prefix":"com.test.1"}]}`, "Input": `"hello, world!"`},
-		{"EventPattern": `{"source":[{"prefix":"com.test.2"}]}`, "InputPath": `$.detail-type`},
-		{"EventPattern": `{"source":[{"prefix":"com.test.3"}]}`, "InputTransformer": map[string]any{
-			"InputTemplate": `{"source": "<source>", "foo": "<foo>"}`,
-			"InputPathsMap": map[string]string{
-				"foo":    "$.detail.foo",
-				"source": "$.source",
-			},
+	s.listenerParams = []EbConfiguration{
+		{TargetId: "ebtn-" + xid.New().String(), RuleName: "ebrn-" + xid.New().String(), EventPattern: `{"source":[{"prefix":"com.test.0"}]}`},
+		{TargetId: "ebtn-" + xid.New().String(), RuleName: "ebrn-" + xid.New().String(), EventPattern: `{"source":[{"prefix":"com.test.1"}]}`, TargetInput: aws.String(`"hello, world!"`)},
+		{TargetId: "ebtn-" + xid.New().String(), RuleName: "ebrn-" + xid.New().String(), EventPattern: `{"source":[{"prefix":"com.test.2"}]}`, TargetInputPath: aws.String(`$.detail-type`)},
+		{TargetId: "ebtn-" + xid.New().String(), RuleName: "ebrn-" + xid.New().String(), EventPattern: `{"source":[{"prefix":"com.test.3"}]}`, TargetInputTemplate: aws.String(`{"source": "<source>", "foo": "<foo>"}`), TargetInputPathsMaps: map[string]string{
+			"foo":    "$.detail.foo",
+			"source": "$.source",
 		}},
 	}
 
@@ -55,26 +56,81 @@ func TestPollEvents(t *testing.T) {
 
 }
 
+type EbConfiguration struct {
+	TargetInput          *string
+	TargetInputPath      *string
+	TargetInputTemplate  *string
+	TargetInputPathsMaps map[string]string
+	EventPattern         string
+	TargetId             string
+	RuleName             string
+}
+
 type PollEventsSuite struct {
 	suite.Suite
 
 	eventBusName   string
-	listenerParams []map[string]any
+	snsTopicName   string
+	snsTopicArn    *string
+	listenerParams []EbConfiguration
 	listenerIDs    []string
 	region         string
 
-	ebClient *eventbridge.Client
+	ebClient  *eventbridge.Client
+	snsClient *sns.Client
 }
 
 func (s *PollEventsSuite) SetupSuite() {
 	s.T().Log("setup suite start")
-	_, err := s.ebClient.CreateEventBus(context.TODO(), &eventbridge.CreateEventBusInput{
+
+	topic, err := s.snsClient.CreateTopic(context.TODO(), &sns.CreateTopicInput{
+		Name: aws.String(s.snsTopicName),
+	})
+	s.Require().NoErrorf(err, "failed to create sns topic: %v", err)
+	s.snsTopicArn = topic.TopicArn
+
+	_, err = s.ebClient.CreateEventBus(context.TODO(), &eventbridge.CreateEventBusInput{
 		Name: aws.String(s.eventBusName),
 	})
 	s.Require().NoErrorf(err, "failed to create event bus: %v", err)
 
 	for _, p := range s.listenerParams {
-		id := s.addListener(p)
+		_, err = s.ebClient.PutRule(context.TODO(), &eventbridge.PutRuleInput{
+			Name:         aws.String(p.RuleName),
+			EventBusName: aws.String(s.eventBusName),
+			EventPattern: aws.String(p.EventPattern),
+		})
+		s.Require().NoErrorf(err, "failed to create eventbridge rule: %v", err)
+
+		target := ebtypes.Target{
+			Id:  aws.String(p.TargetId),
+			Arn: topic.TopicArn,
+		}
+
+		if p.TargetInput != nil {
+			target.Input = p.TargetInput
+		}
+
+		if p.TargetInputPath != nil {
+			target.InputPath = p.TargetInputPath
+		}
+
+		if p.TargetInputPathsMaps != nil && p.TargetInputTemplate != nil {
+			target.InputTransformer = &ebtypes.InputTransformer{
+				InputPathsMap: p.TargetInputPathsMaps,
+				InputTemplate: p.TargetInputTemplate,
+			}
+		}
+
+		_, err = s.ebClient.PutTargets(context.TODO(), &eventbridge.PutTargetsInput{
+			EventBusName: aws.String(s.eventBusName),
+			Rule:         aws.String(p.RuleName),
+			Targets:      []ebtypes.Target{target},
+		})
+
+		s.Require().NoErrorf(err, "failed to create eventbridge target: %v", err)
+
+		id := s.addListener(map[string]any{"TargetId": p.TargetId, "RuleName": p.RuleName, "EventPattern": p.EventPattern})
 		s.listenerIDs = append(s.listenerIDs, id)
 	}
 
@@ -87,8 +143,30 @@ func (s *PollEventsSuite) TearDownSuite() {
 		s.removeListeners()
 	}
 
+	for _, p := range s.listenerParams {
+		_, err := s.ebClient.RemoveTargets(context.TODO(), &eventbridge.RemoveTargetsInput{
+			Ids:          []string{p.TargetId},
+			Rule:         aws.String(p.RuleName),
+			EventBusName: aws.String(s.eventBusName),
+		})
+
+		s.Require().NoErrorf(err, "failed to delete target %v", p.TargetId)
+
+		_, err = s.ebClient.DeleteRule(context.TODO(), &eventbridge.DeleteRuleInput{
+			Name:         aws.String(p.RuleName),
+			EventBusName: aws.String(s.eventBusName),
+		})
+
+		s.Require().NoErrorf(err, "failed to delete rule %v", p.RuleName)
+	}
+
 	err := deleteEventBus(s.ebClient, s.eventBusName)
 	s.Require().NoErrorf(err, "failed to delete bus %v", s.eventBusName)
+
+	_, err = s.snsClient.DeleteTopic(context.TODO(), &sns.DeleteTopicInput{
+		TopicArn: s.snsTopicArn,
+	})
+	s.Require().NoErrorf(err, "failed to delete sns %v", s.snsTopicArn)
 	s.T().Log("tear down suite complete")
 }
 

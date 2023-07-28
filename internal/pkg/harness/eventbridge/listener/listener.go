@@ -22,22 +22,25 @@ const (
 )
 
 // Creates a Listener for an event bus resource
-func New(ctx context.Context, eventBusName, eventPattern, input, inputPath string, inputTransformer *eventrule.InputTransformer, tags map[string]string, opts Options) (*Listener, error) {
+func New(ctx context.Context, eventBusName, eventPattern, targetId, ruleName string, tags map[string]string, opts Options) (*Listener, error) {
 	// validate if the event bus exists
 	eb, err := opts.getEventBus(ctx, opts.ebClient, eventBusName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create resource group: %v", err)
 	}
 
+	target, err := opts.listTargetsByRule(ctx, opts.ebClient, targetId, ruleName, eventBusName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create resource group: %v", err)
+	}
+
 	return &Listener{
-		id:               xid.New().String(),
-		eventPattern:     eventPattern,
-		input:            input,
-		inputPath:        inputPath,
-		inputTransformer: inputTransformer,
-		customTags:       tags,
-		eventBus:         eb,
-		opts:             opts,
+		id:           xid.New().String(),
+		eventPattern: eventPattern,
+		target:       target,
+		customTags:   tags,
+		eventBus:     eb,
+		opts:         opts,
 	}, nil
 }
 
