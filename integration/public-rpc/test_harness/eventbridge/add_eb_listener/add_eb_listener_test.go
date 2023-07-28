@@ -71,7 +71,7 @@ func (s *AddEbListenerSuite) SetupSuite() {
 	topic, err := s.snsClient.CreateTopic(context.TODO(), &sns.CreateTopicInput{
 		Name: aws.String("MySnsTopic"),
 	})
-	s.Require().NoErrorf(err, "failed to create event bus: %v", err)
+	s.Require().NoErrorf(err, "failed to create sns topic: %v", err)
 	s.snsTopicArn = topic.TopicArn
 
 	_, err = s.ebClient.CreateEventBus(context.TODO(), &eventbridge.CreateEventBusInput{
