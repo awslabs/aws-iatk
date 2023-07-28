@@ -83,7 +83,7 @@ func (s *AddEbListenerSuite) SetupSuite() {
 		EventBusName: aws.String(s.eventBusName),
 		EventPattern: aws.String("{\"detail-type\": [\"customerCreated\"], \"source\": [\"aws.events\"]}"),
 	})
-	s.Require().NoErrorf(err, "failed to create event bus: %v", err)
+	s.Require().NoErrorf(err, "failed to create eventbridge rule: %v", err)
 
 	_, err = s.ebClient.PutTargets(context.TODO(), &eventbridge.PutTargetsInput{
 		EventBusName: aws.String(s.eventBusName),
@@ -97,7 +97,7 @@ func (s *AddEbListenerSuite) SetupSuite() {
 			}}},
 	})
 
-	s.Require().NoErrorf(err, "failed to create event bus: %v", err)
+	s.Require().NoErrorf(err, "failed to create eventbridge target: %v", err)
 	s.T().Log("setup suite complete")
 }
 
