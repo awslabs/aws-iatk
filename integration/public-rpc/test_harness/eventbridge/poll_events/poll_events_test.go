@@ -100,7 +100,7 @@ func (s *PollEventsSuite) SetupSuite() {
 			EventBusName: aws.String(s.eventBusName),
 			EventPattern: aws.String(p.EventPattern),
 		})
-		s.Require().NoErrorf(err, "failed to create event bus: %v", err)
+		s.Require().NoErrorf(err, "failed to create eventbridge rule: %v", err)
 
 		target := ebtypes.Target{
 			Id:  aws.String(p.TargetId),
