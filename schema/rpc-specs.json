@@ -54,9 +54,6 @@
                     "EventBusName": {
                         "type": "string"
                     },
-                    "EventPattern": {
-                        "type": "string"
-                    },
                     "Profile": {
                         "type": "string"
                     },
