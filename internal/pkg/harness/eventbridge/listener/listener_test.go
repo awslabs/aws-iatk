@@ -76,7 +76,7 @@ func TestNew(t *testing.T) {
 			eventBusName: testBusName,
 			tags:         map[string]string{"foo": "bar"},
 			arn:          testBusARN(),
-			ruleName:     "",
+			ruleName:     testListenerID,
 			ruleARN:      testRuleARN(),
 			expectErr:    nil,
 			mockGetEventBus: func(ctx context.Context, ebClient ebClient, eventBusName string, arn arn.ARN) *mockGetEventBusFunc {
@@ -131,7 +131,7 @@ func TestNew(t *testing.T) {
 		"ListTargetsByRule failed": {
 			eventBusName: testBusName,
 			arn:          testBusARN(),
-			ruleName:     "",
+			ruleName:     testListenerID,
 			ruleARN:      testRuleARN(),
 			expectErr:    errors.New("failed to create resource group: ListTargetByRule failed"),
 			mockGetEventBus: func(ctx context.Context, ebClient ebClient, eventBusName string, arn arn.ARN) *mockGetEventBusFunc {
@@ -171,7 +171,7 @@ func TestNew(t *testing.T) {
 			}
 			getEventBus := tt.mockGetEventBus(ctx, opts.ebClient, tt.eventBusName, tt.arn)
 			getRule := tt.mockGetRule(ctx, opts.ebClient, tt.ruleName, tt.eventBusName, tt.ruleARN)
-			listTargetsByRule := tt.mockListTargetsByRule(ctx, opts.ebClient, "", "", tt.eventBusName)
+			listTargetsByRule := tt.mockListTargetsByRule(ctx, opts.ebClient, "", tt.ruleName, tt.eventBusName)
 			opts.getEventBus = getEventBus.Execute
 			opts.getRule = getRule.Execute
 			opts.listTargetsByRule = listTargetsByRule.Execute
@@ -179,7 +179,7 @@ func TestNew(t *testing.T) {
 				Name: tt.eventBusName,
 				ARN:  tt.arn,
 			}
-			listener, err := New(ctx, tt.eventBusName, "", "", tt.tags, opts)
+			listener, err := New(ctx, tt.eventBusName, "", tt.ruleName, tt.tags, opts)
 			if tt.expectErr != nil {
 				assert.EqualError(t, err, tt.expectErr.Error())
 			} else {
