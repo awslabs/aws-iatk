@@ -13,7 +13,6 @@ import (
 
 type AddEbListenerParams struct {
 	EventBusName string
-	EventPattern string
 	TargetId     string
 	RuleName     string
 	Tags         map[string]string
@@ -39,7 +38,7 @@ func (p *AddEbListenerParams) RPCMethod() (*types.Result, error) {
 		return nil, fmt.Errorf("error loading AWS config: %v", err)
 	}
 
-	lr, err := listener.New(ctx, p.EventBusName, p.EventPattern, p.TargetId, p.RuleName, p.Tags, listener.NewOptions(cfg))
+	lr, err := listener.New(ctx, p.EventBusName, p.TargetId, p.RuleName, p.Tags, listener.NewOptions(cfg))
 	if err != nil {
 		return nil, fmt.Errorf("failed to locate test target: %w", err)
 	}
@@ -64,8 +63,8 @@ func (p *AddEbListenerParams) validateParams() error {
 	if p.EventBusName == "" {
 		return errors.New(`missing required param "EventBusName"`)
 	}
-	if p.EventPattern == "" {
-		return errors.New(`missing required param "EventPattern"`)
+	if p.RuleName == "" {
+		return errors.New(`missing required param "RuleName"`)
 	}
 	return nil
 }
