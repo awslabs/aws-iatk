@@ -28,6 +28,7 @@ const test_method = "test_harness.eventbridge.remove_listeners"
 func TestRemoveListeners(t *testing.T) {
 	s := &EventBusDestroyTestingResourcesSuite{
 		eventBusName: uuid.NewString(),
+		eventBusRule: "eb-testrule",
 		region:       "us-west-2",
 	}
 	s.setAWSConfig()
@@ -37,6 +38,7 @@ func TestRemoveListeners(t *testing.T) {
 type EventBusDestroyTestingResourcesSuite struct {
 	suite.Suite
 	eventBusName string
+	eventBusRule string
 	region       string
 	cfg          aws.Config
 }
@@ -57,10 +59,24 @@ func (s *EventBusDestroyTestingResourcesSuite) SetupSuite() {
 	if err != nil {
 		s.T().Fatalf("failed to create event bus: %v", err)
 	}
+
+	_, err = ebClient.PutRule(context.TODO(), &eventbridge.PutRuleInput{
+		Name:         aws.String(s.eventBusRule),
+		EventBusName: aws.String(s.eventBusName),
+		EventPattern: aws.String("{\"detail-type\": [\"customerCreated\"], \"source\": [\"aws.events\"]}"),
+	})
+	s.Require().NoErrorf(err, "failed to create eventbridge rule: %v", err)
+	s.T().Log("setup suite complete")
 }
 
 func (s *EventBusDestroyTestingResourcesSuite) TearDownSuite() {
 	ebClient := eventbridge.NewFromConfig(s.cfg)
+
+	_, err := ebClient.DeleteRule(context.TODO(), &eventbridge.DeleteRuleInput{
+		Name:         aws.String(s.eventBusRule),
+		EventBusName: aws.String(s.eventBusName),
+	})
+	s.Require().NoErrorf(err, "failed to delete rule %v", s.eventBusRule)
 
 	deleteEventBus(s.T(), ebClient, s.eventBusName)
 }
@@ -78,7 +94,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestRemoveListenersByResourceGrou
 			createResourceGroups: func(count int) []string {
 				resourceGroupIDs := []string{}
 				for i := 0; i < count; i++ {
-					rgid := createTestingResources(s.T(), s.cfg, s.eventBusName, `{"source":[{"prefix":"com.test"}]}`, s.region, nil)
+					rgid := createTestingResources(s.T(), s.cfg, s.eventBusName, s.eventBusRule, s.region, nil)
 					resourceGroupIDs = append(resourceGroupIDs, rgid)
 				}
 				return resourceGroupIDs
@@ -123,7 +139,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestRemoveListenersByResourceGrou
 			createResourceGroups: func(count int) []string {
 				resourceGroupIDs := []string{}
 				for i := 0; i < count; i++ {
-					rgid := createTestingResources(s.T(), s.cfg, s.eventBusName, `{"source":[{"prefix":"com.test"}]}`, s.region, nil)
+					rgid := createTestingResources(s.T(), s.cfg, s.eventBusName, s.eventBusRule, s.region, nil)
 					resourceGroupIDs = append(resourceGroupIDs, rgid)
 				}
 				return resourceGroupIDs
@@ -206,7 +222,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestRemoveListenersByTagFilters()
 				count := 5
 				resourceGroupIDs := []string{}
 				for i := 0; i < count; i++ {
-					rgid := createTestingResources(s.T(), s.cfg, s.eventBusName, `{"source":[{"prefix":"com.test"}]}`, s.region, map[string]string{
+					rgid := createTestingResources(s.T(), s.cfg, s.eventBusName, s.eventBusRule, s.region, map[string]string{
 						"foo": "bar",
 					})
 					resourceGroupIDs = append(resourceGroupIDs, rgid)
@@ -251,14 +267,14 @@ func (s *EventBusDestroyTestingResourcesSuite) TestRemoveListenersByTagFilters()
 	}
 }
 
-func createTestingResources(t *testing.T, cfg aws.Config, eventBusName, eventPattern, region string, tags map[string]string) string {
+func createTestingResources(t *testing.T, cfg aws.Config, eventBusName, eventBusRule, region string, tags map[string]string) string {
 	rJson := map[string]interface{}{
 		"jsonrpc": "2.0",
 		"id":      "42",
 		"method":  "test_harness.eventbridge.add_listener",
 		"params": map[string]interface{}{
 			"EventBusName": eventBusName,
-			"EventPattern": eventPattern,
+			"RuleName":     eventBusRule,
 			"Region":       region,
 			"Tags":         tags,
 		},
