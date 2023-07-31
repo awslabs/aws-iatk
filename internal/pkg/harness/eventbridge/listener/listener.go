@@ -33,8 +33,6 @@ func New(ctx context.Context, eventBusName, targetId, ruleName string, tags map[
 	r, err = opts.getRule(ctx, opts.ebClient, ruleName, eventBusName)
 	if err != nil {
 		log.Printf("RuleName %q was provided but not found for eventbus %q failed: %v", ruleName, eventBusName, err)
-	} else {
-		log.Printf("found rule %q", r.ARN)
 	}
 
 	target, err := opts.listTargetsByRule(ctx, opts.ebClient, targetId, ruleName, eventBusName)
