@@ -21,7 +21,6 @@ from zion import (
     RemoveListenersParams,
     PollEventsParams,
     WaitUntilEventMatchedParams,
-    ZionException,
 )
 from zion.poll_events import InvalidParamException
 
@@ -168,8 +167,7 @@ class TestZion_wait_until_event_matched(TestCase):
             )
             
             listener_params = AddEbListenerParams(
-                event_bus_name=cls.event_bus_name, 
-                event_pattern=params.event_pattern,
+                event_bus_name=cls.event_bus_name,
                 rule_name=params.rule_name,
                 target_id=params.target_id
             )

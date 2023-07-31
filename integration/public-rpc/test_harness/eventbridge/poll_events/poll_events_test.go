@@ -130,7 +130,7 @@ func (s *PollEventsSuite) SetupSuite() {
 
 		s.Require().NoErrorf(err, "failed to create eventbridge target: %v", err)
 
-		id := s.addListener(map[string]any{"TargetId": p.TargetId, "RuleName": p.RuleName, "EventPattern": p.EventPattern})
+		id := s.addListener(map[string]any{"TargetId": p.TargetId, "RuleName": p.RuleName})
 		s.listenerIDs = append(s.listenerIDs, id)
 	}
 
