@@ -29,8 +29,7 @@ func New(ctx context.Context, eventBusName, targetId, ruleName string, tags map[
 		return nil, fmt.Errorf("failed to create resource group: %v", err)
 	}
 
-	var r *eventrule.Rule
-	r, err = opts.getRule(ctx, opts.ebClient, ruleName, eventBusName)
+	r, err := opts.getRule(ctx, opts.ebClient, ruleName, eventBusName)
 	if err != nil {
 		return nil, fmt.Errorf("RuleName %q was provided but not found for eventbus %q failed: %v", ruleName, eventBusName, err)
 	}

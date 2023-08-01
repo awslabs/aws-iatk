@@ -84,7 +84,7 @@ class AddEbListenerParams:
         A key-value pair associated EventBridge rule.
     """
     event_bus_name: str
-    rule_name: Optional[str] = None
+    rule_name: str
     target_id: Optional[str] = None
     tags: Optional[Dict[str, str]] = None
 
