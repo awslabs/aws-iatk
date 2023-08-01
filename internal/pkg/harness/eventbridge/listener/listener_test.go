@@ -76,7 +76,7 @@ func TestNew(t *testing.T) {
 			eventBusName: testBusName,
 			tags:         map[string]string{"foo": "bar"},
 			arn:          testBusARN(),
-			ruleName:     testListenerID,
+			ruleName:     "InputRuleName",
 			ruleARN:      testRuleARN(),
 			expectErr:    nil,
 			mockGetEventBus: func(ctx context.Context, ebClient ebClient, eventBusName string, arn arn.ARN) *mockGetEventBusFunc {
@@ -128,10 +128,36 @@ func TestNew(t *testing.T) {
 				return mock
 			},
 		},
+		"getRule failed": {
+			eventBusName: testBusName,
+			arn:          testBusARN(),
+			ruleName:     "InputRuleName",
+			ruleARN:      testRuleARN(),
+			expectErr:    errors.New("RuleName \"InputRuleName\" was provided but not found for eventbus \"my-event-bus\" failed: getRule failed"),
+			mockGetEventBus: func(ctx context.Context, ebClient ebClient, eventBusName string, arn arn.ARN) *mockGetEventBusFunc {
+				mock := newMockGetEventBusFunc(t)
+				mock.EXPECT().
+					Execute(ctx, ebClient, eventBusName).
+					Return(&eventbus.EventBus{
+						Name: eventBusName,
+						ARN:  arn,
+					}, nil)
+				return mock
+			},
+			mockGetRule: func(ctx context.Context, ebClient ebClient, ruleName, eventBusName string, ruleARN arn.ARN) *mockGetRuleFunc {
+				mock := newMockGetRuleFunc(t)
+				mock.EXPECT().Execute(ctx, ebClient, ruleName, eventBusName).Return(nil, errors.New("getRule failed"))
+				return mock
+			},
+			mockListTargetsByRule: func(ctx context.Context, ebClient ebClient, targetId, ruleName, eventBusName string) *mockListTargetsByRuleFunc {
+				mock := newMockListTargetsByRuleFunc(t)
+				return mock
+			},
+		},
 		"ListTargetsByRule failed": {
 			eventBusName: testBusName,
 			arn:          testBusARN(),
-			ruleName:     testListenerID,
+			ruleName:     "InputRuleName",
 			ruleARN:      testRuleARN(),
 			expectErr:    errors.New("failed to create resource group: ListTargetByRule failed"),
 			mockGetEventBus: func(ctx context.Context, ebClient ebClient, eventBusName string, arn arn.ARN) *mockGetEventBusFunc {
