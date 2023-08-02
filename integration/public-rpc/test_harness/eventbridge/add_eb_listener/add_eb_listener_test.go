@@ -324,6 +324,26 @@ func (s *AddEbListenerSuite) TestErrors() {
 			expectErrCode: 10,
 			expectErrMsg:  `failed to locate test target: failed to create resource group: TagetId: DoesNotExistTarget was not found on eb-testrule Rule`,
 		},
+		{
+			testname: "provides invalid ruleName",
+			request: func() []byte {
+				r := map[string]any{
+					"jsonrpc": "2.0",
+					"id":      "42",
+					"method":  method,
+					"params": map[string]any{
+						"EventBusName": s.eventBusName,
+						"Region":       s.region,
+						"TargetId":     s.eventBusTarget,
+						"RuleName":     "DoesNotExistTarget",
+					},
+				}
+				out, _ := json.Marshal(r)
+				return out
+			},
+			expectErrCode: 10,
+			expectErrMsg:  `failed to locate test target: RuleName "DoesNotExistTarget" was provided but not found`,
+		},
 	}
 
 	for _, tt := range cases {
