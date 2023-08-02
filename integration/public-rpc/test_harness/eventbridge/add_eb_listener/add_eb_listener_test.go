@@ -151,7 +151,7 @@ func (s *AddEbListenerSuite) TestAddEbListenerNoTarget() {
 					"method":  method,
 					"params": map[string]any{
 						"EventBusName": s.eventBusName,
-						"EventPattern": `{"source":[{"prefix":""}]}`,
+						"RuleName":     s.eventBusRule,
 						"Region":       s.region,
 					},
 				}
@@ -168,7 +168,7 @@ func (s *AddEbListenerSuite) TestAddEbListenerNoTarget() {
 					"method":  method,
 					"params": map[string]any{
 						"EventBusName": s.eventBusName,
-						"EventPattern": `{"source":[{"prefix":""}]}`,
+						"RuleName":     s.eventBusRule,
 						"Region":       s.region,
 						"Tags":         tags,
 					},
@@ -212,7 +212,6 @@ func (s *AddEbListenerSuite) TestAddEbListenerWithTarget() {
 					"method":  method,
 					"params": map[string]any{
 						"EventBusName": s.eventBusName,
-						"EventPattern": `{"source":[{"prefix":"com.test"}]}`,
 						"TargetId":     s.eventBusTarget,
 						"RuleName":     s.eventBusRule,
 						"Region":       s.region,
@@ -255,8 +254,8 @@ func (s *AddEbListenerSuite) TestErrors() {
 					"id":      "42",
 					"method":  method,
 					"params": map[string]any{
-						"EventPattern": "{}",
-						"Region":       s.region,
+						"Region":   s.region,
+						"RuleName": s.eventBusRule,
 					},
 				}
 				out, _ := json.Marshal(r)
@@ -266,7 +265,7 @@ func (s *AddEbListenerSuite) TestErrors() {
 			expectErrMsg:  `missing required param "EventBusName"`,
 		},
 		{
-			testname: "missing event pattern",
+			testname: "missing rule name",
 			request: func() []byte {
 				r := map[string]any{
 					"jsonrpc": "2.0",
@@ -281,7 +280,7 @@ func (s *AddEbListenerSuite) TestErrors() {
 				return out
 			},
 			expectErrCode: 10,
-			expectErrMsg:  `missing required param "EventPattern"`,
+			expectErrMsg:  `missing required param "RuleName"`,
 		},
 		{
 			testname: "custom tags contain reserved key",
@@ -292,7 +291,7 @@ func (s *AddEbListenerSuite) TestErrors() {
 					"method":  method,
 					"params": map[string]any{
 						"EventBusName": s.eventBusName,
-						"EventPattern": `{"source":[{"prefix":"com.test"}]}`,
+						"RuleName":     s.eventBusRule,
 						"Region":       s.region,
 						"Tags": map[string]string{
 							"zion:TestHarness:Created": "12345",
@@ -314,7 +313,6 @@ func (s *AddEbListenerSuite) TestErrors() {
 					"method":  method,
 					"params": map[string]any{
 						"EventBusName": s.eventBusName,
-						"EventPattern": `{"source":[{"prefix":"com.test"}]}`,
 						"Region":       s.region,
 						"TargetId":     "DoesNotExistTarget",
 						"RuleName":     s.eventBusRule,
@@ -335,7 +333,6 @@ func (s *AddEbListenerSuite) TestErrors() {
 					"method":  method,
 					"params": map[string]any{
 						"EventBusName": s.eventBusName,
-						"EventPattern": `{"source":[{"prefix":"com.test"}]}`,
 						"Region":       s.region,
 						"TargetId":     s.eventBusTarget,
 						"RuleName":     "DoesNotExistTarget",
@@ -345,7 +342,7 @@ func (s *AddEbListenerSuite) TestErrors() {
 				return out
 			},
 			expectErrCode: 10,
-			expectErrMsg:  `failed to locate test target: failed to create resource group: ListTargetsByRule for Rule: "DoesNotExistTarget" failed`,
+			expectErrMsg:  `failed to locate test target: RuleName "DoesNotExistTarget" was provided but not found`,
 		},
 	}
 

@@ -76,10 +76,7 @@ class AddEbListenerParams:
     ----------
     event_bus_name : str
         Name of the AWS Event Bus
-    event_pattern : str
-        Event Pattern to filter events that arrive on the
-        AWS Event Bus
-    rule_name : str, optional
+    rule_name : str
         Name of a Rule on the EventBus to replicate
     target_id : str, optional
         Target Id on the given rule to replicate
@@ -87,8 +84,7 @@ class AddEbListenerParams:
         A key-value pair associated EventBridge rule.
     """
     event_bus_name: str
-    event_pattern: str
-    rule_name: Optional[str] = None
+    rule_name: str
     target_id: Optional[str] = None
     tags: Optional[Dict[str, str]] = None
 
@@ -102,9 +98,7 @@ class AddEbListenerParams:
             "params": {},
         }
         jsonrpc_data["params"]["EventBusName"] = self.event_bus_name
-        jsonrpc_data["params"]["EventPattern"] = self.event_pattern
-        if self.rule_name:
-            jsonrpc_data["params"]["RuleName"] = self.rule_name
+        jsonrpc_data["params"]["RuleName"] = self.rule_name
         if self.target_id:
             jsonrpc_data["params"]["TargetId"] = self.target_id
         if self.tags:

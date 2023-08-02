@@ -63,9 +63,12 @@ func testRuleARN() arn.ARN {
 func TestNew(t *testing.T) {
 	cases := map[string]struct {
 		mockGetEventBus       func(ctx context.Context, ebClient ebClient, eventBusName string, arn arn.ARN) *mockGetEventBusFunc
+		mockGetRule           func(ctx context.Context, ebClient ebClient, ruleName string, eventBusName string, ruleARN arn.ARN) *mockGetRuleFunc
 		mockListTargetsByRule func(ctx context.Context, ebClient ebClient, targetId, ruleName, eventBusName string) *mockListTargetsByRuleFunc
 		eventBusName          string
 		arn                   arn.ARN
+		ruleName              string
+		ruleARN               arn.ARN
 		tags                  map[string]string
 		expectErr             error
 	}{
@@ -73,6 +76,8 @@ func TestNew(t *testing.T) {
 			eventBusName: testBusName,
 			tags:         map[string]string{"foo": "bar"},
 			arn:          testBusARN(),
+			ruleName:     "InputRuleName",
+			ruleARN:      testRuleARN(),
 			expectErr:    nil,
 			mockGetEventBus: func(ctx context.Context, ebClient ebClient, eventBusName string, arn arn.ARN) *mockGetEventBusFunc {
 				mock := newMockGetEventBusFunc(t)
@@ -82,6 +87,15 @@ func TestNew(t *testing.T) {
 						Name: eventBusName,
 						ARN:  arn,
 					}, nil)
+				return mock
+			},
+			mockGetRule: func(ctx context.Context, ebClient ebClient, ruleName, eventBusName string, ruleARN arn.ARN) *mockGetRuleFunc {
+				mock := newMockGetRuleFunc(t)
+				mock.EXPECT().Execute(ctx, ebClient, ruleName, eventBusName).Return(&eventrule.Rule{
+					Name:         ruleName,
+					EventBusName: eventBusName,
+					ARN:          ruleARN,
+				}, nil)
 				return mock
 			},
 			mockListTargetsByRule: func(ctx context.Context, ebClient ebClient, targetId, ruleName, eventBusName string) *mockListTargetsByRuleFunc {
@@ -105,6 +119,36 @@ func TestNew(t *testing.T) {
 					Return(nil, errors.New("event bus not found"))
 				return mock
 			},
+			mockGetRule: func(ctx context.Context, ebClient ebClient, ruleName, eventBusName string, ruleARN arn.ARN) *mockGetRuleFunc {
+				mock := newMockGetRuleFunc(t)
+				return mock
+			},
+			mockListTargetsByRule: func(ctx context.Context, ebClient ebClient, targetId, ruleName, eventBusName string) *mockListTargetsByRuleFunc {
+				mock := newMockListTargetsByRuleFunc(t)
+				return mock
+			},
+		},
+		"getRule failed": {
+			eventBusName: testBusName,
+			arn:          testBusARN(),
+			ruleName:     "InputRuleName",
+			ruleARN:      testRuleARN(),
+			expectErr:    errors.New("RuleName \"InputRuleName\" was provided but not found for eventbus \"my-event-bus\" failed: getRule failed"),
+			mockGetEventBus: func(ctx context.Context, ebClient ebClient, eventBusName string, arn arn.ARN) *mockGetEventBusFunc {
+				mock := newMockGetEventBusFunc(t)
+				mock.EXPECT().
+					Execute(ctx, ebClient, eventBusName).
+					Return(&eventbus.EventBus{
+						Name: eventBusName,
+						ARN:  arn,
+					}, nil)
+				return mock
+			},
+			mockGetRule: func(ctx context.Context, ebClient ebClient, ruleName, eventBusName string, ruleARN arn.ARN) *mockGetRuleFunc {
+				mock := newMockGetRuleFunc(t)
+				mock.EXPECT().Execute(ctx, ebClient, ruleName, eventBusName).Return(nil, errors.New("getRule failed"))
+				return mock
+			},
 			mockListTargetsByRule: func(ctx context.Context, ebClient ebClient, targetId, ruleName, eventBusName string) *mockListTargetsByRuleFunc {
 				mock := newMockListTargetsByRuleFunc(t)
 				return mock
@@ -113,6 +157,8 @@ func TestNew(t *testing.T) {
 		"ListTargetsByRule failed": {
 			eventBusName: testBusName,
 			arn:          testBusARN(),
+			ruleName:     "InputRuleName",
+			ruleARN:      testRuleARN(),
 			expectErr:    errors.New("failed to create resource group: ListTargetByRule failed"),
 			mockGetEventBus: func(ctx context.Context, ebClient ebClient, eventBusName string, arn arn.ARN) *mockGetEventBusFunc {
 				mock := newMockGetEventBusFunc(t)
@@ -122,6 +168,15 @@ func TestNew(t *testing.T) {
 						Name: eventBusName,
 						ARN:  arn,
 					}, nil)
+				return mock
+			},
+			mockGetRule: func(ctx context.Context, ebClient ebClient, ruleName, eventBusName string, ruleARN arn.ARN) *mockGetRuleFunc {
+				mock := newMockGetRuleFunc(t)
+				mock.EXPECT().Execute(ctx, ebClient, ruleName, eventBusName).Return(&eventrule.Rule{
+					Name:         ruleName,
+					EventBusName: eventBusName,
+					ARN:          ruleARN,
+				}, nil)
 				return mock
 			},
 			mockListTargetsByRule: func(ctx context.Context, ebClient ebClient, targetId, ruleName, eventBusName string) *mockListTargetsByRuleFunc {
@@ -141,14 +196,16 @@ func TestNew(t *testing.T) {
 				ebClient: newMockEbClient(t),
 			}
 			getEventBus := tt.mockGetEventBus(ctx, opts.ebClient, tt.eventBusName, tt.arn)
-			listTargetsByRule := tt.mockListTargetsByRule(ctx, opts.ebClient, "", "", tt.eventBusName)
+			getRule := tt.mockGetRule(ctx, opts.ebClient, tt.ruleName, tt.eventBusName, tt.ruleARN)
+			listTargetsByRule := tt.mockListTargetsByRule(ctx, opts.ebClient, "", tt.ruleName, tt.eventBusName)
 			opts.getEventBus = getEventBus.Execute
+			opts.getRule = getRule.Execute
 			opts.listTargetsByRule = listTargetsByRule.Execute
 			expectEventBus := &eventbus.EventBus{
 				Name: tt.eventBusName,
 				ARN:  tt.arn,
 			}
-			listener, err := New(ctx, tt.eventBusName, "", "", "", tt.tags, opts)
+			listener, err := New(ctx, tt.eventBusName, "", tt.ruleName, tt.tags, opts)
 			if tt.expectErr != nil {
 				assert.EqualError(t, err, tt.expectErr.Error())
 			} else {
