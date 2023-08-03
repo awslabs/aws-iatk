@@ -40,13 +40,15 @@ class RemoveListeners_TagFilter:
         One part of a key-value pair that make up a tag. A value acts as a descriptor within a tag category (key). The value can be empty or null.
     """
     key: str
-    values: List[str]
+    values: Optional[List[str]] = None
 
     def to_dict(self) -> dict:
-        return {
+        d = {
             "Key": self.key,
-            "Values": self.values,
         }
+        if self.values:
+            d["Values"] = self.values
+        return d
 
 
 @dataclass
