@@ -43,7 +43,7 @@ __all__ = [
     "AddEbListenerParams",
     "RemoveListenersOutput",
     "RemoveListenersParams",
-    "RemoveListeners_TagFilter"
+    "RemoveListeners_TagFilter",
     "PollEventsOutput",
     "PollEventsParams",
     "WaitUntilEventMatchedParams"]
