@@ -36,11 +36,19 @@ class RemoveListeners_TagFilter:
     ----------
     key : str
         One part of a key-value pair that makes up a tag. A key is a general label that acts like a category for more specific tag values.
-    values : List[str]
+    values : List[str], optional
         One part of a key-value pair that make up a tag. A value acts as a descriptor within a tag category (key). The value can be empty or null.
     """
     key: str
-    values: List[str]
+    values: Optional[List[str]] = None
+
+    def to_dict(self) -> dict:
+        d = {
+            "Key": self.key,
+        }
+        if self.values:
+            d["Values"] = self.values
+        return d
 
 
 @dataclass
@@ -70,7 +78,9 @@ class RemoveListenersParams:
         if self.ids:
             jsonrpc_data["params"]["Ids"] = self.ids
         if self.tag_filters:
-            jsonrpc_data["params"]["TagFilters"] = self.tag_filters
+            jsonrpc_data["params"]["TagFilters"] = [
+                tag_filter.to_dict() for tag_filter in self.tag_filters
+            ]
         if region:
             jsonrpc_data["params"]["Region"] = region
         if profile:

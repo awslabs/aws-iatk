@@ -24,6 +24,7 @@ from .add_eb_listener import (
 from .remove_listeners import (
     RemoveListenersOutput,
     RemoveListenersParams,
+    RemoveListeners_TagFilter,
 )
 from .poll_events import (
     PollEventsOutput,
@@ -42,6 +43,7 @@ __all__ = [
     "AddEbListenerParams",
     "RemoveListenersOutput",
     "RemoveListenersParams",
+    "RemoveListeners_TagFilter",
     "PollEventsOutput",
     "PollEventsParams",
     "WaitUntilEventMatchedParams"]
