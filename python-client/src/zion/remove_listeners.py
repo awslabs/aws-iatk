@@ -42,6 +42,12 @@ class RemoveListeners_TagFilter:
     key: str
     values: List[str]
 
+    def to_dict(self) -> dict:
+        return {
+            "Key": self.key,
+            "Values": self.values,
+        }
+
 
 @dataclass
 class RemoveListenersParams:
@@ -70,7 +76,9 @@ class RemoveListenersParams:
         if self.ids:
             jsonrpc_data["params"]["Ids"] = self.ids
         if self.tag_filters:
-            jsonrpc_data["params"]["TagFilters"] = self.tag_filters
+            jsonrpc_data["params"]["TagFilters"] = [
+                tag_filter.to_dict() for tag_filter in self.tag_filters
+            ]
         if region:
             jsonrpc_data["params"]["Region"] = region
         if profile:
