@@ -4,13 +4,12 @@
 package destroytestingresources_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"log"
-	"os/exec"
 	"strings"
 	"testing"
+	"zion/integration/zion"
 	"zion/internal/pkg/harness/eventbridge/listener"
 	"zion/internal/pkg/jsonrpc"
 
@@ -191,7 +190,8 @@ func (s *EventBusDestroyTestingResourcesSuite) TestRemoveListenersByResourceGrou
 
 			input := tt.input(resourceGroupIDs)
 			var out strings.Builder
-			invoke(t, input, &out)
+			var sErr strings.Builder
+			zion.Invoke(t, input, &out, &sErr, nil)
 			log.Printf("response: %v", out.String())
 			var actual jsonrpc.Response
 			json.Unmarshal([]byte(out.String()), &actual)
@@ -252,7 +252,8 @@ func (s *EventBusDestroyTestingResourcesSuite) TestRemoveListenersByTagFilters()
 			input := tt.input(tt.tagFilters)
 			log.Printf("request: %v", string(input))
 			var out strings.Builder
-			invoke(t, input, &out)
+			var sErr strings.Builder
+			zion.Invoke(t, input, &out, &sErr, nil)
 			log.Printf("response: %v", out.String())
 			var actual jsonrpc.Response
 			json.Unmarshal([]byte(out.String()), &actual)
@@ -281,22 +282,13 @@ func createTestingResources(t *testing.T, cfg aws.Config, eventBusName, eventBus
 	}
 	resquest, _ := json.Marshal(rJson)
 	var out strings.Builder
-	invoke(t, resquest, &out)
+	var sErr strings.Builder
+	zion.Invoke(t, resquest, &out, &sErr, nil)
 	var response jsonrpc.Response
 	json.Unmarshal([]byte(out.String()), &response)
 	t.Log(response.Error)
 	output := response.Result.(map[string]interface{})["output"].(map[string]interface{})
 	return output["Id"].(string)
-}
-
-func invoke(t *testing.T, in []byte, out *strings.Builder) {
-	cmd := exec.Command("../../../bin/zion")
-	cmd.Stdin = bytes.NewReader(in)
-	cmd.Stdout = out
-	err := cmd.Run()
-	if err != nil {
-		t.Fatalf("command run failed: %v", err)
-	}
 }
 
 func deleteEventBus(t *testing.T, client *eventbridge.Client, eventBusName string) {

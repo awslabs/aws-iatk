@@ -4,14 +4,13 @@
 package pollevents_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"strings"
 	"testing"
 	"time"
+	"zion/integration/zion"
 	"zion/internal/pkg/jsonrpc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -453,14 +452,13 @@ func (s *PollEventsSuite) invokeAndAssertPollEventsRPC(listenerID string, waitTi
 func (s *PollEventsSuite) invoke(req []byte) jsonrpc.Response {
 	var stdout strings.Builder
 	var stderr strings.Builder
-	s.T().Logf("request: %v", string(req))
-	err := invoke(req, &stdout, &stderr)
-	// s.T().Logf("stderr: %v", stderr.String())
-	s.Require().NoError(err)
+	test := s.T()
+	test.Logf("request: %v", string(req))
+	zion.Invoke(test, req, &stdout, &stderr, nil)
 
-	s.T().Logf("response: %v", stdout.String())
+	test.Logf("response: %v", stdout.String())
 	var res jsonrpc.Response
-	err = json.Unmarshal([]byte(stdout.String()), &res)
+	err := json.Unmarshal([]byte(stdout.String()), &res)
 	s.Require().NoError(err, "cannot unmarshal response")
 	return res
 }
@@ -518,15 +516,6 @@ func (s *PollEventsSuite) ebEventToEntry(event ebEvent) ebtypes.PutEventsRequest
 		DetailType:   aws.String(event.DetailType),
 		Detail:       aws.String(string(detailJSON)),
 	}
-}
-
-func invoke(in []byte, stdout *strings.Builder, stderr *strings.Builder) error {
-	cmd := exec.Command("../../../../../bin/zion")
-	cmd.Stdin = bytes.NewReader(in)
-	cmd.Stdout = stdout
-	cmd.Stderr = stderr
-	err := cmd.Run()
-	return err
 }
 
 func deleteEventBus(client *eventbridge.Client, eventBusName string) error {

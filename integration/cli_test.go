@@ -7,12 +7,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
-	"os/exec"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
+	"zion/integration/zion"
 
 	"github.com/stretchr/testify/suite"
 
@@ -48,11 +47,10 @@ func TestCliErrCases(t *testing.T) {
 
 	for name, tt := range cases {
 		t.Run(name, func(t *testing.T) {
-			cmd := exec.Command("../bin/zion")
-			cmd.Stdin = strings.NewReader(tt.input)
 			var out strings.Builder
-			cmd.Stdout = &out
-			_ = cmd.Run()
+			var sErr strings.Builder
+			zion.Invoke(t, []byte(tt.input), &out, &sErr, nil)
+
 			actual := strings.Trim(out.String(), "\n")
 			assert.Equal(t, tt.expect, actual, fmt.Sprintf("expected: %v, got: %v", tt.expect, actual))
 		})
@@ -80,12 +78,10 @@ func TestCliGetPhysicalIdErrCases(t *testing.T) {
 
 	for name, tt := range cases {
 		t.Run(name, func(t *testing.T) {
-			cmd := exec.Command("../bin/zion")
-			cmd.Env = tt.env
-			cmd.Stdin = strings.NewReader(tt.input)
 			var out strings.Builder
-			cmd.Stdout = &out
-			_ = cmd.Run()
+			var sErr strings.Builder
+			zion.Invoke(t, []byte(tt.input), &out, &sErr, &tt.env)
+
 			re := regexp.MustCompile(tt.expect)
 			actual := strings.Trim(out.String(), "\n")
 			assert.True(t, re.MatchString(actual), fmt.Sprintf("expected: %v, got: %v", tt.expect, actual))
@@ -122,13 +118,11 @@ func (s *PhysicalIDWithCredsSuite) TestCliGetPhysicalIdCredCases() {
 
 	for name, tt := range cases {
 		s.T().Run(name, func(t *testing.T) {
-			cmd := exec.Command("../bin/zion")
-			cmd.Env = os.Environ()
-			cmd.Env = append(cmd.Env, fmt.Sprintf("AWS_REGION=%s", tt.region))
-			cmd.Stdin = strings.NewReader(tt.input)
 			var out strings.Builder
-			cmd.Stdout = &out
-			_ = cmd.Run()
+			var sErr strings.Builder
+			tEnv := []string{fmt.Sprintf("AWS_REGION=%s", tt.region)}
+			zion.Invoke(t, []byte(tt.input), &out, &sErr, &tEnv)
+
 			re := regexp.MustCompile(tt.expect)
 			actual := strings.Trim(out.String(), "\n")
 			assert.True(t, re.MatchString(actual), fmt.Sprintf("expected: %v, got: %v", tt.expect, actual))
