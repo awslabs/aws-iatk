@@ -8,7 +8,7 @@ import (
 )
 
 func Invoke(t *testing.T, in []byte, out *strings.Builder, sErr *strings.Builder, env *[]string) {
-	cmd := exec.Command("../../../bin/zion")
+	cmd := exec.Command("../../bin/zion")
 	if env != nil {
 		cmd.Env = *env
 	}
