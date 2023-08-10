@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -120,7 +121,8 @@ func (s *PhysicalIDWithCredsSuite) TestCliGetPhysicalIdCredCases() {
 		s.T().Run(name, func(t *testing.T) {
 			var out strings.Builder
 			var sErr strings.Builder
-			tEnv := []string{fmt.Sprintf("AWS_REGION=%s", tt.region)}
+			tEnv := os.Environ()
+			tEnv = append(tEnv, fmt.Sprintf("AWS_REGION=%s", tt.region))
 			zion.Invoke(t, []byte(tt.input), &out, &sErr, &tEnv)
 
 			re := regexp.MustCompile(tt.expect)
