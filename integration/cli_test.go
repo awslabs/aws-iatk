@@ -50,7 +50,7 @@ func TestCliErrCases(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			var out strings.Builder
 			var sErr strings.Builder
-			zion.Invoke(t, []byte(tt.input), &out, &sErr, nil)
+			zion.SInvoke(t, tt.input, &out, &sErr, nil, true)
 
 			actual := strings.Trim(out.String(), "\n")
 			assert.Equal(t, tt.expect, actual, fmt.Sprintf("expected: %v, got: %v", tt.expect, actual))
