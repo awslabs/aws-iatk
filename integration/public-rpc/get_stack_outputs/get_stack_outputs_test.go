@@ -4,15 +4,14 @@
 package getstackoutputs_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"log"
-	"os/exec"
 	"strings"
 	"testing"
 	"time"
+	"zion/integration/zion"
 	"zion/internal/pkg/aws/config"
 	"zion/internal/pkg/jsonrpc"
 
@@ -192,7 +191,8 @@ func (s *GetStackOutputsSuite) TestGetStackOutputs() {
 			input := tt.input(tt.outputs)
 			log.Printf("request: %v", string(input))
 			var out strings.Builder
-			invoke(t, input, &out)
+			var sErr strings.Builder
+			zion.Invoke(t, input, &out, &sErr, nil)
 			log.Printf("response: %v", out.String())
 			var actual jsonrpc.Response
 			json.Unmarshal([]byte(out.String()), &actual)
@@ -240,7 +240,8 @@ func (s *GetStackOutputsSuite) TestErrGetStackOutputs() {
 			input := tt.input(tt.outputs)
 			log.Printf("request: %v", string(input))
 			var out strings.Builder
-			invoke(t, input, &out)
+			var sErr strings.Builder
+			zion.Invoke(t, input, &out, &sErr, nil)
 			log.Printf("response: %v", out.String())
 			var actual jsonrpc.Response
 			json.Unmarshal([]byte(out.String()), &actual)
@@ -251,15 +252,5 @@ func (s *GetStackOutputsSuite) TestErrGetStackOutputs() {
 				assert.Equal(t, tt.expectErrMsg, actual.Error.Message)
 			}
 		})
-	}
-}
-
-func invoke(t *testing.T, in []byte, out *strings.Builder) {
-	cmd := exec.Command("../../../bin/zion")
-	cmd.Stdin = bytes.NewReader(in)
-	cmd.Stdout = out
-	err := cmd.Run()
-	if err != nil {
-		t.Fatalf("command run failed: %v", err)
 	}
 }

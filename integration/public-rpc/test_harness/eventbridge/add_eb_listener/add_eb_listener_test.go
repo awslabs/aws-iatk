@@ -4,13 +4,12 @@
 package addeblistener_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"strings"
 	"testing"
+	"zion/integration/zion"
 	"zion/internal/pkg/jsonrpc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -360,15 +359,14 @@ func (s *AddEbListenerSuite) TestErrors() {
 func (s *AddEbListenerSuite) invoke(req []byte) jsonrpc.Response {
 	var out strings.Builder
 	var sErr strings.Builder
-	err := invoke(req, &out, &sErr)
+	test := s.T()
+	zion.Invoke(test, req, &out, &sErr, nil)
 
-	s.T().Logf("response: %v", out.String())
-	s.T().Logf("err: %v", sErr.String())
-
-	s.Require().NoError(err)
+	test.Logf("response: %v", out.String())
+	test.Logf("err: %v", sErr.String())
 
 	var res jsonrpc.Response
-	err = json.Unmarshal([]byte(out.String()), &res)
+	err := json.Unmarshal([]byte(out.String()), &res)
 	s.Require().NoError(err, "cannot unmarshal response")
 	return res
 }
@@ -463,15 +461,6 @@ func (s *AddEbListenerSuite) assertTags(expectTags, actualTags map[string]string
 			s.Equal(val, actualTags[key])
 		}
 	}
-}
-
-func invoke(in []byte, out *strings.Builder, sErr *strings.Builder) error {
-	cmd := exec.Command("../../../../../bin/zion")
-	cmd.Stdin = bytes.NewReader(in)
-	cmd.Stdout = out
-	cmd.Stderr = sErr
-	err := cmd.Run()
-	return err
 }
 
 func deleteQueue(client *sqs.Client, queueURL string) error {
