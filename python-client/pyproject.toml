@@ -28,6 +28,7 @@ test = [
   "pytest-xdist",
   "boto3",
   "parameterized",
+  "aws_xray_sdk",
   "black"
 ]
 
