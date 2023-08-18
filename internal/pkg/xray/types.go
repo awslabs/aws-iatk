@@ -127,8 +127,8 @@ type LinkAttribute struct {
 }
 
 type Tree struct {
-	Root        *Segment     `json:"root"`
-	Paths       [][]*Segment `json:"paths"`
-	SourceTrace *Trace       `json:"source_trace"`
-	ChildTraces []*Trace     `json:"child_traces"`
+	Root        *Segment          `json:"root"`
+	Paths       [][]*Segment      `json:"paths"`
+	SourceTrace *Trace            `json:"source_trace"`
+	ChildTraces map[string]*Trace `json:"child_traces"`
 }
