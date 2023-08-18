@@ -27,6 +27,7 @@ type Segment struct {
 	Annotations map[string]interface{} `json:"annotations,omitempty"` // only accepts string, number or boolean
 	Metadata    map[string]interface{} `json:"metadata,omitempty"`
 	Subsegments []*Subsegment          `json:"subsegments,omitempty"`
+	Links       []*Link                `json:"links,omitempty"`
 }
 
 type Subsegment struct {
@@ -51,6 +52,7 @@ type Subsegment struct {
 	Metadata     map[string]interface{} `json:"metadata,omitempty"`
 	Type         *string                `json:"type,omitempty"`
 	Subsegments  []*Subsegment          `json:"subsegments,omitempty"`
+	Links        []*Link                `json:"links,omitempty"`
 }
 
 type Service struct {
