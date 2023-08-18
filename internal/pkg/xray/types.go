@@ -1,46 +1,10 @@
 package xray
 
-import (
-	"encoding/json"
-	"fmt"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/xray/types"
-)
-
-func TraceFromApiResponse(trace types.Trace) (*Trace, error) {
-	segments := []*Segment{}
-	for _, sm := range trace.Segments {
-		doc := aws.ToString(sm.Document)
-		segment, err := SegmentFromDocument(doc)
-		if err != nil {
-			return nil, fmt.Errorf("failed to resolve segment document: %w", err)
-		}
-		segments = append(segments, segment)
-	}
-	return &Trace{
-		Id:            trace.Id,
-		Duration:      trace.Duration,
-		LimitExceeded: trace.LimitExceeded,
-		Segments:      segments,
-	}, nil
-}
-
-func SegmentFromDocument(doc string) (*Segment, error) {
-	var decoded Segment
-	err := json.Unmarshal([]byte(doc), &decoded)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode segment document: %w", err)
-	}
-	return &decoded, nil
-}
-
 type Trace struct {
 	Id            *string    `json:"id"`
 	Duration      *float64   `json:"duration"`
 	LimitExceeded *bool      `json:"limitExceeded"`
 	Segments      []*Segment `json:"segments"`
-	Tree          *Tree      `json:"tree"`
 }
 
 type Segment struct {
@@ -145,7 +109,26 @@ type Sql struct {
 	Preparation      *string `json:"preparation"`
 }
 
+type ReferenceType string
+
+const (
+	ReferenceTypeParent ReferenceType = "parent"
+	ReferenceTypeChild  ReferenceType = "child"
+)
+
+type Link struct {
+	TraceId    *string        `json:"trace_id"`
+	Id         *string        `json:"id"`
+	Attributes *LinkAttribute `json:"attributes"`
+}
+
+type LinkAttribute struct {
+	ReferenceType *ReferenceType `json:"aws.xray.reserved.reference_type"`
+}
+
 type Tree struct {
-	Root  *Segment     `json:"root"`
-	Paths [][]*Segment `json:"paths"`
+	Root        *Segment     `json:"root"`
+	Paths       [][]*Segment `json:"paths"`
+	SourceTrace *Trace       `json:"source_trace"`
+	ChildTraces []*Trace     `json:"child_traces"`
 }
