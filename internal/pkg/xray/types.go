@@ -66,25 +66,25 @@ type Cause struct {
 }
 
 type Exception struct {
-	Id        *string       `json:"id"`
-	Message   *string       `json:"message"`
-	Type      *string       `json:"type"`
-	Remote    *bool         `json:"remote"`
-	Truncated *int          `json:"truncated"`
-	Skipped   *int          `json:"skipped"`
-	Cause     *string       `json:"cause"`
-	Stack     []*StackFrame `json:"stack"`
+	Id        *string       `json:"id,omitempty"`
+	Message   *string       `json:"message,omitempty"`
+	Type      *string       `json:"type,omitempty"`
+	Remote    *bool         `json:"remote,omitempty"`
+	Truncated *int          `json:"truncated,omitempty"`
+	Skipped   *int          `json:"skipped,omitempty"`
+	Cause     *string       `json:"cause,omitempty"`
+	Stack     []*StackFrame `json:"stack,omitempty"`
 }
 
 type StackFrame struct {
-	Path  *string `json:"path"`
-	Line  *int    `json:"line"`
-	Label *string `json:"label"`
+	Path  *string `json:"path,omitempty"`
+	Line  *int    `json:"line,omitempty"`
+	Label *string `json:"label,omitempty"`
 }
 
 type Http struct {
-	Request  *Request  `json:"request"`
-	Response *Response `json:"response"`
+	Request  *Request  `json:"request,omitempty"`
+	Response *Response `json:"response,omitempty"`
 }
 
 type Request struct {
