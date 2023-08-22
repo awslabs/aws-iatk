@@ -134,3 +134,8 @@ type Tree struct {
 	SourceTrace *Trace            `json:"source_trace"`
 	ChildTraces map[string]*Trace `json:"child_traces"`
 }
+
+type TraceTreeNode struct {
+	SegmentObject *Segment         `json:"segment_object"`
+	Children      []*TraceTreeNode `json:"children,omitempty"`
+}
