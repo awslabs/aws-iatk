@@ -88,27 +88,28 @@ type Http struct {
 }
 
 type Request struct {
-	Method        *string `json:"method"`
-	ClientIp      *string `json:"client_ip"`
-	Url           *string `json:"url"`
-	UserAgent     *string `json:"user_agent"`
-	XForwardedFor *bool   `json:"x_forwarded_for"`
+	Method        *string `json:"method,omitempty"`
+	ClientIp      *string `json:"client_ip,omitempty"`
+	Url           *string `json:"url,omitempty"`
+	UserAgent     *string `json:"user_agent,omitempty"`
+	XForwardedFor *bool   `json:"x_forwarded_for,omitempty"`
+	Traced        *bool   `json:"traced,omitempty"`
 }
 
 type Response struct {
-	Status        *int `json:"status"`
-	ContentLength *int `json:"content_length"`
+	Status        *int `json:"status,omitempty"`
+	ContentLength *int `json:"content_length,omitempty"`
 }
 
 type Sql struct {
-	ConnectionString *string `json:"connection_string"`
-	Url              *string `json:"url"`
-	SanitizedQuery   *string `json:"sanitized_query"`
-	DatabaseType     *string `json:"database_type"`
-	DatabaseVersion  *string `json:"database_version"`
-	DriverVersion    *string `json:"driver_version"`
-	User             *string `json:"user"`
-	Preparation      *string `json:"preparation"`
+	ConnectionString *string `json:"connection_string,omitempty"`
+	Url              *string `json:"url,omitempty"`
+	SanitizedQuery   *string `json:"sanitized_query,omitempty"`
+	DatabaseType     *string `json:"database_type,omitempty"`
+	DatabaseVersion  *string `json:"database_version,omitempty"`
+	DriverVersion    *string `json:"driver_version,omitempty"`
+	User             *string `json:"user,omitempty"`
+	Preparation      *string `json:"preparation,omitempty"`
 }
 
 type ReferenceType string
@@ -119,12 +120,12 @@ const (
 )
 
 type Link struct {
-	TraceId    *string        `json:"trace_id"`
-	Id         *string        `json:"id"`
-	Attributes *LinkAttribute `json:"attributes"`
+	TraceId    *string         `json:"trace_id"`
+	Id         *string         `json:"id"`
+	Attributes *LinkAttributes `json:"attributes"`
 }
 
-type LinkAttribute struct {
+type LinkAttributes struct {
 	ReferenceType *ReferenceType `json:"aws.xray.reserved.reference_type"`
 }
 
