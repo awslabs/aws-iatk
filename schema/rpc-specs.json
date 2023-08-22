@@ -47,6 +47,155 @@
                 "type": "object"
             }
         },
+        "get_trace_tree": {
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "FetchChildLinkedTraces": {
+                        "type": "bool"
+                    },
+                    "Profile": {
+                        "type": "string"
+                    },
+                    "Region": {
+                        "type": "string"
+                    },
+                    "TraceId": {
+                        "type": "string"
+                    }
+                }
+            },
+            "returns": {
+                "type": "object",
+                "properties": {
+                    "child_traces": {
+                        "type": "object"
+                    },
+                    "paths": {
+                        "type": "array",
+                        "items": {
+                            "type": "array"
+                        }
+                    },
+                    "root": {
+                        "type": "object",
+                        "properties": {
+                            "annotations": {
+                                "type": "object"
+                            },
+                            "aws": null,
+                            "cause": null,
+                            "end_time": {
+                                "type": "number"
+                            },
+                            "error": {
+                                "type": "bool"
+                            },
+                            "fault": {
+                                "type": "bool"
+                            },
+                            "http": {
+                                "type": "object",
+                                "properties": {
+                                    "request": {
+                                        "type": "object",
+                                        "properties": {
+                                            "client_ip": {
+                                                "type": "string"
+                                            },
+                                            "method": {
+                                                "type": "string"
+                                            },
+                                            "url": {
+                                                "type": "string"
+                                            },
+                                            "user_agent": {
+                                                "type": "string"
+                                            },
+                                            "x_forwarded_for": {
+                                                "type": "bool"
+                                            }
+                                        }
+                                    },
+                                    "response": {
+                                        "type": "object",
+                                        "properties": {
+                                            "content_length": {
+                                                "type": "integer"
+                                            },
+                                            "status": {
+                                                "type": "integer"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "in_progress": {
+                                "type": "bool"
+                            },
+                            "links": {
+                                "type": "array"
+                            },
+                            "metadata": {
+                                "type": "object"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "origin": {
+                                "type": "string"
+                            },
+                            "parent_id": {
+                                "type": "string"
+                            },
+                            "service": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "start_time": {
+                                "type": "number"
+                            },
+                            "subsegments": {
+                                "type": "array"
+                            },
+                            "throttle": {
+                                "type": "bool"
+                            },
+                            "trace_id": {
+                                "type": "string"
+                            },
+                            "user": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "source_trace": {
+                        "type": "object",
+                        "properties": {
+                            "duration": {
+                                "type": "number"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "limitExceeded": {
+                                "type": "bool"
+                            },
+                            "segments": {
+                                "type": "array"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "test_harness.eventbridge.add_listener": {
             "parameters": {
                 "type": "object",
