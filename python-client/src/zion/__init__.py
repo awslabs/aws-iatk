@@ -346,17 +346,16 @@ class Zion:
             same client passed in the params with the event registered
         """
         def _add_header(request, **kwargs):
-            trace_id = TraceId().to_id()
-            TraceIdString= 'Root={};Sampled={}'.format(trace_id, sampled)
+            trace_id_string= 'Root=;Sampled={}'.format(sampled)
             
-            request.headers.add_header('X-Amzn-Trace-Id', TraceIdString)
-            LOG.debug(f"Trace ID format: {TraceIdString}")
+            request.headers.add_header('X-Amzn-Trace-Id', trace_id_string)
+            LOG.debug(f"Trace ID format: {trace_id_string}")
 
-        serviceName = client.meta.service_model.service_name
-        eventString = 'before-sign.{}.*'
-        LOG.debug(f"service id: {client.meta.service_model.service_id}, service name: {serviceName}")
+        service_name = client.meta.service_model.service_name
+        event_string = 'before-sign.{}.*'
+        LOG.debug(f"service id: {client.meta.service_model.service_id}, service name: {service_name}")
         
-        client.meta.events.register(eventString.format(serviceName), _add_header)
+        client.meta.events.register(event_string.format(service_name), _add_header)
         
         return client
 
