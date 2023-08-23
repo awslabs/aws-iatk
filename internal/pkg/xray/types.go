@@ -1,46 +1,10 @@
 package xray
 
-import (
-	"encoding/json"
-	"fmt"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/xray/types"
-)
-
-func TraceFromApiResponse(trace types.Trace) (*Trace, error) {
-	segments := []*Segment{}
-	for _, sm := range trace.Segments {
-		doc := aws.ToString(sm.Document)
-		segment, err := SegmentFromDocument(doc)
-		if err != nil {
-			return nil, fmt.Errorf("failed to resolve segment document: %w", err)
-		}
-		segments = append(segments, segment)
-	}
-	return &Trace{
-		Id:            trace.Id,
-		Duration:      trace.Duration,
-		LimitExceeded: trace.LimitExceeded,
-		Segments:      segments,
-	}, nil
-}
-
-func SegmentFromDocument(doc string) (*Segment, error) {
-	var decoded Segment
-	err := json.Unmarshal([]byte(doc), &decoded)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode segment document: %w", err)
-	}
-	return &decoded, nil
-}
-
 type Trace struct {
 	Id            *string    `json:"id"`
 	Duration      *float64   `json:"duration"`
 	LimitExceeded *bool      `json:"limitExceeded"`
 	Segments      []*Segment `json:"segments"`
-	Tree          *Tree      `json:"tree"`
 }
 
 type Segment struct {
@@ -63,6 +27,7 @@ type Segment struct {
 	Annotations map[string]interface{} `json:"annotations,omitempty"` // only accepts string, number or boolean
 	Metadata    map[string]interface{} `json:"metadata,omitempty"`
 	Subsegments []*Subsegment          `json:"subsegments,omitempty"`
+	Links       []*Link                `json:"links,omitempty"`
 }
 
 type Subsegment struct {
@@ -87,6 +52,7 @@ type Subsegment struct {
 	Metadata     map[string]interface{} `json:"metadata,omitempty"`
 	Type         *string                `json:"type,omitempty"`
 	Subsegments  []*Subsegment          `json:"subsegments,omitempty"`
+	Links        []*Link                `json:"links,omitempty"`
 }
 
 type Service struct {
@@ -100,52 +66,72 @@ type Cause struct {
 }
 
 type Exception struct {
-	Id        *string       `json:"id"`
-	Message   *string       `json:"message"`
-	Type      *string       `json:"type"`
-	Remote    *bool         `json:"remote"`
-	Truncated *int          `json:"truncated"`
-	Skipped   *int          `json:"skipped"`
-	Cause     *string       `json:"cause"`
-	Stack     []*StackFrame `json:"stack"`
+	Id        *string       `json:"id,omitempty"`
+	Message   *string       `json:"message,omitempty"`
+	Type      *string       `json:"type,omitempty"`
+	Remote    *bool         `json:"remote,omitempty"`
+	Truncated *int          `json:"truncated,omitempty"`
+	Skipped   *int          `json:"skipped,omitempty"`
+	Cause     *string       `json:"cause,omitempty"`
+	Stack     []*StackFrame `json:"stack,omitempty"`
 }
 
 type StackFrame struct {
-	Path  *string `json:"path"`
-	Line  *int    `json:"line"`
-	Label *string `json:"label"`
+	Path  *string `json:"path,omitempty"`
+	Line  *int    `json:"line,omitempty"`
+	Label *string `json:"label,omitempty"`
 }
 
 type Http struct {
-	Request  *Request  `json:"request"`
-	Response *Response `json:"response"`
+	Request  *Request  `json:"request,omitempty"`
+	Response *Response `json:"response,omitempty"`
 }
 
 type Request struct {
-	Method        *string `json:"method"`
-	ClientIp      *string `json:"client_ip"`
-	Url           *string `json:"url"`
-	UserAgent     *string `json:"user_agent"`
-	XForwardedFor *bool   `json:"x_forwarded_for"`
+	Method        *string `json:"method,omitempty"`
+	ClientIp      *string `json:"client_ip,omitempty"`
+	Url           *string `json:"url,omitempty"`
+	UserAgent     *string `json:"user_agent,omitempty"`
+	XForwardedFor *bool   `json:"x_forwarded_for,omitempty"`
+	Traced        *bool   `json:"traced,omitempty"`
 }
 
 type Response struct {
-	Status        *int `json:"status"`
-	ContentLength *int `json:"content_length"`
+	Status        *int `json:"status,omitempty"`
+	ContentLength *int `json:"content_length,omitempty"`
 }
 
 type Sql struct {
-	ConnectionString *string `json:"connection_string"`
-	Url              *string `json:"url"`
-	SanitizedQuery   *string `json:"sanitized_query"`
-	DatabaseType     *string `json:"database_type"`
-	DatabaseVersion  *string `json:"database_version"`
-	DriverVersion    *string `json:"driver_version"`
-	User             *string `json:"user"`
-	Preparation      *string `json:"preparation"`
+	ConnectionString *string `json:"connection_string,omitempty"`
+	Url              *string `json:"url,omitempty"`
+	SanitizedQuery   *string `json:"sanitized_query,omitempty"`
+	DatabaseType     *string `json:"database_type,omitempty"`
+	DatabaseVersion  *string `json:"database_version,omitempty"`
+	DriverVersion    *string `json:"driver_version,omitempty"`
+	User             *string `json:"user,omitempty"`
+	Preparation      *string `json:"preparation,omitempty"`
+}
+
+type ReferenceType string
+
+const (
+	ReferenceTypeParent ReferenceType = "parent"
+	ReferenceTypeChild  ReferenceType = "child"
+)
+
+type Link struct {
+	TraceId    *string         `json:"trace_id"`
+	Id         *string         `json:"id"`
+	Attributes *LinkAttributes `json:"attributes"`
+}
+
+type LinkAttributes struct {
+	ReferenceType *ReferenceType `json:"aws.xray.reserved.reference_type"`
 }
 
 type Tree struct {
-	Root  *Segment     `json:"root"`
-	Paths [][]*Segment `json:"paths"`
+	Root        *Segment          `json:"root"`
+	Paths       [][]*Segment      `json:"paths"`
+	SourceTrace *Trace            `json:"source_trace"`
+	ChildTraces map[string]*Trace `json:"child_traces"`
 }
