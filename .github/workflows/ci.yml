@@ -105,8 +105,6 @@ jobs:
   python_client_unit_test:
     if: github.repository_owner == 'awslabs'
     runs-on: ubuntu-latest
-    env:
-      AWS_REGION: "us-east-1"
     steps:
       - name: Set up Go
         uses: actions/setup-go@v3

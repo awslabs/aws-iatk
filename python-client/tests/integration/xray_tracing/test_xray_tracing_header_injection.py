@@ -143,7 +143,6 @@ class TestZion_xray_tracing_sfn(TestCase):
     zion = Zion("region=us-east-1")
     sfn_client = boto3.client("stepfunctions")
     iam_client = boto3.client("iam")
-    state_machin_arn = None
     role_policy = {
         "Version": "2012-10-17",
         "Statement": [
@@ -173,6 +172,11 @@ class TestZion_xray_tracing_sfn(TestCase):
             }
         }
         }
+    def get_state_machine_arn(self, sfn_client):
+        response = sfn_client.list_state_machines()["stateMachines"]
+        for sfn in response:
+            if sfn['name'] == "test_xray_tracing_state_machine":
+                return sfn["stateMachineArn"]
     @classmethod
     def setUpClass(cls) -> None:
         LOG.debug("creating resources")
@@ -187,7 +191,7 @@ class TestZion_xray_tracing_sfn(TestCase):
             role = cls.iam_client.get_role(
                 RoleName="test_sfn_execution"
             )
-            create_state_machine_response = cls.sfn_client.create_state_machine(
+            cls.sfn_client.create_state_machine(
                 name="test_xray_tracing_state_machine",
                 roleArn=role["Role"]["Arn"],
                 definition=json.dumps(cls.definition),
@@ -195,16 +199,14 @@ class TestZion_xray_tracing_sfn(TestCase):
                     "enabled":True
                 }
             )
-            cls.state_machin_arn = create_state_machine_response["stateMachineArn"]
         except Exception as e:
             LOG.debug(e)
     
     @classmethod
     def tearDownClass(cls) -> None:
         LOG.debug("remove step functions state machine")
-        LOG.debug(cls.state_machin_arn)
         cls.sfn_client.delete_state_machine(
-            stateMachineArn=cls.state_machin_arn
+            stateMachineArn=cls.get_state_machine_arn(cls, cls.sfn_client)
         )
         LOG.debug("delete role")
         cls.iam_client.delete_role(
@@ -216,12 +218,13 @@ class TestZion_xray_tracing_sfn(TestCase):
         self.zion.patch_aws_client(self.sfn_client, 1)
         
         start_response = self.sfn_client.start_execution(
-            stateMachineArn=self.__class__.state_machin_arn,
+            stateMachineArn=self.get_state_machine_arn(self.sfn_client),
             input='{"IsHelloWorldExample": true}'
         )
         describe_response = self.sfn_client.describe_execution(
             executionArn=start_response["executionArn"]
             )
+        LOG.debug(describe_response)
         self.assertIn("traceHeader", describe_response)
         sampled_string = describe_response["traceHeader"].split(";")[1]
         self.assertEqual(sampled_string[len(sampled_string) - 1],"1")
@@ -230,13 +233,14 @@ class TestZion_xray_tracing_sfn(TestCase):
         time.sleep(3)
         self.zion.patch_aws_client(self.sfn_client, 0)
         start_response = self.sfn_client.start_execution(
-            stateMachineArn=self.__class__.state_machin_arn,
+            stateMachineArn=self.get_state_machine_arn(self.sfn_client),
             input='{"IsHelloWorldExample": true}'
         )
         time.sleep(3)
         describe_response = self.sfn_client.describe_execution(
             executionArn=start_response["executionArn"]
             )
+        LOG.debug(describe_response)
         self.assertIn("traceHeader", describe_response)
         sampled_string = describe_response["traceHeader"].split(";")[1]
         self.assertEqual(sampled_string[len(sampled_string) - 1],"0")
