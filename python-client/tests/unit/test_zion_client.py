@@ -5,9 +5,10 @@ import zion
 
 class TestZionClient(TestCase):
     def setUp(self):
-        self.clientLambda = boto3.client("lambda")
-        self.clientSfn = boto3.client("stepfunctions")
-        self.clientApiGateway = boto3.client("apigateway")
+        region = "us-east-1"
+        self.clientLambda = boto3.client("lambda", region_name=region)
+        self.clientSfn = boto3.client("stepfunctions", region_name=region)
+        self.clientApiGateway = boto3.client("apigateway", region_name=region)
         self.zionClient = zion.Zion
 
 
