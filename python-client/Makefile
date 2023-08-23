@@ -13,6 +13,9 @@ integ-test:
 contract-test:
 	pytest -vvv tests/contract
 
+unit-test:
+	pytest -vvv tests/unit
+
 build-client:
 	python -m build
 	pip3 install -e .

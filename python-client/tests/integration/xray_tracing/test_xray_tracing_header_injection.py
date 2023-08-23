@@ -26,7 +26,7 @@ LOG.setLevel(logging.DEBUG)
 boto3.set_stream_logger(name="zion", level=logging.DEBUG)
 
 class TestZion_xray_tracing_lambda(TestCase):
-    zion = Zion("region=us-east-2")
+    zion = Zion("region=us-east-1")
     lambda_client = boto3.client("lambda")
     iam_client = boto3.client("iam")
     role_policy = {
@@ -140,7 +140,7 @@ class TestZion_xray_tracing_lambda(TestCase):
 
 
 class TestZion_xray_tracing_sfn(TestCase):
-    zion = Zion("region=us-east-2")
+    zion = Zion("region=us-east-1")
     sfn_client = boto3.client("stepfunctions")
     iam_client = boto3.client("iam")
     state_machin_arn = None
