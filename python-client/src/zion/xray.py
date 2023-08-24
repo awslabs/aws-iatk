@@ -533,9 +533,6 @@ class Tree:
         self.root = Segment(input_dict["root"])
         self.paths = [[Segment(s) for s in path] for path in input_dict["paths"]]
         self.source_trace = Trace(input_dict["source_trace"])
-        if input_dict.get("child_traces", {}):
-            self.child_traces = {
-                cid: Trace(child) for cid, child in input_dict.get("child_traces", {}).items()
-            }
-        else:
-            self.child_traces = {}
+        self.child_traces = {
+            cid: Trace(child) for cid, child in input_dict.get("child_traces", {}).items()
+        } if input_dict.get("child_traces") else {}

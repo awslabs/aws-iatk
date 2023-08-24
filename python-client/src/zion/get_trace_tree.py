@@ -20,7 +20,7 @@ class GetTraceTreeOutput:
     trace_tree : Tree
         Trace tree structure of the provided trace id
     """
-    trace_tree: str
+    trace_tree: Tree
 
     def __init__(self, jsonrpc_data_bytes) -> None:
         jsonrpc_data = jsonrpc_data_bytes.decode("utf-8")
