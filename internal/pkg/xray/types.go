@@ -137,6 +137,6 @@ type Tree struct {
 }
 
 type TraceTreeNode struct {
-	SegmentObject *Segment         `json:"segment_object"`
-	Children      []*TraceTreeNode `json:"children,omitempty"`
+	SegmentObject *Segment
+	Children      []*TraceTreeNode
 }
