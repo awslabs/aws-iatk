@@ -18,6 +18,7 @@ import boto3
 from botocore.exceptions import ClientError
 from parameterized import parameterized
 import pytest
+import random
 
 
 
@@ -29,32 +30,10 @@ class TestZion_xray_tracing_lambda(TestCase):
     zion = Zion("region=us-east-1")
     lambda_client = boto3.client("lambda")
     iam_client = boto3.client("iam")
-    role_policy = {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-        "Sid": "",
-        "Effect": "Allow",
-        "Principal": {
-            "Service": "lambda.amazonaws.com"
-        },
-        "Action": "sts:AssumeRole"
-        }
-    ]
-    }
-    def check_lambda_function_exists(function):
-        return function["FunctionName"] == "test_lambda"
-
+    lambda_function_name = "test_lambda" + str(random.randrange(0,100000))
     @classmethod
     def setUpClass(cls) -> None:
         LOG.debug("creating resources")
-        try:
-            cls.iam_client.create_role(
-                RoleName="test_lambda_basic_execution",
-                AssumeRolePolicyDocument=json.dumps(cls.role_policy),
-            )
-        except Exception as e:
-            LOG.debug(e)
         try:
             current_path = os.path.realpath(__file__)
             current_dir = os.path.dirname(current_path)
@@ -63,20 +42,17 @@ class TestZion_xray_tracing_lambda(TestCase):
                 zipped_code = f.read()
             time.sleep(10)
             role = cls.iam_client.get_role(
-                RoleName="test_lambda_basic_execution"
+                RoleName="xray-integration-role"
                 )
-            response = cls.lambda_client.list_functions()
-            filtered = filter(cls.check_lambda_function_exists,response["Functions"])
-            if len(list(filtered)) == 0:
-                LOG.debug("creating lambda function")
-                cls.lambda_client.create_function(
-                    FunctionName="test_lambda",
-                    Role=role["Role"]["Arn"],
-                    Runtime='python3.9',
-                    Handler='helloworld.handler',
-                    Code=dict(ZipFile=zipped_code),
-                    TracingConfig={'Mode': 'Active'}
-                )
+            LOG.debug("creating lambda function")
+            cls.lambda_client.create_function(
+                FunctionName=cls.lambda_function_name,
+                Role=role["Role"]["Arn"],
+                Runtime='python3.9',
+                Handler='helloworld.handler',
+                Code=dict(ZipFile=zipped_code),
+                TracingConfig={'Mode': 'Active'}
+            )
         except Exception as e:
             LOG.debug(e)
 
@@ -85,28 +61,24 @@ class TestZion_xray_tracing_lambda(TestCase):
     def tearDownClass(cls) -> None:
         LOG.debug("remove lambda function")
         cls.lambda_client.delete_function(
-            FunctionName="test_lambda"
+            FunctionName=cls.lambda_function_name
         )
-        LOG.debug("delete role")
-        cls.iam_client.delete_role(
-            RoleName="test_lambda_basic_execution"
-        )
-    
+
     def test_sampled_xray_trace_lambda(self):
         time.sleep(3)
         self.zion.patch_aws_client(self.lambda_client, 1)
         status = self.lambda_client.get_function(
-            FunctionName="test_lambda"
+            FunctionName=self.lambda_function_name
         )["Configuration"]["State"]
         LOG.debug(status)
         while status != "Active":
             time.sleep(1)
             status = self.lambda_client.get_function(
-            FunctionName="test_lambda"
+            FunctionName=self.lambda_function_name
             )
             LOG.debug(status)
         response = self.lambda_client.invoke(
-            FunctionName='test_lambda',
+            FunctionName=self.lambda_function_name,
             Payload='{ "key": "value" }'
         )
         LOG.debug(response)
@@ -119,17 +91,17 @@ class TestZion_xray_tracing_lambda(TestCase):
         time.sleep(3)
         self.zion.patch_aws_client(self.lambda_client, 0)
         status = self.lambda_client.get_function(
-            FunctionName="test_lambda"
+            FunctionName=self.lambda_function_name
         )["Configuration"]["State"]
         LOG.debug(status)
         while status != "Active":
             time.sleep(1)
             status = self.lambda_client.get_function(
-            FunctionName="test_lambda"
+            FunctionName=self.lambda_function_name
             )
             LOG.debug(status)
         response = self.lambda_client.invoke(
-            FunctionName='test_lambda',
+            FunctionName=self.lambda_function_name,
             Payload='{ "key": "value" }'
         )
         LOG.debug(response)
@@ -143,19 +115,7 @@ class TestZion_xray_tracing_sfn(TestCase):
     zion = Zion("region=us-east-1")
     sfn_client = boto3.client("stepfunctions")
     iam_client = boto3.client("iam")
-    role_policy = {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-            "Sid": "",
-            "Effect": "Allow",
-            "Principal": {
-                "Service": "states.amazonaws.com"
-            },
-            "Action": "sts:AssumeRole"
-            }
-        ]
-        }
+    sfn_machine_name = "test_xray_tracing_state_machine" + str(random.randrange(0,100000))
     definition = {
         "Comment": "A Hello World example of the Amazon States Language using Pass states",
         "StartAt": "Hello",
@@ -175,24 +135,17 @@ class TestZion_xray_tracing_sfn(TestCase):
     def get_state_machine_arn(self, sfn_client):
         response = sfn_client.list_state_machines()["stateMachines"]
         for sfn in response:
-            if sfn['name'] == "test_xray_tracing_state_machine":
+            if sfn['name'] == self.sfn_machine_name:
                 return sfn["stateMachineArn"]
     @classmethod
     def setUpClass(cls) -> None:
-        LOG.debug("creating resources")
-        try:
-            cls.iam_client.create_role(
-                RoleName="test_sfn_execution",
-                AssumeRolePolicyDocument=json.dumps(cls.role_policy),
-            )
-        except Exception as e:
-            LOG.debug(e)
+        LOG.debug("creating state machine")
         try:
             role = cls.iam_client.get_role(
-                RoleName="test_sfn_execution"
+                RoleName="xray-integration-role"
             )
             cls.sfn_client.create_state_machine(
-                name="test_xray_tracing_state_machine",
+                name=cls.sfn_machine_name,
                 roleArn=role["Role"]["Arn"],
                 definition=json.dumps(cls.definition),
                 tracingConfiguration={
@@ -207,10 +160,6 @@ class TestZion_xray_tracing_sfn(TestCase):
         LOG.debug("remove step functions state machine")
         cls.sfn_client.delete_state_machine(
             stateMachineArn=cls.get_state_machine_arn(cls, cls.sfn_client)
-        )
-        LOG.debug("delete role")
-        cls.iam_client.delete_role(
-            RoleName="test_sfn_execution"
         )
     
     def test_sampled_xray_trace_sfn(self):

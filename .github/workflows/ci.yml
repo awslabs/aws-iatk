@@ -125,10 +125,7 @@ jobs:
           pip install build
           make copy-service-source-for-sdist
           make init
-      
-      - name: Install Mockery
-        run: go install github.com/vektra/mockery/v2@v2.30.1
-
+          
       - name: Run unit test
         run: |
           cd python-client
