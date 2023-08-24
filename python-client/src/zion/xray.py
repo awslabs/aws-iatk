@@ -11,8 +11,8 @@ LOG = logging.getLogger(__name__)
 
 
 class ReferenceType(Enum):
-    parent = 1
-    child = 2
+    parent = "parent"
+    child = "child"
 
 
 @dataclass
@@ -503,7 +503,7 @@ class Trace:
         self.id = input_dict.get("id", "")
         self.duration = input_dict.get("duration", 0)
         self.limit_exceeded = input_dict.get("limit_exceeded", False)
-        self.segments = [Segment[s] for s in input_dict.get("segments", [])]
+        self.segments = [Segment(s) for s in input_dict.get("segments", [])]
 
     def __eq__(self, __value: "Trace") -> bool:
         return self.id == __value.id
@@ -533,6 +533,9 @@ class Tree:
         self.root = Segment(input_dict["root"])
         self.paths = [[Segment(s) for s in path] for path in input_dict["paths"]]
         self.source_trace = Trace(input_dict["source_trace"])
-        self.child_traces = {
-            cid: Trace(child) for cid, child in input_dict["child_traces"].items()
-        }
+        if input_dict.get("child_traces", {}):
+            self.child_traces = {
+                cid: Trace(child) for cid, child in input_dict.get("child_traces", {}).items()
+            }
+        else:
+            self.child_traces = {}
