@@ -6,18 +6,16 @@ package getstackoutputs_test
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"log"
 	"strings"
 	"testing"
-	"time"
+	cfn "zion/integration/cloudformation"
 	"zion/integration/zion"
 	"zion/internal/pkg/aws/config"
 	"zion/internal/pkg/jsonrpc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
-	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -49,66 +47,14 @@ func (s *GetStackOutputsSuite) setAWSConfig() {
 func (s *GetStackOutputsSuite) SetupSuite() {
 	s.setAWSConfig()
 	cfnClient := cloudformation.NewFromConfig(s.cfg)
-	templateString := `{"AWSTemplateFormatVersion": "2010-09-09","Description": "simple SQS template","Resources": {"SQSQueue":{"Type" : "AWS::SQS::Queue"}},"Outputs": {"QueueURL" : {"Description" : "URL of newly created SQS Queue","Value" : { "Ref" : "SQSQueue" }}, "QueueURLFromGetAtt": {"Description": "Queue URL", "Value": {"Fn::GetAtt": ["SQSQueue", "QueueUrl"]}}, "QueueArn": {"Description": "Queue ARN", "Value": {"Fn::GetAtt": ["SQSQueue", "Arn"]}}}}`
-
-	log.Printf("create stack %q", s.stackName)
-	cfnClient.CreateStack(context.TODO(), &cloudformation.CreateStackInput{
-		StackName:    aws.String(s.stackName),
-		TemplateBody: aws.String(templateString),
-	})
-
-	createRetryable := func(
-		ctx context.Context,
-		params *cloudformation.DescribeStacksInput,
-		output *cloudformation.DescribeStacksOutput,
-		err error,
-	) (bool, error) {
-		if output.Stacks != nil {
-			for _, stack := range output.Stacks {
-				switch stack.StackStatus {
-				case types.StackStatusCreateInProgress:
-					return true, nil
-				case types.StackStatusCreateFailed:
-					return false, errors.New(*stack.StackStatusReason)
-				case types.StackStatusCreateComplete:
-					return false, nil
-				default:
-					return false, nil
-				}
-			}
-		}
-		return false, err
-	}
-
-	maxWaitTime := 5 * time.Minute
-	waiter := cloudformation.NewStackCreateCompleteWaiter(cfnClient, func(o *cloudformation.StackCreateCompleteWaiterOptions) {
-		o.Retryable = createRetryable
-	})
-
-	waiter.Wait(context.TODO(), &cloudformation.DescribeStacksInput{
-		StackName: aws.String(s.stackName),
-	}, *aws.Duration(maxWaitTime))
-	log.Printf("completed create stack %q", s.stackName)
+	err := cfn.Deploy(s.T(), cfnClient, s.stackName, "./test_stack.json")
+	s.Require().NoErrorf(err, "failed to create stack")
 }
 
 func (s *GetStackOutputsSuite) TearDownSuite() {
 	cfnClient := cloudformation.NewFromConfig(s.cfg)
-
-	log.Printf("destroy stack %q", s.stackName)
-	cfnClient.DeleteStack(context.TODO(), &cloudformation.DeleteStackInput{
-		StackName: aws.String(s.stackName),
-	})
-
-	waiter := cloudformation.NewStackDeleteCompleteWaiter(cfnClient, func(options *cloudformation.StackDeleteCompleteWaiterOptions) {
-		options.LogWaitAttempts = false
-		options.MaxDelay = 40 * time.Second
-	})
-
-	maxWaitTime := 5 * time.Minute
-	waiter.Wait(context.TODO(), &cloudformation.DescribeStacksInput{
-		StackName: aws.String(s.stackName),
-	}, maxWaitTime)
-	log.Printf("completed destroy stack %q", s.stackName)
+	err := cfn.Destroy(s.T(), cfnClient, s.stackName)
+	s.Require().NoErrorf(err, "failed to destroy stack")
 }
 
 func (s *GetStackOutputsSuite) TestGetStackOutputs() {
