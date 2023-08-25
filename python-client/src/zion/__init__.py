@@ -7,7 +7,6 @@ import pathlib
 import json
 import boto3
 import logging
-from aws_xray_sdk.core.models.traceid import TraceId
 from dataclasses import dataclass
 from functools import wraps
 
