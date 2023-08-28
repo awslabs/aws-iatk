@@ -14,7 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 )
 
-func Deploy(t *testing.T, cfnClient *cloudformation.Client, stackName, templatePath string) error {
+func Deploy(t *testing.T, cfnClient *cloudformation.Client, stackName, templatePath string, capabilities []types.Capability) error {
 	absPath, err := filepath.Abs(templatePath)
 	if err != nil {
 		return fmt.Errorf("template path not valid or not exists: %w", err)
@@ -28,6 +28,7 @@ func Deploy(t *testing.T, cfnClient *cloudformation.Client, stackName, templateP
 	_, err = cfnClient.CreateStack(context.TODO(), &cloudformation.CreateStackInput{
 		StackName:    aws.String(stackName),
 		TemplateBody: aws.String(templateBody),
+		Capabilities: capabilities,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create stack: %w", err)
@@ -44,7 +45,7 @@ func Deploy(t *testing.T, cfnClient *cloudformation.Client, stackName, templateP
 				switch stack.StackStatus {
 				case types.StackStatusCreateInProgress:
 					return true, nil
-				case types.StackStatusCreateFailed:
+				case types.StackStatusCreateFailed, types.StackStatusRollbackComplete:
 					return false, errors.New(*stack.StackStatusReason)
 				case types.StackStatusCreateComplete:
 					return false, nil

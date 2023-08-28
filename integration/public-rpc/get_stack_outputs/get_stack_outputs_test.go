@@ -47,7 +47,7 @@ func (s *GetStackOutputsSuite) setAWSConfig() {
 func (s *GetStackOutputsSuite) SetupSuite() {
 	s.setAWSConfig()
 	cfnClient := cloudformation.NewFromConfig(s.cfg)
-	err := cfn.Deploy(s.T(), cfnClient, s.stackName, "./test_stack.json")
+	err := cfn.Deploy(s.T(), cfnClient, s.stackName, "./test_stack.json", nil)
 	s.Require().NoErrorf(err, "failed to create stack")
 }
 
