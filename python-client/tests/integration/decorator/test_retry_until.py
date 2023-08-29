@@ -23,19 +23,6 @@ class TestZion_retry_until_timeout(TestCase):
     lambda_client = boto3.client("lambda")
     iam_client = boto3.client("iam")
     lambda_function_name = "test_lambda" + str(random.randrange(0,100000))
-    role_policy = {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-        "Sid": "",
-        "Effect": "Allow",
-        "Principal": {
-            "Service": "lambda.amazonaws.com"
-        },
-        "Action": "sts:AssumeRole"
-        }
-    ]
-    }
 
     @classmethod
     def setUpClass(cls) -> None:
