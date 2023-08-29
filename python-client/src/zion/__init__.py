@@ -325,7 +325,22 @@ class Zion:
         LOG.debug(f"timeout after {params.timeout_seconds} seconds")
         LOG.debug("no matching event found")
         return False
-
+    
+    def retry_until(condition, timeout):
+        def retry_until_decorator(func):
+            def _wrapper(*args, **kwargs):
+                start = datetime.now()
+                elapsed = lambda _: (datetime.now() - start).total_seconds()
+                while elapsed(None) < timeout:
+                    output = func(*args, **kwargs)
+                    if condition(output):
+                        return True
+                LOG.debug(f"timeout after {timeout} seconds")
+                LOG.debug("condition not satisfied")
+                return False
+            return _wrapper
+        return retry_until_decorator
+    
     @log_duration
     def _popen_zion(self, input, env_vars):
         LOG.debug("calling zion rpc with input %s", input)
