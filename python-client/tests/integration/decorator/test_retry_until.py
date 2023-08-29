@@ -122,10 +122,10 @@ class TestZion_retry_until_timeout(TestCase):
     
     def test_lambda_status_failed_timeout(self):
         start = time.time()
-        def is_active(response: any) -> bool:
+        def is_failed(response: any) -> bool:
             self.status = response["Configuration"]["State"]
             return response["Configuration"]["State"] == "Failed"
-        @self.zion.retry_until(condition=is_active, timeout=5)
+        @self.zion.retry_until(condition=is_failed, timeout=5)
         def get_lambda():
             return self.lambda_client.get_function(
             FunctionName=self.lambda_function_name
