@@ -63,9 +63,8 @@ class TestZion_xray_tracing_lambda(TestCase):
         cls.lambda_client.delete_function(
             FunctionName=cls.lambda_function_name
         )
-
+    @pytest.mark.timeout(timeout=1000, method="thread")
     def test_sampled_xray_trace_lambda(self):
-        time.sleep(3)
         self.zion.patch_aws_client(self.lambda_client, 1)
         status = self.lambda_client.get_function(
             FunctionName=self.lambda_function_name
@@ -75,7 +74,7 @@ class TestZion_xray_tracing_lambda(TestCase):
             time.sleep(1)
             status = self.lambda_client.get_function(
             FunctionName=self.lambda_function_name
-            )
+            )["Configuration"]["State"]
             LOG.debug(status)
         response = self.lambda_client.invoke(
             FunctionName=self.lambda_function_name,
@@ -87,8 +86,8 @@ class TestZion_xray_tracing_lambda(TestCase):
         sampled_string = trace_id.split(";")[1]
         self.assertEqual(sampled_string[len(sampled_string) - 1],"1")
 
+    @pytest.mark.timeout(timeout=1000, method="thread")
     def test_unsampled_xray_trace_lambda(self):
-        time.sleep(3)
         self.zion.patch_aws_client(self.lambda_client, 0)
         status = self.lambda_client.get_function(
             FunctionName=self.lambda_function_name
@@ -98,7 +97,7 @@ class TestZion_xray_tracing_lambda(TestCase):
             time.sleep(1)
             status = self.lambda_client.get_function(
             FunctionName=self.lambda_function_name
-            )
+            )["Configuration"]["State"]
             LOG.debug(status)
         response = self.lambda_client.invoke(
             FunctionName=self.lambda_function_name,
