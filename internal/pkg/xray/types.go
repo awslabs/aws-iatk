@@ -1,5 +1,10 @@
 package xray
 
+import (
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/xray"
+)
+
 type Trace struct {
 	Id            *string    `json:"id"`
 	Duration      *float64   `json:"duration"`
@@ -139,4 +144,25 @@ type Tree struct {
 type TraceTreeNode struct {
 	SegmentObject *Segment
 	Children      []*TraceTreeNode
+}
+
+type treeOptions struct {
+	// aws clients
+	xrayClient xrayClient
+
+	// funcs
+	getTraces getTracesFunc
+}
+
+func NewTreeOptions(cfg aws.Config) treeOptions {
+	return treeOptions{
+		xrayClient: xray.NewFromConfig(cfg),
+
+		getTraces: GetTraces,
+	}
+}
+
+//go:generate mockery --name xrayClient
+type xrayClient interface {
+	BatchGetTracesAPI
 }

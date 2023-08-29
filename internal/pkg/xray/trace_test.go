@@ -81,7 +81,7 @@ func TestTraceFromApiResponseFailure(t *testing.T) {
 	}
 }
 
-func TestGet(t *testing.T) {
+func TestGetTraces(t *testing.T) {
 	cases := map[string]struct {
 		mockBatchGetTracesAPI func(ctx context.Context, traceIds []string) *MockBatchGetTracesAPI
 		traceIds              []string
@@ -218,7 +218,7 @@ func TestGet(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.TODO()
 			mockAPI := tt.mockBatchGetTracesAPI(ctx, tt.traceIds)
-			traceMap, err := Get(ctx, mockAPI, tt.traceIds)
+			traceMap, err := GetTraces(ctx, mockAPI, tt.traceIds)
 			if tt.expectErr != nil {
 				assert.EqualError(t, err, tt.expectErr.Error())
 			} else {

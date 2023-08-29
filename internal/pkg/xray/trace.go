@@ -27,7 +27,7 @@ func TraceFromApiResponse(trace *types.Trace) (*Trace, error) {
 	}, nil
 }
 
-func Get(ctx context.Context, api BatchGetTracesAPI, traceIds []string) (map[string]*Trace, error) {
+func GetTraces(ctx context.Context, api BatchGetTracesAPI, traceIds []string) (map[string]*Trace, error) {
 	input := &xray.BatchGetTracesInput{
 		TraceIds: traceIds,
 	}
@@ -71,3 +71,6 @@ func Get(ctx context.Context, api BatchGetTracesAPI, traceIds []string) (map[str
 type BatchGetTracesAPI interface {
 	BatchGetTraces(context.Context, *xray.BatchGetTracesInput, ...func(*xray.Options)) (*xray.BatchGetTracesOutput, error)
 }
+
+//go:generate mockery --name getTracesFunc
+type getTracesFunc func(ctx context.Context, api BatchGetTracesAPI, traceIds []string) (map[string]*Trace, error)

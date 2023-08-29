@@ -8,22 +8,20 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 )
 
-func NewTree(ctx context.Context, api BatchGetTracesAPI, sourceTraceId string, fetchChildLinkedTraces bool) (*Tree, error) {
+func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string, fetchChildLinkedTraces bool) (*Tree, error) {
 
 	// Fetch input source trace.
-	traceMap, err := Get(ctx, api, []string{sourceTraceId})
-
-	trace := traceMap[sourceTraceId]
+	traceMap, err := opts.getTraces(ctx, opts.xrayClient, []string{sourceTraceId})
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch trace %s with error: %v", sourceTraceId, err)
 	}
 
-	// Check if this is even possible or would this return an error
+	trace := traceMap[sourceTraceId]
+
+	// If the trace returns 0 segments, raise an error
 	if len(trace.Segments) == 0 {
-		return &Tree{
-			SourceTrace: trace,
-		}, nil
+		return nil, fmt.Errorf("failed to fetch trace %s with error: no trace segments found", sourceTraceId)
 	}
 
 	// Sort the segments by starttime before creating a tree
@@ -32,11 +30,11 @@ func NewTree(ctx context.Context, api BatchGetTracesAPI, sourceTraceId string, f
 			return aws.ToFloat64(trace.Segments[i].StartTime) < aws.ToFloat64(trace.Segments[j].StartTime)
 		})
 
-	// First segment is assumed to be root
+	// First segment is the root
 	traceTreeRoot := InsertTraceTreeNode(nil, trace.Segments[0])
 
-	// Insert original trace segments
-	for _, segment := range trace.Segments {
+	// Insert original trace segments, skip the root segment
+	for _, segment := range trace.Segments[1:] {
 		treeNodeInserted := InsertTraceTreeNode(traceTreeRoot, segment)
 
 		if treeNodeInserted == nil {
@@ -49,9 +47,8 @@ func NewTree(ctx context.Context, api BatchGetTracesAPI, sourceTraceId string, f
 	// TODO: Insert child traces segments into the tree if fetchChildLinkedTraces = true
 
 	// Find all the leaf nodes and their complete paths using DFS algorithm
-	var leafPaths [][]*Segment
 	var singlePath []*Segment
-	leafPaths = FindLeafSegmentPaths(traceTreeRoot, singlePath)
+	leafPaths := FindLeafSegmentPaths(traceTreeRoot, singlePath)
 
 	return &Tree{
 		Root:        traceTreeRoot.SegmentObject,
@@ -85,7 +82,7 @@ func InsertTraceTreeNode(rootTreeNode *TraceTreeNode, newSegment *Segment) *Trac
 		}
 	}
 
-	// If none of the children are parents of the new segment, return nil
+	// If none of the Segment Nodes are parents of the new segment, return nil
 	return nil
 }
 
