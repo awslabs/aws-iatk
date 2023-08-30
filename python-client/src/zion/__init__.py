@@ -504,8 +504,17 @@ class Zion:
 
         
     def retry_fetch_trace_until(self, params: RetryFetchXRayTraceUntilParams):
+        xray_client = boto3.client("xray")
         @self.retry_until(condition=params.condition, timeout=params.timeout_seconds)
-        def test():
+        def fetch_trace_id():
+            response = xray_client.batch_get_traces(TraceIds=[params.trace_id])
+            return response["Traces"][0]
+        try:
+            response = fetch_trace_id()
+        except Exception as e:
+            LOG.debug(e)
+            return False
+        return response
 
 
 # Set up logging to ``/dev/null`` like a library is supposed to.

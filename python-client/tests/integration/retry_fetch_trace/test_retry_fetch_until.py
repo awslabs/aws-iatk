@@ -13,6 +13,10 @@ import zion
 import os
 import pytest
 import json
+from ....src.zion.retry_xray_trace import (
+    RetryFetchXRayTraceUntilParams,
+)
+
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
 boto3.set_stream_logger(name="zion", level=logging.DEBUG)
@@ -66,6 +70,8 @@ class TestZion_retry_fetch_until(TestCase):
         )
 
     def test_get_traces(self):
+        def trace_is
+        params = RetryFetchXRayTraceUntilParams(trace_id=self.xray_trace_id)
         time.sleep(3)
         print(self.xray_trace_id)
         response = self.xray_client.batch_get_traces(TraceIds=[self.xray_trace_id])

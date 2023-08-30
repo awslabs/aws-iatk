@@ -17,7 +17,7 @@ class RetryFetchXRayTraceUntilParams:
 
     Parameters
     ----------
-    treace_id:
+    trace_id:
         Id of the x-ray trace
     condition : Callable[[str], bool]
         Callable fuction that takes a str and returns a bool
