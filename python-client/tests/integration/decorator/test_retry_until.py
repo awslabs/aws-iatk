@@ -33,7 +33,6 @@ class TestZion_retry_until_timeout(TestCase):
             test_lambda_path = os.path.join(current_dir, "testdata","helloworld.zip")
             with open(test_lambda_path, "rb") as f:
                 zipped_code = f.read()
-            time.sleep(10)
             role = cls.iam_client.get_role(
                 RoleName="xray-integration-role"
                 )
