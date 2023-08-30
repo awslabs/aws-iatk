@@ -34,9 +34,10 @@ class RetryFetchXRayTraceUntilParams:
         condition: Callable[[str], bool],
         timeout_seconds: int = 30,
     ):
-        if timeout_seconds <= 0 or timeout_seconds > 999:
-            raise InvalidParamException("timeout_seconds must be between 1 and 999")
-
+        if timeout_seconds < 0 or timeout_seconds > 999:
+            raise InvalidParamException("timeout_seconds must be between 0 and 999")
+        if not isinstance(trace_id, str):
+            raise InvalidParamException("traceID must be in a form of a string")
         self.condition = condition
         self.timeout_seconds = timeout_seconds
         self.trace_id = trace_id
