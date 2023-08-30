@@ -5,6 +5,7 @@ from subprocess import Popen, PIPE
 from datetime import datetime
 import pathlib
 import json
+import boto3
 import logging
 from dataclasses import dataclass
 from functools import wraps
@@ -325,6 +326,7 @@ class Zion:
         LOG.debug(f"timeout after {params.timeout_seconds} seconds")
         LOG.debug("no matching event found")
         return False
+
     
     def retry_until(condition, timeout = 10):
         if(not(isinstance(timeout, int) or  isinstance(timeout, float))):
@@ -349,6 +351,38 @@ class Zion:
             return _wrapper
         return retry_until_decorator
     
+        
+    def patch_aws_client(self, client: boto3.client, sampled = 1) -> boto3.client:
+        """
+        Patches boto3 client to register event to include generated x-ray trace id and sampling rule as part of request header before invoke/execution
+
+         Parameters
+        ----------
+        params : client
+            boto3.client for specified aws service
+               : sampled
+            int, value 0 or 1 to select if trace has been sampled or not
+            
+        
+        Returns
+        -------
+        boto3.client
+            same client passed in the params with the event registered
+        """
+        def _add_header(request, **kwargs):
+            trace_id_string= 'Root=;Sampled={}'.format(sampled)
+            
+            request.headers.add_header('X-Amzn-Trace-Id', trace_id_string)
+            LOG.debug(f"Trace ID format: {trace_id_string}")
+
+        service_name = client.meta.service_model.service_name
+        event_string = 'before-sign.{}.*'
+        LOG.debug(f"service id: {client.meta.service_model.service_id}, service name: {service_name}")
+        
+        client.meta.events.register(event_string.format(service_name), _add_header)
+        
+        return client
+
     @log_duration
     def _popen_zion(self, input, env_vars):
         LOG.debug("calling zion rpc with input %s", input)
