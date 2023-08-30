@@ -326,7 +326,33 @@ class Zion:
         LOG.debug("no matching event found")
         return False
     
-    def retry_until(condition, timeout = 10):
+    def retry_until(self, condition, timeout = 10):
+        """
+        Decorator function to retry until condition or timeout is met
+
+        IAM Permissions Needed
+        ----------------------
+        
+        Parameters
+        ----------
+        condition: Callable[[any], bool]
+        Callable fuction that takes any type and returns a bool
+
+        timeout: int or float
+        value that specifies how long the function will retry for until it times out
+        
+        Returns
+        -------
+        bool
+            True if the condition was met or false if the timeout is met
+
+        Raises
+        ------
+        ValueException
+            When timeout is a negative number
+        TypeException
+            When timeout or condition is not a suitable type
+        """
         if(not(isinstance(timeout, int) or  isinstance(timeout, float))):
             raise TypeError("timeout must be an int or float")
         elif(timeout < 0):

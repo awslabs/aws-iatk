@@ -17,7 +17,7 @@ LOG.setLevel(logging.DEBUG)
 boto3.set_stream_logger(name="zion", level=logging.DEBUG)
 
 class TestZion_retry_until_timeout(TestCase):
-    zion = zion.Zion
+    zion = zion.Zion()
     num = 0
     status = ""
     lambda_client = boto3.client("lambda")
