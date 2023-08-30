@@ -182,8 +182,9 @@ class TestZion_retry_until_timeout(TestCase):
         self.assertGreater(self.num, 0)
         self.assertFalse(response)
         self.assertGreaterEqual(end - start, 5)
-    
-    def test_lambda_status_active(self):
+        
+    #labeling below test cases a to run first so it can run while lambda is deploying, guaranteeing looping 
+    def test_a_lambda_status_active(self):
         def is_active(response: any) -> bool:
             self.status = response["Configuration"]["State"]
             return response["Configuration"]["State"] == "Active"
@@ -196,7 +197,7 @@ class TestZion_retry_until_timeout(TestCase):
         self.assertTrue(response)
         self.assertEqual(self.status, "Active")
     
-    def test_lambda_status_failed_timeout(self):
+    def test_a_lambda_status_failed_timeout(self):
         start = time.time()
         def is_failed(response: any) -> bool:
             self.status = response["Configuration"]["State"]
