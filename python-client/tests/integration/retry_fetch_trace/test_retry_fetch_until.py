@@ -13,15 +13,14 @@ import zion
 import os
 import pytest
 import json
-from ....src.zion.retry_xray_trace import (
-    RetryFetchXRayTraceUntilParams,
-)
+from zion import RetryFetchXRayTraceUntilParams
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
 boto3.set_stream_logger(name="zion", level=logging.DEBUG)
 
 class TestZion_retry_fetch_until(TestCase):
+    counter = 0
     xray_trace_id = ""
     zion = zion.Zion()
     lambda_client = boto3.client("lambda")
@@ -39,7 +38,6 @@ class TestZion_retry_fetch_until(TestCase):
             test_lambda_path = os.path.join(current_dir, "testdata","helloworld.zip")
             with open(test_lambda_path, "rb") as f:
                 zipped_code = f.read()
-            time.sleep(10)
             role = cls.iam_client.get_role(
                 RoleName="xray-integration-role"
                 )
@@ -69,11 +67,30 @@ class TestZion_retry_fetch_until(TestCase):
             FunctionName=cls.lambda_function_name
         )
 
-    def test_get_traces(self):
-        def trace_is
-        params = RetryFetchXRayTraceUntilParams(trace_id=self.xray_trace_id)
-        time.sleep(3)
-        print(self.xray_trace_id)
-        response = self.xray_client.batch_get_traces(TraceIds=[self.xray_trace_id])
-        print(json.dumps(response, indent=2))
+    def test_get_traces_pass(self):
+        time.sleep(5)
+        def num_is_10(trace):
+            self.counter = self.counter + 1
+            return random.randrange(0,11) == 10
+        params = RetryFetchXRayTraceUntilParams(
+            trace_id=self.xray_trace_id,
+            condition=num_is_10,
+            timeout_seconds=10)
+        response = self.zion.retry_fetch_trace_until(params=params)
+        print(self.counter)
+        print(response)
+        self.assertEqual(0,1)
+    
+    def test_get_traces_fail(self):
+        time.sleep(5)
+        def num_is_10(trace):
+            self.counter = self.counter + 1
+            return random.randrange(0,10) == 10
+        params = RetryFetchXRayTraceUntilParams(
+            trace_id=self.xray_trace_id,
+            condition=num_is_10,
+            timeout_seconds=10)
+        response = self.zion.retry_fetch_trace_until(params=params)
+        print(self.counter)
+        print(response)
         self.assertEqual(0,1)
