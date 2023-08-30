@@ -11,7 +11,7 @@ import boto3
 import random
 import zion
 import os
-
+import pytest
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
 boto3.set_stream_logger(name="zion", level=logging.DEBUG)
@@ -56,6 +56,83 @@ class TestZion_retry_until_timeout(TestCase):
         cls.lambda_client.delete_function(
             FunctionName=cls.lambda_function_name
         )
+
+    def test_retry_timeout_is_default_fail(self):
+        def num_is_ten(val):
+            return val == 10
+        @self.zion.retry_until(condition=num_is_ten)
+        def num_add_one_slow():
+            time.sleep(1.5)
+            self.num = self.num + 1
+            return self.num
+        start = time.time()
+        response = num_add_one_slow()
+        end = time.time()
+        self.assertGreater(end - start, 10)
+        self.assertNotEqual(self.num, 10)
+        self.assertFalse(response)
+
+    def test_retry_timeout_is_default_pass(self):
+        def num_is_ten(val):
+            return val == 10
+        @self.zion.retry_until(condition=num_is_ten)
+        def num_add_one_slow():
+            time.sleep(0.5)
+            self.num = self.num + 1
+            return self.num
+        start = time.time()
+        response = num_add_one_slow()
+        end = time.time()
+        self.assertLess(end - start, 10)
+        self.assertEqual(self.num, 10)
+        self.assertTrue(response)
+
+    @pytest.mark.timeout(timeout=2500, method="thread")
+    def test_retry_timeout_is_infinite(self):
+        def num_is_ten(val):
+            return val == 10
+        @self.zion.retry_until(condition=num_is_ten, timeout=0)
+        def num_add_one_slow():
+            time.sleep(2)
+            self.num = self.num + 1
+            return self.num
+        start = time.time()
+        response = num_add_one_slow()
+        end = time.time()
+        self.assertGreater(end - start, 10)
+        self.assertEqual(self.num, 10)
+        self.assertTrue(response)
+
+    def test_retry_condition_not_function_error(self):
+        with pytest.raises(TypeError) as e:  
+            @self.zion.retry_until(condition=0, timeout=5)
+            def num_add_one():
+                self.num = self.num + 1
+                return self.num 
+            num_add_one()
+            self.assertEqual(e, "condition is not a callable function")
+    
+    def test_retry_timeout_wrong_type_error(self):
+        def num_is_ten(val):
+            return val == 10
+        with pytest.raises(TypeError) as e:  
+            @self.zion.retry_until(condition=num_is_ten, timeout="test")
+            def num_add_one():
+                self.num = self.num + 1
+                return self.num 
+            num_add_one()
+            self.assertEqual(e, "timeout must be an int or float")
+
+    def test_retry_timeout_less_than_zero_error(self):
+        def num_is_ten(val):
+            return val == 10
+        with pytest.raises(ValueError) as e:  
+            @self.zion.retry_until(condition=num_is_ten, timeout=-1)
+            def num_add_one():
+                self.num = self.num + 1
+                return self.num 
+            num_add_one()
+            self.assertEqual(e, "timeout must not be a negative value")
 
     def test_retry_should_pass(self):
         def num_is_ten(val):

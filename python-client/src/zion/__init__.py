@@ -326,11 +326,19 @@ class Zion:
         LOG.debug("no matching event found")
         return False
     
-    def retry_until(condition, timeout):
+    def retry_until(condition, timeout = 10):
+        if(not(isinstance(timeout, int) or  isinstance(timeout, float))):
+            raise TypeError("timeout must be an int or float")
+        elif(timeout < 0):
+            raise ValueError("timeout must not be a negative value")
+        if(not callable(condition)):
+            raise TypeError("condition is not a callable function")
         def retry_until_decorator(func):
             def _wrapper(*args, **kwargs):
                 start = datetime.now()
                 elapsed = lambda _: (datetime.now() - start).total_seconds()
+                if timeout == 0:
+                    elapsed = lambda _: -1
                 while elapsed(None) < timeout:
                     output = func(*args, **kwargs)
                     if condition(output):
