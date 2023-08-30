@@ -362,6 +362,7 @@ class Zion:
         if(not callable(condition)):
             raise TypeError("condition is not a callable function")
         def retry_until_decorator(func):
+            @wraps(func)
             def _wrapper(*args, **kwargs):
                 start = datetime.now()
                 elapsed = lambda _: (datetime.now() - start).total_seconds()
