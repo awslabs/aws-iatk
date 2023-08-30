@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/eventbridge v1.18.3
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.39.5
 	github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.14.7
+	github.com/aws/aws-sdk-go-v2/service/sfn v1.19.5
 	github.com/aws/aws-sdk-go-v2/service/sns v1.20.14
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.20.2
 	github.com/aws/aws-sdk-go-v2/service/xray v1.17.2

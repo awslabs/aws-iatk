@@ -19,7 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
-	"github.com/aws/aws-sdk-go-v2/service/stepfunctions"
+	"github.com/aws/aws-sdk-go-v2/service/sfn"
 	"github.com/rs/xid"
 	"github.com/stretchr/testify/suite"
 )
@@ -48,7 +48,7 @@ type GetTraceTreeSuite struct {
 
 	cfnClient    *cloudformation.Client
 	lambdaClient *lambda.Client
-	sfnClient    *stepfunctions.Client
+	sfnClient    *sfn.Client
 
 	producerFunctionName string
 	stateMachineArn      string
@@ -102,7 +102,7 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 			testname: "invoke lambda and fetch child traces",
 			invoke: func(t *testing.T) string {
 				t.Logf("invoke lambda function %q", s.producerFunctionName)
-				out, err := s.lambdaClient.Invoke(context.TODO(), &lambda.InvokeInput{
+				_, err := s.lambdaClient.Invoke(context.TODO(), &lambda.InvokeInput{
 					FunctionName: aws.String(s.producerFunctionName),
 					Payload:      []byte("{}"),
 				})
@@ -122,7 +122,7 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 			testname: "invoke lambda and do not fetch child traces",
 			invoke: func(t *testing.T) string {
 				t.Logf("invoke lambda function %q", s.producerFunctionName)
-				out, err := s.lambdaClient.Invoke(context.TODO(), &lambda.InvokeInput{
+				_, err := s.lambdaClient.Invoke(context.TODO(), &lambda.InvokeInput{
 					FunctionName: aws.String(s.producerFunctionName),
 					Payload:      []byte("{}"),
 				})
