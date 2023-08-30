@@ -338,7 +338,7 @@ class Zion:
         Parameters
         ----------
         condition: Callable[[any], bool]
-        Callable fuction that takes any type and returns a bool
+        Callable function that takes any type and returns a bool
 
         timeout: int or float
         value that specifies how long the function will retry for until it times out
