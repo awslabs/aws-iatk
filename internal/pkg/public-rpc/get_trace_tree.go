@@ -15,10 +15,9 @@ import (
 )
 
 type GetTraceTreeParams struct {
-	TracingHeader          string `json:"TracingHeader"`
-	FetchChildLinkedTraces bool   `json:"FetchChildLinkedTraces,omitempty"`
-	Profile                string `json:"Profile,omitempty"`
-	Region                 string `json:"Region,omitempty"`
+	TracingHeader string `json:"TracingHeader"`
+	Profile       string `json:"Profile,omitempty"`
+	Region        string `json:"Region,omitempty"`
 }
 
 func (p *GetTraceTreeParams) RPCMethod() (*types.Result, error) {
@@ -42,7 +41,7 @@ func (p *GetTraceTreeParams) RPCMethod() (*types.Result, error) {
 
 	xrayClient := xray.NewFromConfig(cfg)
 
-	traceTree, err := zionxray.NewTree(ctx, xrayClient, *traceId, p.FetchChildLinkedTraces)
+	traceTree, err := zionxray.NewTree(ctx, xrayClient, *traceId)
 
 	return &types.Result{
 		Output: traceTree,
