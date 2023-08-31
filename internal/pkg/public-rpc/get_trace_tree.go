@@ -48,19 +48,17 @@ func (p *GetTraceTreeParams) RPCMethod() (*types.Result, error) {
 	}, err
 }
 
+// Folows the logic set in the sdk https://github.com/aws/aws-xray-sdk-python/blob/master/aws_xray_sdk/core/models/trace_header.py
 func getTracIdFromTracingHeader(tracingHeader string) (*string, error) {
 
 	splitHeader := strings.Split(tracingHeader, ";")
-	if len(splitHeader) < 2 {
-		return nil, errors.New(`invalid tracing header provided`)
+	for _, headerComponent := range splitHeader {
+		splitComponent := strings.Split(headerComponent, "=")
+		if splitComponent[0] == "Root" {
+			return &splitComponent[1], nil
+		}
 	}
-	root := splitHeader[0]
-	splitRoot := strings.Split(root, "=")
-	if len(splitHeader) != 2 {
-		return nil, errors.New(`root not found in tracing header`)
-	}
-
-	return &splitRoot[1], nil
+	return nil, errors.New(`invalid tracing header provided`)
 
 }
 
