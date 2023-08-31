@@ -130,13 +130,7 @@ type LinkAttributes struct {
 }
 
 type Tree struct {
-	Root        *Segment          `json:"root"`
-	Paths       [][]*Segment      `json:"paths"`
-	SourceTrace *Trace            `json:"source_trace"`
-	ChildTraces map[string]*Trace `json:"child_traces"`
-}
-
-type TraceTreeNode struct {
-	SegmentObject *Segment
-	Children      []*TraceTreeNode
+	Root        *Segment     `json:"root"`
+	Paths       [][]*Segment `json:"paths"`
+	SourceTrace *Trace       `json:"source_trace"`
 }

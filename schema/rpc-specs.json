@@ -60,7 +60,7 @@
                     "Region": {
                         "type": "string"
                     },
-                    "TraceId": {
+                    "TracingHeader": {
                         "type": "string"
                     }
                 }
@@ -68,9 +68,6 @@
             "returns": {
                 "type": "object",
                 "properties": {
-                    "child_traces": {
-                        "type": "object"
-                    },
                     "paths": {
                         "type": "array",
                         "items": {

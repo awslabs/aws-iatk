@@ -522,17 +522,11 @@ class Tree:
         List of List of Segments for all paths from Root Segment to each Leaf Segment
     source_trace : Trace
         The Trace containing the Root Segment
-    child_traces: Dict[str, Trace]
-        Map of child Trace ID to child Trace
     """
     root: Segment
     paths: List[List[Segment]]
     source_trace: Trace
-    child_traces: Dict[str, Trace]
     def __init__(self, input_dict: dict):
         self.root = Segment(input_dict["root"])
         self.paths = [[Segment(s) for s in path] for path in input_dict["paths"]]
         self.source_trace = Trace(input_dict["source_trace"])
-        self.child_traces = {
-            cid: Trace(child) for cid, child in input_dict.get("child_traces", {}).items()
-        } if input_dict.get("child_traces") else {}

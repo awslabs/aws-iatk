@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"zion/internal/pkg/aws/config"
 	"zion/internal/pkg/public-rpc/types"
@@ -14,7 +15,7 @@ import (
 )
 
 type GetTraceTreeParams struct {
-	TracingHeader                string `json:"TracingHeader"`
+	TracingHeader          string `json:"TracingHeader"`
 	FetchChildLinkedTraces bool   `json:"FetchChildLinkedTraces,omitempty"`
 	Profile                string `json:"Profile,omitempty"`
 	Region                 string `json:"Region,omitempty"`
@@ -22,8 +23,14 @@ type GetTraceTreeParams struct {
 
 func (p *GetTraceTreeParams) RPCMethod() (*types.Result, error) {
 
-	if p.TraceId == "" {
+	if p.TracingHeader == "" {
 		return nil, errors.New(`missing required param "TraceId"`)
+	}
+
+	traceId, err := getTracIdFromTracingHeader(p.TracingHeader)
+
+	if err != nil {
+		return nil, fmt.Errorf("error while getting trace_id from the tracing header: %v", err)
 	}
 
 	ctx := context.TODO()
@@ -35,11 +42,27 @@ func (p *GetTraceTreeParams) RPCMethod() (*types.Result, error) {
 
 	xrayClient := xray.NewFromConfig(cfg)
 
-	traceTree, err := zionxray.NewTree(ctx, xrayClient, p.TraceId, p.FetchChildLinkedTraces)
+	traceTree, err := zionxray.NewTree(ctx, xrayClient, *traceId, p.FetchChildLinkedTraces)
 
 	return &types.Result{
 		Output: traceTree,
 	}, err
+}
+
+func getTracIdFromTracingHeader(tracingHeader string) (*string, error) {
+
+	splitHeader := strings.Split(tracingHeader, ";")
+	if len(splitHeader) < 2 {
+		return nil, errors.New(`invalid tracing header provided`)
+	}
+	root := splitHeader[0]
+	splitRoot := strings.Split(root, "=")
+	if len(splitHeader) != 2 {
+		return nil, errors.New(`root not found in tracing header`)
+	}
+
+	return &splitRoot[1], nil
+
 }
 
 func (p *GetTraceTreeParams) ReflectOutput() reflect.Value {

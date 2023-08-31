@@ -36,13 +36,10 @@ class GetTraceTreeParams:
 
     Parameters
     ----------
-    trace_id : str
-        Trace id to get the trace tree
-    fetch_child_linked_traces : bool, optional
-        Boolean to include child linked traces
+    tracing_header : str
+        Trace header to get the trace tree
     """
     tracing_header: str
-    fetch_child_linked_traces: bool=False
     _rpc_method: str = "get_trace_tree"
 
     def jsonrpc_dumps(self, region, profile):
@@ -53,7 +50,6 @@ class GetTraceTreeParams:
             "params": {},
         }
         jsonrpc_data["params"]["TracingHeader"] = self.tracing_header
-        jsonrpc_data["params"]["FetchChildLinkedTraces"] = self.fetch_child_linked_traces
         if region:
             jsonrpc_data["params"]["Region"] = region
         if profile:

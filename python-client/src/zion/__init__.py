@@ -338,7 +338,7 @@ class Zion:
         self, params: GetTraceTreeParams
     ) -> GetTraceTreeOutput:
         """
-        Fetch the trace tree structure of the provided trace_id
+        Fetch the trace tree structure using the provided tracing_header
 
         Parameters
         ----------
