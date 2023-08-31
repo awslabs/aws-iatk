@@ -23,7 +23,7 @@ boto3.set_stream_logger(name="zion", level=logging.DEBUG)
 class TestZion_retry_fetch_until(TestCase):
     counter = 0
     xray_trace_id = ""
-    dummy_trace_Id = TraceId().to_id()
+    dummy_trace_id = TraceId().to_id()
     zion = zion.Zion()
     lambda_client = boto3.client("lambda")
     iam_client = boto3.client("iam")
@@ -103,18 +103,52 @@ class TestZion_retry_fetch_until(TestCase):
     #     self.assertNotEqual(self.counter, 10)
     #     self.assertGreater(end - start, 10)
 
+    # def test_unsampled_traceid_fail(self):
+    #     def num_is_10(trace):
+    #         self.counter = random.randrange(0,10)
+    #         return self.counter == 10
+    #     params = RetryFetchXRayTraceUntilParams(
+    #         trace_id=self.dummy_trace_id,
+    #         condition=num_is_10,
+    #         timeout_seconds=10)
+    #     start = time.time()
+    #     with pytest.raises(IndexError) as e:  
+    #         self.zion.retry_fetch_trace_until(params=params)
+    #         end = time.time()
+    #         self.assertNotEqual(self.counter, 10)
+    #         self.assertGreater(end - start, 10)
+    #         self.assertEqual(e, "trace id must be sampled and exist on aws")
+
+    # @pytest.mark.timeout(timeout=2500, method="thread")
+    # def test_get_traces_infinite_timeout_pass(self):
+    #     time.sleep(5)
+    #     def num_is_10(trace):
+    #         time.sleep(1.5)
+    #         self.counter += 1
+    #         return self.counter == 10
+    #     params = RetryFetchXRayTraceUntilParams(
+    #         trace_id=self.xray_trace_id,
+    #         condition=num_is_10,
+    #         timeout_seconds=0)
+    #     start = time.time()
+    #     response = self.zion.retry_fetch_trace_until(params=params)
+    #     end = time.time()
+    #     self.assertTrue(response)
+    #     self.assertEqual(self.counter, 10)
+    #     self.assertGreater(end - start, 15)
+
     def test_invalid_traceid_fail(self):
         def num_is_10(trace):
             self.counter = random.randrange(0,10)
             return self.counter == 10
         params = RetryFetchXRayTraceUntilParams(
-            trace_id=self.dummy_trace_Id,
+            trace_id="test",
             condition=num_is_10,
             timeout_seconds=10)
         start = time.time()
-        response = self.zion.retry_fetch_trace_until(params=params)
-        print(response)
-        end = time.time()
-        self.assertFalse(response)
-        self.assertNotEqual(self.counter, 10)
-        self.assertGreater(end - start, 10)
+        with pytest.raises(IndexError) as e:  
+            self.zion.retry_fetch_trace_until(params=params)
+            end = time.time()
+            self.assertNotEqual(self.counter, 10)
+            self.assertGreater(end - start, 10)
+            self.assertEqual(e, "trace id must be sampled and exist on aws")

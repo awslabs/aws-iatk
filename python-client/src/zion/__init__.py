@@ -511,9 +511,9 @@ class Zion:
             return response["Traces"][0]
         try:
             response = fetch_trace_id()
-        except Exception as e:
+        except IndexError as e:
             LOG.debug(e)
-            return False
+            raise IndexError("trace id must be sampled and exist on aws")
         return response
 
 
