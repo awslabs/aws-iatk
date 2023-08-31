@@ -52,7 +52,7 @@ class GetTraceTreeParams:
             "method": self._rpc_method,
             "params": {},
         }
-        jsonrpc_data["params"]["TraceId"] = self.trace_id
+        jsonrpc_data["params"]["TracingHeader"] = self.tracing_header
         jsonrpc_data["params"]["FetchChildLinkedTraces"] = self.fetch_child_linked_traces
         if region:
             jsonrpc_data["params"]["Region"] = region
