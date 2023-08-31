@@ -34,6 +34,10 @@ from .poll_events import (
     PollEventsParams,
     WaitUntilEventMatchedParams,
 )
+from .get_trace_tree import (
+    GetTraceTreeOutput,
+    GetTraceTreeParams
+)
 
 __all__ = [
     "Zion", 
@@ -49,7 +53,9 @@ __all__ = [
     "RemoveListeners_TagFilter",
     "PollEventsOutput",
     "PollEventsParams",
-    "WaitUntilEventMatchedParams"]
+    "WaitUntilEventMatchedParams",
+    "GetTraceTreeParams",
+    "GetTraceTreeOutput"]
 
 LOG = logging.getLogger(__name__)
 zion_service_logger = logging.getLogger("zion.service")
@@ -329,6 +335,37 @@ class Zion:
         LOG.debug("no matching event found")
         return False
 
+      
+    def get_trace_tree(
+        self, params: GetTraceTreeParams
+    ) -> GetTraceTreeOutput:
+        """
+        Fetch the trace tree structure using the provided tracing_header
+
+        Parameters
+        ----------
+        params : GetTraceTreeParams
+            Data Class that holds required parameters
+        
+        Returns
+        -------
+        GetTraceTreeOutput
+            Data Class that holds the trace tree structure
+
+        Raises
+        ------
+        ZionException
+            When failed to fetch a trace tree
+        """
+        input_data = params.jsonrpc_dumps(self.region, self.profile)
+        stdout_data = self._popen_zion(input_data, {})
+        self._raise_error_if_returned(stdout_data)
+
+        output = GetTraceTreeOutput(stdout_data)
+
+        LOG.debug(f"Output: {output}")
+        return output
+
     
     def retry_until(self, condition, timeout = 10):
         """
@@ -415,6 +452,7 @@ class Zion:
         client.meta.events.register(event_string.format(service_name), _add_header)
         
         return client
+
 
     @log_duration
     def _popen_zion(self, input, env_vars):

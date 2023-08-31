@@ -1,9 +1,11 @@
 package xray
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/xray"
 	"github.com/aws/aws-sdk-go-v2/service/xray/types"
 )
 
@@ -23,4 +25,8 @@ func TraceFromApiResponse(trace *types.Trace) (*Trace, error) {
 		LimitExceeded: trace.LimitExceeded,
 		Segments:      segments,
 	}, nil
+}
+
+type BatchGetTracesAPI interface {
+	BatchGetTraces(context.Context, *xray.BatchGetTracesInput, ...func(*xray.Options)) (*xray.BatchGetTracesOutput, error)
 }
