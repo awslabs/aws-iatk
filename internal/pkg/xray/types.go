@@ -33,6 +33,8 @@ type Segment struct {
 	Metadata    map[string]interface{} `json:"metadata,omitempty"`
 	Subsegments []*Subsegment          `json:"subsegments,omitempty"`
 	Links       []*Link                `json:"links,omitempty"`
+
+	children []*Segment
 }
 
 type Subsegment struct {
@@ -139,11 +141,6 @@ type Tree struct {
 	Paths       [][]*Segment      `json:"paths"`
 	SourceTrace *Trace            `json:"source_trace"`
 	ChildTraces map[string]*Trace `json:"child_traces"`
-}
-
-type TraceTreeNode struct {
-	SegmentObject *Segment
-	Children      []*TraceTreeNode
 }
 
 type treeOptions struct {

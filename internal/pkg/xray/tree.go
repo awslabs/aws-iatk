@@ -6,9 +6,10 @@ import (
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"golang.org/x/exp/maps"
 )
 
-func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string, fetchChildLinkedTraces bool) (*Tree, error) {
+func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string) (*Tree, error) {
 
 	// Fetch input source trace.
 	traceMap, err := opts.getTraces(ctx, opts.xrayClient, []string{sourceTraceId})
@@ -31,77 +32,79 @@ func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string, fetchC
 		})
 
 	// First segment is the root
-	traceTreeRoot := InsertTraceTreeNode(nil, trace.Segments[0])
+	treeRootSegment := trace.Segments[0]
+
+	// Recursively get a map of segment/subsegment ids to the corresponding Segment
+	mapSegSubsegsIdToSeg := CreateSegIdtoSegMap(trace.Segments)
 
 	// Insert original trace segments, skip the root segment
 	for _, segment := range trace.Segments[1:] {
-		treeNodeInserted := InsertTraceTreeNode(traceTreeRoot, segment)
-
-		if treeNodeInserted == nil {
-			return nil, fmt.Errorf("found a segment %s with no parent", aws.ToString(segment.Id))
+		if segment.ParentId != nil {
+			// ParentId could be pointing to a segmentId or a subsegmentId
+			if parentSegment, ok := mapSegSubsegsIdToSeg[*segment.ParentId]; ok {
+				parentSegment.InsertSegmentChild(segment)
+			} else {
+				return nil, fmt.Errorf("found a segment %s with no parent", *segment.Id)
+			}
 		}
 	}
 
-	// TODO: Create a function to recursively find all child traces from subsegments if fetchChildLinkedTraces = true
-
-	// TODO: Insert child traces segments into the tree if fetchChildLinkedTraces = true
-
 	// Find all the leaf nodes and their complete paths using DFS algorithm
 	var singlePath []*Segment
-	leafPaths := FindLeafSegmentPaths(traceTreeRoot, singlePath)
+	leafPaths := FindLeafSegmentPaths(treeRootSegment, singlePath)
 
 	return &Tree{
-		Root:        traceTreeRoot.SegmentObject,
+		Root:        treeRootSegment,
 		Paths:       leafPaths,
 		SourceTrace: trace,
 	}, nil
 }
 
-func InsertTraceTreeNode(rootTreeNode *TraceTreeNode, newSegment *Segment) *TraceTreeNode {
-
-	// If the root Segment is provided, create and return a TraceTreeNode
-	if newSegment.ParentId == nil {
-		return &TraceTreeNode{
-			SegmentObject: newSegment,
-		}
-	}
-
-	if aws.ToString(rootTreeNode.SegmentObject.Id) == aws.ToString(newSegment.ParentId) {
-		newTreeNode := TraceTreeNode{
-			SegmentObject: newSegment,
-		}
-		rootTreeNode.Children = append(rootTreeNode.Children, &newTreeNode)
-		return &newTreeNode
-	}
-
-	for _, childTreeNode := range rootTreeNode.Children {
-		// If a node under this child inserted the new segment, return the node
-		insertedGrandChild := InsertTraceTreeNode(childTreeNode, newSegment)
-		if insertedGrandChild != nil {
-			return insertedGrandChild
-		}
-	}
-
-	// If none of the Segment Nodes are parents of the new segment, return nil
-	return nil
+// Add the provided child segment to children
+func (parentSegment *Segment) InsertSegmentChild(childSegment *Segment) {
+	parentSegment.children = append(parentSegment.children, childSegment)
 }
 
-func FindLeafSegmentPaths(rootTreeNode *TraceTreeNode, path []*Segment) [][]*Segment {
-	path = append(path, rootTreeNode.SegmentObject)
+// Recursive function that creates a map of Segment/Subsegment id to the corresponding Segment
+func CreateSubSegIdtoSegMap(subSegments []*Subsegment, segment *Segment) map[string]*Segment {
+	mapSegSubSegs := map[string]*Segment{}
+	for _, subSegment := range subSegments {
+		mapSegSubSegs[*subSegment.Id] = segment
+		if subSegment.Subsegments != nil {
+			maps.Copy(mapSegSubSegs, CreateSubSegIdtoSegMap(subSegment.Subsegments, segment))
+		}
+	}
+	return mapSegSubSegs
+}
 
-	// If rootTreeNode is a leaf, return a slice with the leaf path
-	if len(rootTreeNode.Children) == 0 {
+// Creates a map of Segment/Subsegment id to the corresponding Segment
+func CreateSegIdtoSegMap(segments []*Segment) map[string]*Segment {
+	mapSegSubsegsToSeg := map[string]*Segment{}
+	for _, segment := range segments {
+		mapSegSubsegsToSeg[*segment.Id] = segment
+		mapSubSegsToSeg := CreateSubSegIdtoSegMap(segment.Subsegments, segment)
+		maps.Copy(mapSegSubsegsToSeg, mapSubSegsToSeg)
+
+	}
+	return mapSegSubsegsToSeg
+}
+
+func FindLeafSegmentPaths(treeRootSegment *Segment, path []*Segment) [][]*Segment {
+	path = append(path, treeRootSegment)
+
+	// If treeRootSegment is a leaf, return a slice with the leaf path
+	if len(treeRootSegment.children) == 0 {
 		var leafPaths [][]*Segment
 		leafPaths = append(leafPaths, path)
 		return leafPaths
 	}
 
 	var leafPaths [][]*Segment
-	for _, childTreeNode := range rootTreeNode.Children {
+	for _, childSegmentNode := range treeRootSegment.children {
 		// Create a copy of path so that all Nodes don't get added to the same path
 		path_copy := make([]*Segment, len(path))
 		copy(path_copy, path)
-		childLeafPaths := FindLeafSegmentPaths(childTreeNode, path_copy)
+		childLeafPaths := FindLeafSegmentPaths(childSegmentNode, path_copy)
 		leafPaths = append(leafPaths, childLeafPaths...)
 	}
 	return leafPaths
