@@ -167,10 +167,10 @@ func TestInsertSegmentChild(t *testing.T) {
 	child1Segment := &Segment{Id: &child1SegmentId, ParentId: &rootSegmentId}
 	child2Segment := &Segment{Id: &child2SegmentId, ParentId: &rootSegmentId}
 	child1Child2Segment := &Segment{Id: &child1Child1SegmentId, ParentId: &child1SegmentId}
-	treeRootSegment.InsertSegmentChild(child1Segment)
-	treeRootSegment.InsertSegmentChild(child2Segment)
+	InsertSegmentChild(treeRootSegment, child1Segment)
+	InsertSegmentChild(treeRootSegment, child2Segment)
 	assert.Nil(t, child1Segment.children)
-	child1Segment.InsertSegmentChild(child1Child2Segment)
+	InsertSegmentChild(child1Segment, child1Child2Segment)
 
 	assert.Equal(t, treeRootSegment.children, []*Segment{child1Segment, child2Segment})
 	assert.Equal(t, child1Segment.children, []*Segment{child1Child2Segment})

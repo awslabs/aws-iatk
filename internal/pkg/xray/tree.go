@@ -42,7 +42,7 @@ func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string) (*Tree
 		if segment.ParentId != nil {
 			// ParentId could be pointing to a segmentId or a subsegmentId
 			if parentSegment, ok := mapSegSubsegsIdToSeg[*segment.ParentId]; ok {
-				parentSegment.InsertSegmentChild(segment)
+				InsertSegmentChild(parentSegment, segment)
 			} else {
 				return nil, fmt.Errorf("found a segment %s with no parent", *segment.Id)
 			}
@@ -60,8 +60,8 @@ func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string) (*Tree
 	}, nil
 }
 
-// Add the provided child segment to children
-func (parentSegment *Segment) InsertSegmentChild(childSegment *Segment) {
+// Add the provided child segment to the parentSegment's children
+func InsertSegmentChild(parentSegment *Segment, childSegment *Segment) {
 	parentSegment.children = append(parentSegment.children, childSegment)
 }
 

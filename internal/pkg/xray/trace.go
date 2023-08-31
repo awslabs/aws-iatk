@@ -52,13 +52,13 @@ func GetTraces(ctx context.Context, api BatchGetTracesAPI, traceIds []string) (m
 
 			// Create Trace and add to map if processed
 			for _, trace := range resp.Traces {
-				trace_object, err := TraceFromApiResponse(&trace)
-
-				if err != nil {
-					return nil, fmt.Errorf("failed to load trace details for trace id: %v", aws.ToString(trace.Id))
-				}
-
 				if _, ok := traceMap[aws.ToString(trace.Id)]; !ok {
+					trace_object, err := TraceFromApiResponse(&trace)
+
+					if err != nil {
+						return nil, fmt.Errorf("failed to load trace details for trace id: %v", aws.ToString(trace.Id))
+					}
+
 					traceMap[aws.ToString(trace.Id)] = trace_object
 				}
 			}
