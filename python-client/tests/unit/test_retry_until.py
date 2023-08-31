@@ -7,14 +7,10 @@ Integration tests for zion.retry_until
 import logging
 from unittest import TestCase
 import time
-import boto3
-import random
 import zion
-import os
 import pytest
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
-boto3.set_stream_logger(name="zion", level=logging.DEBUG)
 
 class TestZion_retry_until_timeout(TestCase):
     zion = zion.Zion()
