@@ -378,7 +378,6 @@ class Zion:
                         return True
                     time.sleep(math.pow(2, attempt) * delay)
                     attempt += 1
-                print(attempt)
                 LOG.debug(f"timeout after {timeout} seconds")
                 LOG.debug("condition not satisfied")
                 return False
