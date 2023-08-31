@@ -41,7 +41,7 @@ class GetTraceTreeParams:
     fetch_child_linked_traces : bool, optional
         Boolean to include child linked traces
     """
-    trace_id: str
+    tracing_header: str
     fetch_child_linked_traces: bool=False
     _rpc_method: str = "get_trace_tree"
 
