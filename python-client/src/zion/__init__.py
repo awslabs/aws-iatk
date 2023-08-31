@@ -9,6 +9,8 @@ import boto3
 import logging
 from dataclasses import dataclass
 from functools import wraps
+import time
+import math
 
 from .get_physical_id_from_stack import (
     PhysicalIdFromStackOutput,
@@ -365,6 +367,8 @@ class Zion:
             @wraps(func)
             def _wrapper(*args, **kwargs):
                 start = datetime.now()
+                attempt = 1
+                delay = 0.05
                 elapsed = lambda _: (datetime.now() - start).total_seconds()
                 if timeout == 0:
                     elapsed = lambda _: -1
@@ -372,6 +376,9 @@ class Zion:
                     output = func(*args, **kwargs)
                     if condition(output):
                         return True
+                    time.sleep(math.pow(2, attempt) * delay)
+                    attempt += 1
+                print(attempt)
                 LOG.debug(f"timeout after {timeout} seconds")
                 LOG.debug("condition not satisfied")
                 return False

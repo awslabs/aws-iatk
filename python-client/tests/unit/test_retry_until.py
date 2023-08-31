@@ -22,7 +22,6 @@ class TestZion_retry_until_timeout(TestCase):
             return val == 10
         @self.zion.retry_until(condition=num_is_ten)
         def num_add_one_slow():
-            time.sleep(1.5)
             self.num = self.num + 1
             return self.num
         start = time.time()
@@ -33,18 +32,17 @@ class TestZion_retry_until_timeout(TestCase):
         self.assertFalse(response)
 
     def test_retry_timeout_is_default_pass(self):
-        def num_is_ten(val):
-            return val == 10
-        @self.zion.retry_until(condition=num_is_ten)
-        def num_add_one_slow():
-            time.sleep(0.5)
+        def num_is_five(val):
+            return val == 5
+        @self.zion.retry_until(condition=num_is_five)
+        def num_add_one():
             self.num = self.num + 1
             return self.num
         start = time.time()
-        response = num_add_one_slow()
+        response = num_add_one()
         end = time.time()
-        self.assertLess(end - start, 10)
-        self.assertEqual(self.num, 10)
+        self.assertLess(end - start, 5)
+        self.assertEqual(self.num, 5)
         self.assertTrue(response)
 
     @pytest.mark.timeout(timeout=2500, method="thread")
@@ -95,14 +93,14 @@ class TestZion_retry_until_timeout(TestCase):
             self.assertEqual(e, "timeout must not be a negative value")
 
     def test_retry_should_pass(self):
-        def num_is_ten(val):
-            return val == 10
-        @self.zion.retry_until(condition=num_is_ten, timeout=5)
+        def num_is_five(val):
+            return val == 5
+        @self.zion.retry_until(condition=num_is_five, timeout=5)
         def num_add_one():
             self.num = self.num + 1
             return self.num
         response = num_add_one()
-        self.assertEqual(self.num, 10)
+        self.assertEqual(self.num, 5)
         self.assertTrue(response)
 
     def test_retry_should_timeout(self):
@@ -120,14 +118,14 @@ class TestZion_retry_until_timeout(TestCase):
         self.assertGreaterEqual(end - start, 5)
 
     def test_retry_should_pass_multiple_arguments(self):
-        def num_is_ten(val):
-            return val == 10
-        @self.zion.retry_until(condition=num_is_ten, timeout=5)
+        def num_is_five(val):
+            return val == 5
+        @self.zion.retry_until(condition=num_is_five, timeout=5)
         def num_add_one(dummy, dummy1, dummy2="dummy2"):
             self.num = self.num + 1
             return self.num
         response = num_add_one(0, 0, dummy2="test")
-        self.assertEqual(self.num, 10)
+        self.assertEqual(self.num, 5)
         self.assertTrue(response)
 
     def test_retry_should_timeout_multiple_arguments(self):
