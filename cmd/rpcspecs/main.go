@@ -74,6 +74,8 @@ func newProp(rVal reflect.Value) *Property {
 	switch dVal.Kind() {
 	case reflect.String:
 		return &Property{Type: "string"}
+	case reflect.Bool:
+		return &Property{Type: "bool"}
 	case reflect.Float32, reflect.Float64:
 		return &Property{Type: "number"}
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
