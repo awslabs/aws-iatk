@@ -15,7 +15,7 @@ func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string) (*Tree
 	traceMap, err := opts.getTraces(ctx, opts.xrayClient, []string{sourceTraceId})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch trace %s with error: %v", sourceTraceId, err)
+		return nil, fmt.Errorf("failed to fetch trace %s with error: %w", sourceTraceId, err)
 	}
 
 	trace := traceMap[sourceTraceId]
