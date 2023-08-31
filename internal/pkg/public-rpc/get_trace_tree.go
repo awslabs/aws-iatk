@@ -14,7 +14,7 @@ import (
 )
 
 type GetTraceTreeParams struct {
-	TraceId                string `json:"TraceId"`
+	TracingHeader                string `json:"TracingHeader"`
 	FetchChildLinkedTraces bool   `json:"FetchChildLinkedTraces,omitempty"`
 	Profile                string `json:"Profile,omitempty"`
 	Region                 string `json:"Region,omitempty"`
