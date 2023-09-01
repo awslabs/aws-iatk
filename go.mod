@@ -15,7 +15,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.1
-	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
+	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 )
 
 require (

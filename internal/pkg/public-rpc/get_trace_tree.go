@@ -10,8 +10,6 @@ import (
 	"zion/internal/pkg/aws/config"
 	"zion/internal/pkg/public-rpc/types"
 	zionxray "zion/internal/pkg/xray"
-
-	"github.com/aws/aws-sdk-go-v2/service/xray"
 )
 
 type GetTraceTreeParams struct {
@@ -39,9 +37,7 @@ func (p *GetTraceTreeParams) RPCMethod() (*types.Result, error) {
 		return nil, fmt.Errorf("error when loading AWS config: %v", err)
 	}
 
-	xrayClient := xray.NewFromConfig(cfg)
-
-	traceTree, err := zionxray.NewTree(ctx, xrayClient, *traceId)
+	traceTree, err := zionxray.NewTree(ctx, zionxray.NewTreeOptions(cfg), *traceId)
 
 	return &types.Result{
 		Output: traceTree,
