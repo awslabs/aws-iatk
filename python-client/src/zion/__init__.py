@@ -5,9 +5,12 @@ from subprocess import Popen, PIPE
 from datetime import datetime
 import pathlib
 import json
+import boto3
 import logging
 from dataclasses import dataclass
 from functools import wraps
+import time
+import math
 
 from .get_physical_id_from_stack import (
     PhysicalIdFromStackOutput,
@@ -31,6 +34,10 @@ from .poll_events import (
     PollEventsParams,
     WaitUntilEventMatchedParams,
 )
+from .get_trace_tree import (
+    GetTraceTreeOutput,
+    GetTraceTreeParams
+)
 
 __all__ = [
     "Zion", 
@@ -46,7 +53,9 @@ __all__ = [
     "RemoveListeners_TagFilter",
     "PollEventsOutput",
     "PollEventsParams",
-    "WaitUntilEventMatchedParams"]
+    "WaitUntilEventMatchedParams",
+    "GetTraceTreeParams",
+    "GetTraceTreeOutput"]
 
 LOG = logging.getLogger(__name__)
 zion_service_logger = logging.getLogger("zion.service")
@@ -325,6 +334,125 @@ class Zion:
         LOG.debug(f"timeout after {params.timeout_seconds} seconds")
         LOG.debug("no matching event found")
         return False
+
+      
+    def get_trace_tree(
+        self, params: GetTraceTreeParams
+    ) -> GetTraceTreeOutput:
+        """
+        Fetch the trace tree structure using the provided tracing_header
+
+        Parameters
+        ----------
+        params : GetTraceTreeParams
+            Data Class that holds required parameters
+        
+        Returns
+        -------
+        GetTraceTreeOutput
+            Data Class that holds the trace tree structure
+
+        Raises
+        ------
+        ZionException
+            When failed to fetch a trace tree
+        """
+        input_data = params.jsonrpc_dumps(self.region, self.profile)
+        stdout_data = self._popen_zion(input_data, {})
+        self._raise_error_if_returned(stdout_data)
+
+        output = GetTraceTreeOutput(stdout_data)
+
+        LOG.debug(f"Output: {output}")
+        return output
+
+    
+    def retry_until(self, condition, timeout = 10):
+        """
+        Decorator function to retry until condition or timeout is met
+
+        IAM Permissions Needed
+        ----------------------
+        
+        Parameters
+        ----------
+        condition: Callable[[any], bool]
+        Callable function that takes any type and returns a bool
+
+        timeout: int or float
+        value that specifies how long the function will retry for until it times out
+        
+        Returns
+        -------
+        bool
+            True if the condition was met or false if the timeout is met
+
+        Raises
+        ------
+        ValueException
+            When timeout is a negative number
+        TypeException
+            When timeout or condition is not a suitable type
+        """
+        if(not(isinstance(timeout, int) or  isinstance(timeout, float))):
+            raise TypeError("timeout must be an int or float")
+        elif(timeout < 0):
+            raise ValueError("timeout must not be a negative value")
+        if(not callable(condition)):
+            raise TypeError("condition is not a callable function")
+        def retry_until_decorator(func):
+            @wraps(func)
+            def _wrapper(*args, **kwargs):
+                start = datetime.now()
+                attempt = 1
+                delay = 0.05
+                elapsed = lambda _: (datetime.now() - start).total_seconds()
+                if timeout == 0:
+                    elapsed = lambda _: -1
+                while elapsed(None) < timeout:
+                    output = func(*args, **kwargs)
+                    if condition(output):
+                        return True
+                    time.sleep(math.pow(2, attempt) * delay)
+                    attempt += 1
+                LOG.debug(f"timeout after {timeout} seconds")
+                LOG.debug("condition not satisfied")
+                return False
+            return _wrapper
+        return retry_until_decorator
+    
+        
+    def patch_aws_client(self, client: boto3.client, sampled = 1) -> boto3.client:
+        """
+        Patches boto3 client to register event to include generated x-ray trace id and sampling rule as part of request header before invoke/execution
+
+         Parameters
+        ----------
+        params : client
+            boto3.client for specified aws service
+               : sampled
+            int, value 0 or 1 to select if trace has been sampled or not
+            
+        
+        Returns
+        -------
+        boto3.client
+            same client passed in the params with the event registered
+        """
+        def _add_header(request, **kwargs):
+            trace_id_string= 'Root=;Sampled={}'.format(sampled)
+            
+            request.headers.add_header('X-Amzn-Trace-Id', trace_id_string)
+            LOG.debug(f"Trace ID format: {trace_id_string}")
+
+        service_name = client.meta.service_model.service_name
+        event_string = 'before-sign.{}.*'
+        LOG.debug(f"service id: {client.meta.service_model.service_id}, service name: {service_name}")
+        
+        client.meta.events.register(event_string.format(service_name), _add_header)
+        
+        return client
+
 
     @log_duration
     def _popen_zion(self, input, env_vars):

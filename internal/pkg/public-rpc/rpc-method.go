@@ -21,6 +21,7 @@ func init() {
 	MethodMap["test_harness.eventbridge.add_listener"] = new(AddEbListenerParams)
 	MethodMap["test_harness.eventbridge.remove_listeners"] = new(RemoveEbListenersParams)
 	MethodMap["test_harness.eventbridge.poll_events"] = new(PollEventsParams)
+	MethodMap["get_trace_tree"] = new(GetTraceTreeParams)
 }
 
 func GetRPCStruct(methodName string, params json.RawMessage) (Method, error) {

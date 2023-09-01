@@ -108,6 +108,7 @@ class ClientContractTest(TestCase):
                 "get_stack_outputs",
                 "remove_listeners",
                 "poll_events",
+                "get_trace_tree"
             ]:
                 # NOTE: skipping for these methods since the Output cls does some form of transform
                 continue
