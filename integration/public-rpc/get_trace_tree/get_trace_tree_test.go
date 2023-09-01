@@ -93,8 +93,6 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 	cases := []struct {
 		testname                     string
 		invoke                       func(*testing.T) string
-		fetchChildTraces             bool
-		expectHasChildTrace          bool
 		expectSourceTraceNumSegments int
 		expectNumPaths               int
 	}{
@@ -113,9 +111,7 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 				return tracingHeader
 
 			},
-			fetchChildTraces:             true,
 			expectNumPaths:               1,
-			expectHasChildTrace:          true,
 			expectSourceTraceNumSegments: 2,
 		},
 		{
@@ -133,9 +129,7 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 				return tracingHeader
 
 			},
-			fetchChildTraces:             false,
 			expectNumPaths:               1,
-			expectHasChildTrace:          false,
 			expectSourceTraceNumSegments: 2,
 		},
 		{
@@ -147,9 +141,7 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 				tracingHeader := ""
 				return tracingHeader
 			},
-			fetchChildTraces:             true,
 			expectNumPaths:               2,
-			expectHasChildTrace:          false,
 			expectSourceTraceNumSegments: 5,
 		},
 		{
@@ -161,9 +153,7 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 				tracingHeader := ""
 				return tracingHeader
 			},
-			fetchChildTraces:             false,
 			expectNumPaths:               2,
-			expectHasChildTrace:          false,
 			expectSourceTraceNumSegments: 5,
 		},
 		{
@@ -175,9 +165,7 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 				tracingHeader := ""
 				return tracingHeader
 			},
-			fetchChildTraces:             false,
 			expectNumPaths:               2,
-			expectHasChildTrace:          false,
 			expectSourceTraceNumSegments: 5,
 		},
 	}
@@ -187,12 +175,7 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 			tracingHeader := tt.invoke(t)
 
 			// Get Trace Tree
-			tree := s.assertAndReturnTraceTree(tracingHeader, tt.fetchChildTraces)
-			if tt.expectHasChildTrace {
-				s.Require().Contains(tree, "child_traces")
-			} else {
-				s.Require().NotContains(tree, "child_traces")
-			}
+			tree := s.assertAndReturnTraceTree(tracingHeader)
 			paths := tree["paths"].([]any)
 			s.Equal(tt.expectNumPaths, len(paths), "expected num paths is different than actual")
 			sourceTrace := tree["source_trace"].(map[string]any)
@@ -236,31 +219,12 @@ func (s *GetTraceTreeSuite) TestErrors() {
 					"method": %q,
 					"params": {
 						"TracingHeader": "Root=;",
-						"FetchChildLinkedTraces": true,
 						"Region": %q
 					}
 				}`, test_method, s.region))
 			},
 			expectErrCode: 10,
-			expectErrMsg:  "invalid TracingHeader",
-		},
-		{
-			testname: "invalid fetch child linked traces",
-			request: func() []byte {
-				return []byte(fmt.Sprintf(`
-				{
-					"jsonrpc": "2.0",
-					"id": "020",
-					"method": %q,
-					"params": {
-						"TracingHeader": "Root=1-64e92e5a-10a48563226aa2bd6e930b8c",
-						"FetchChildLinkedTraces": 123,
-						"Region": %q
-					}
-				}`, test_method, s.region))
-			},
-			expectErrCode: -32602,
-			expectErrMsg:  "Invalid params",
+			expectErrMsg:  "invalid tracing header provided",
 		},
 	}
 
@@ -270,7 +234,7 @@ func (s *GetTraceTreeSuite) TestErrors() {
 			res := s.invoke(req)
 			s.Require().NotNil(res.Error)
 			s.Equal(tt.expectErrCode, res.Error.Code)
-			s.Contains(tt.expectErrMsg, res.Error.Message)
+			s.Contains(res.Error.Message, tt.expectErrMsg)
 		})
 	}
 }
@@ -289,7 +253,7 @@ func (s *GetTraceTreeSuite) invoke(req []byte) jsonrpc.Response {
 	return res
 }
 
-func (s *GetTraceTreeSuite) assertAndReturnTraceTree(tracingHeader string, fetchChildTraces bool) map[string]any {
+func (s *GetTraceTreeSuite) assertAndReturnTraceTree(tracingHeader string) map[string]any {
 	req := []byte(fmt.Sprintf(`
 	{
 		"jsonrpc": "2.0",
@@ -297,10 +261,9 @@ func (s *GetTraceTreeSuite) assertAndReturnTraceTree(tracingHeader string, fetch
 		"method": %q,
 		"params": {
 			"TracingHeader": %q,
-			"FetchChildLinkedTraces": %v,
 			"Region": %q
 		}
-	}`, test_method, tracingHeader, fetchChildTraces, s.region))
+	}`, test_method, tracingHeader, s.region))
 	s.T().Log("get trace tree")
 	res := s.invoke(req)
 	s.Require().Nilf(res.Error, "failed to get trace tree: %w", res.Error)
