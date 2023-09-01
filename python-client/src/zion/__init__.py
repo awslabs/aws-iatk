@@ -478,43 +478,20 @@ class Zion:
             message = data_dict.get("error", {}).get("message", "")
             error_code = data_dict.get("error", {}).get("Code", 0)
             raise ZionException(message=message, error_code=error_code)
-        
-    def retry_until(self,condition, timeout = 10):
-        if(not(isinstance(timeout, int) or  isinstance(timeout, float))):
-            raise TypeError("timeout must be an int or float")
-        elif(timeout < 0):
-            raise ValueError("timeout must not be a negative value")
-        if(not callable(condition)):
-            raise TypeError("condition is not a callable function")
-        def retry_until_decorator(func):
-            def _wrapper(*args, **kwargs):
-                start = datetime.now()
-                elapsed = lambda _: (datetime.now() - start).total_seconds()
-                if timeout == 0:
-                    elapsed = lambda _: -1
-                while elapsed(None) < timeout:
-                    output = func(*args, **kwargs)
-                    if condition(output):
-                        return True
-                LOG.debug(f"timeout after {timeout} seconds")
-                LOG.debug("condition not satisfied")
-                return False
-            return _wrapper
-        return retry_until_decorator
 
         
     def retry_fetch_trace_until(self, params: RetryFetchXRayTraceUntilParams):
-        xray_client = boto3.client("xray")
         @self.retry_until(condition=params.condition, timeout=params.timeout_seconds)
-        def fetch_trace_id():
-            response = xray_client.batch_get_traces(TraceIds=[params.trace_id])
-            return response["Traces"][0]
+        def fetch_trace_tree():
+            response = self.get_trace_tree(params=GetTraceTreeParams(
+                tracing_header="R" + params.trace_header[1:]
+            ))
+            return response
         try:
-            response = fetch_trace_id()
-        except IndexError as e:
-            LOG.debug(e)
-            raise IndexError("trace id must be sampled and exist on aws")
-        return response
+            response = fetch_trace_tree()
+            return response
+        except ZionException as e:
+            raise ZionException("trace header is not sampled", 500)
 
 
 # Set up logging to ``/dev/null`` like a library is supposed to.

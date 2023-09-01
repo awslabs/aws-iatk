@@ -17,8 +17,8 @@ class RetryFetchXRayTraceUntilParams:
 
     Parameters
     ----------
-    trace_id:
-        Id of the x-ray trace
+    trace_header:
+        x-ray trace header
     condition : Callable[[str], bool]
         Callable fuction that takes a str and returns a bool
     timeout_seconds : int
@@ -26,21 +26,21 @@ class RetryFetchXRayTraceUntilParams:
     """
     condition: Callable[[str], bool]    
     timeout_seconds: int
-    trace_id: str
+    trace_header: str
 
     def __init__(
         self,
-        trace_id: str,
+        trace_header: str,
         condition: Callable[[str], bool],
         timeout_seconds: int = 30,
     ):
+        if not isinstance(trace_header, str):
+            raise InvalidParamException("trace header must be in a form of a string")
         if timeout_seconds < 0 or timeout_seconds > 999:
-            raise InvalidParamException("timeout_seconds must be between 0 and 999")
-        if not isinstance(trace_id, str):
-            raise InvalidParamException("traceID must be in a form of a string")
+            raise InvalidParamException("timeout must be between 0 and 999")
         self.condition = condition
         self.timeout_seconds = timeout_seconds
-        self.trace_id = trace_id
+        self.trace_header = trace_header
 
 
 class InvalidParamException(Exception):
