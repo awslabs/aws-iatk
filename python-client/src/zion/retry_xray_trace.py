@@ -5,7 +5,9 @@ import json
 import logging
 from dataclasses import dataclass
 from typing import List, Callable
-
+from .get_trace_tree import (
+    GetTraceTreeOutput
+)
 
 LOG = logging.getLogger(__name__)
 
@@ -24,20 +26,16 @@ class RetryFetchXRayTraceUntilParams:
     timeout_seconds : int
         Timeout (in seconds) to stop the fetching
     """
-    condition: Callable[[str], bool]    
+    condition: Callable[[GetTraceTreeOutput], bool]    
     timeout_seconds: int
     trace_header: str
 
     def __init__(
         self,
         trace_header: str,
-        condition: Callable[[str], bool],
+        condition: Callable[[], bool],
         timeout_seconds: int = 30,
     ):
-        if not isinstance(trace_header, str):
-            raise InvalidParamException("trace header must be in a form of a string")
-        if timeout_seconds < 0 or timeout_seconds > 999:
-            raise InvalidParamException("timeout must be between 0 and 999")
         self.condition = condition
         self.timeout_seconds = timeout_seconds
         self.trace_header = trace_header

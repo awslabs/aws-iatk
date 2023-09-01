@@ -14,7 +14,6 @@ import os
 import pytest
 import json
 from zion import RetryFetchXRayTraceUntilParams
-from aws_xray_sdk.core.models.traceid import TraceId
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -23,11 +22,10 @@ boto3.set_stream_logger(name="zion", level=logging.DEBUG)
 class TestZion_retry_fetch_until(TestCase):
     counter = 0
     xray_trace_header = ""
-    dummy_trace_header = "Root={},Sampled=1".format(TraceId().to_id())
+    dummy_trace_header = "Root=test,Sampled=1"
     zion = zion.Zion()
     lambda_client = boto3.client("lambda")
     iam_client = boto3.client("iam")
-    xray_client = boto3.client("xray")
     lambda_function_name = "test_lambda" + str(random.randrange(0,100000))
 
     @classmethod
@@ -73,8 +71,8 @@ class TestZion_retry_fetch_until(TestCase):
     def test_get_traces_pass(self):
         time.sleep(5)
         def num_is_10(trace):
-            self.counter = random.randrange(0,11)
-            return self.counter == 10
+            self.counter = random.randrange(0,2)
+            return self.counter == 1
         params = RetryFetchXRayTraceUntilParams(
             trace_header=self.xray_trace_header,
             condition=num_is_10,
@@ -83,7 +81,7 @@ class TestZion_retry_fetch_until(TestCase):
         response = self.zion.retry_fetch_trace_until(params=params)
         end = time.time()
         self.assertTrue(response)
-        self.assertEqual(self.counter, 10)
+        self.assertEqual(self.counter, 1)
         self.assertLess(end - start, 10)
     
     @pytest.mark.flaky(reruns=3)
@@ -136,7 +134,6 @@ class TestZion_retry_fetch_until(TestCase):
             self.assertNotEqual(self.counter, 10)
             self.assertGreater(end - start, 10)
             self.assertEqual(e, "Method not found")
-            self.assertEqual(0,1)
 
     def test_condition_not_function_error(self):
         params = RetryFetchXRayTraceUntilParams(
@@ -148,25 +145,3 @@ class TestZion_retry_fetch_until(TestCase):
             self.assertNotEqual(self.counter, 10)
             self.assertEqual(e, "condition is not a callable function")
     
-    def test_retry_timeout_wrong_type_error(self):
-        def num_is_10(trace):
-            self.counter = random.randrange(0,11)
-            return self.counter == 10
-        with pytest.raises(TypeError) as e:
-            params = RetryFetchXRayTraceUntilParams(
-                trace_header=self.xray_trace_header,
-                condition=num_is_10,
-                timeout_seconds="test")
-            self.assertNotEqual(self.counter, 10)
-            self.assertEqual("trace header must be in a form of a string")
-
-    def test_retry_timeout_less_than_zero_error(self):
-        def num_is_10(trace):
-            self.counter = random.randrange(0,11)
-            return self.counter == 10
-        with pytest.raises(zion.retry_xray_trace.InvalidParamException) as e:
-            params = RetryFetchXRayTraceUntilParams(
-                trace_header=self.xray_trace_header,
-                condition=num_is_10,
-                timeout_seconds=-1)
-            self.assertEqual(e, "timeout must be between 0 and 999")

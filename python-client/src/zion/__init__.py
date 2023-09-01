@@ -481,6 +481,30 @@ class Zion:
 
         
     def retry_fetch_trace_until(self, params: RetryFetchXRayTraceUntilParams):
+        """
+        function to retry get_trace_tree condition or timeout is met
+
+        IAM Permissions Needed
+        ----------------------
+        
+        Parameters
+        ----------
+        condition: Callable[[Tree], bool]
+        Callable function that takes any type and returns a bool
+
+        timeout: int or float
+        value that specifies how long the function will retry for until it times out
+        
+        Returns
+        -------
+        bool
+            True if the condition was met or false if the timeout is met
+
+        Raises
+        ------
+        Zionexception
+            When an exception occurs during get_trace_tree
+        """
         @self.retry_until(condition=params.condition, timeout=params.timeout_seconds)
         def fetch_trace_tree():
             response = self.get_trace_tree(params=GetTraceTreeParams(
@@ -491,7 +515,7 @@ class Zion:
             response = fetch_trace_tree()
             return response
         except ZionException as e:
-            raise ZionException("trace header is not sampled", 500)
+            raise ZionException(e, 500)
 
 
 # Set up logging to ``/dev/null`` like a library is supposed to.
