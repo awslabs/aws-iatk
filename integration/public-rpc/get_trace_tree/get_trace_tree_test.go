@@ -15,11 +15,13 @@ import (
 	"zion/internal/pkg/jsonrpc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/sfn"
+	awshttp "github.com/aws/smithy-go/transport/http"
 	"github.com/rs/xid"
 	"github.com/stretchr/testify/suite"
 )
@@ -35,6 +37,8 @@ func TestGetTraceTree(t *testing.T) {
 	cfnClient := cloudformation.NewFromConfig(cfg)
 	s := new(GetTraceTreeSuite)
 	s.cfnClient = cfnClient
+	s.lambdaClient = lambda.NewFromConfig(cfg)
+	s.sfnClient = sfn.NewFromConfig(cfg)
 	s.stackName = "test-stack-" + xid.New().String()
 	s.region = region
 	suite.Run(t, s)
@@ -97,17 +101,19 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 		expectNumPaths               int
 	}{
 		{
-			testname: "invoke lambda and fetch child traces",
+			testname: "invoke lambda",
 			invoke: func(t *testing.T) string {
 				t.Logf("invoke lambda function %q", s.producerFunctionName)
-				_, err := s.lambdaClient.Invoke(context.TODO(), &lambda.InvokeInput{
+				invokeLambdaOut, err := s.lambdaClient.Invoke(context.TODO(), &lambda.InvokeInput{
 					FunctionName: aws.String(s.producerFunctionName),
 					Payload:      []byte("{}"),
 				})
 				s.Require().NoError(err, "failed to invoke producer lambda function")
 
+				rawResponse := middleware.GetRawResponse(invokeLambdaOut.ResultMetadata).(*awshttp.Response)
+
 				// retrieve tracing header
-				tracingHeader := ""
+				tracingHeader := rawResponse.Header["X-Amzn-Trace-Id"][0]
 				return tracingHeader
 
 			},
@@ -115,25 +121,7 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 			expectSourceTraceNumSegments: 2,
 		},
 		{
-			testname: "invoke lambda and do not fetch child traces",
-			invoke: func(t *testing.T) string {
-				t.Logf("invoke lambda function %q", s.producerFunctionName)
-				_, err := s.lambdaClient.Invoke(context.TODO(), &lambda.InvokeInput{
-					FunctionName: aws.String(s.producerFunctionName),
-					Payload:      []byte("{}"),
-				})
-				s.Require().NoError(err, "failed to invoke producer lambda function")
-
-				// retrieve tracing header
-				tracingHeader := ""
-				return tracingHeader
-
-			},
-			expectNumPaths:               1,
-			expectSourceTraceNumSegments: 2,
-		},
-		{
-			testname: "invoke state machine and fetch child traces",
+			testname: "invoke state machine",
 			invoke: func(t *testing.T) string {
 				// Invoke StateMachine
 				// startExecutionOut, err := s.sfnClient.
@@ -145,19 +133,7 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 			expectSourceTraceNumSegments: 5,
 		},
 		{
-			testname: "invoke state machine and do not fetch child traces",
-			invoke: func(t *testing.T) string {
-				// Invoke StateMachine
-				// startExecutionOut, err := s.sfnClient.
-				// describe execution
-				tracingHeader := ""
-				return tracingHeader
-			},
-			expectNumPaths:               2,
-			expectSourceTraceNumSegments: 5,
-		},
-		{
-			testname: "invoke api endpoint and do not fetch child traces",
+			testname: "invoke api endpoint",
 			invoke: func(t *testing.T) string {
 				// Invoke StateMachine
 				// startExecutionOut, err := s.sfnClient.
@@ -180,7 +156,7 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 			s.Equal(tt.expectNumPaths, len(paths), "expected num paths is different than actual")
 			sourceTrace := tree["source_trace"].(map[string]any)
 			s.Require().Contains(sourceTrace, "segments")
-			segments := sourceTrace["segment"].([]any)
+			segments := sourceTrace["segments"].([]any)
 			s.Equal(tt.expectSourceTraceNumSegments, len(segments))
 		})
 	}
@@ -272,6 +248,6 @@ func (s *GetTraceTreeSuite) assertAndReturnTraceTree(tracingHeader string) map[s
 	s.Require().True(ok, "output of get_trace_tree must be a map")
 	s.Require().Contains(output, "root")
 	s.Require().Contains(output, "paths")
-	s.Require().Contains(output, "source_traces")
+	s.Require().Contains(output, "source_trace")
 	return output
 }
