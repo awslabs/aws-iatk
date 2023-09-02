@@ -66,9 +66,13 @@ Resources:
     Type: AWS::Serverless::StateMachine
     Properties:
       Definition:
-        StartAt: MyLambdaState
+        StartAt: MyLambdaStateA
         States:
-          MyLambdaState:
+          MyLambdaStateA:
+            Type: Task
+            Resource: !GetAtt ConsumerA.Arn
+            Next: MyLambdaStateB
+          MyLambdaStateB:
             Type: Task
             Resource: !GetAtt ConsumerA.Arn
             End: true

@@ -7,8 +7,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"testing"
+	"time"
 	cfn "zion/integration/cloudformation"
 	"zion/integration/zion"
 	zioncfn "zion/internal/pkg/cloudformation"
@@ -23,6 +25,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sfn"
 	awshttp "github.com/aws/smithy-go/transport/http"
 	"github.com/rs/xid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -93,10 +97,11 @@ func (s *GetTraceTreeSuite) TestPass() {
 	s.Assert().Equal(1, 1)
 }
 
-func (s *GetTraceTreeSuite) TestInvokeLambda() {
+func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 	cases := []struct {
 		testname                     string
 		invoke                       func(*testing.T) string
+		sleep                        int
 		expectSourceTraceNumSegments int
 		expectNumPaths               int
 	}{
@@ -108,56 +113,71 @@ func (s *GetTraceTreeSuite) TestInvokeLambda() {
 					FunctionName: aws.String(s.producerFunctionName),
 					Payload:      []byte("{}"),
 				})
-				s.Require().NoError(err, "failed to invoke producer lambda function")
-
+				require.NoError(t, err, "failed to invoke producer lambda function")
 				rawResponse := middleware.GetRawResponse(invokeLambdaOut.ResultMetadata).(*awshttp.Response)
-
-				// retrieve tracing header
 				tracingHeader := rawResponse.Header["X-Amzn-Trace-Id"][0]
 				return tracingHeader
 
 			},
+			sleep:                        5,
 			expectNumPaths:               1,
 			expectSourceTraceNumSegments: 2,
 		},
 		{
 			testname: "invoke state machine",
 			invoke: func(t *testing.T) string {
-				// Invoke StateMachine
-				// startExecutionOut, err := s.sfnClient.
-				// describe execution
-				tracingHeader := ""
+				t.Logf("invoke state machine %q", s.stateMachineArn)
+				startExecutionOut, err := s.sfnClient.StartExecution(context.TODO(), &sfn.StartExecutionInput{
+					StateMachineArn: aws.String(s.stateMachineArn),
+					Input:           aws.String("{}"),
+					TraceHeader:     aws.String("Sampled=1"),
+				})
+				require.NoError(t, err, "failed to start state machine execution")
+				describeOut, err := s.sfnClient.DescribeExecution(context.TODO(), &sfn.DescribeExecutionInput{
+					ExecutionArn: startExecutionOut.ExecutionArn,
+				})
+				require.NoError(t, err, "failed to describe state machine execution")
+				tracingHeader := aws.ToString(describeOut.TraceHeader)
 				return tracingHeader
 			},
+			sleep:                        10,
 			expectNumPaths:               2,
 			expectSourceTraceNumSegments: 5,
 		},
 		{
 			testname: "invoke api endpoint",
 			invoke: func(t *testing.T) string {
-				// Invoke StateMachine
-				// startExecutionOut, err := s.sfnClient.
-				// describe execution
-				tracingHeader := ""
+				client := &http.Client{}
+				req, err := http.NewRequest("GET", s.apiEndpoint, nil)
+				require.NoError(t, err, "failed to create request")
+				req.Header.Set("X-Amzn-Trace-Id", "Sampled=1")
+				res, err := client.Do(req)
+				require.NoError(t, err, "failed to do request")
+				tracingHeader := res.Header.Get("X-Amzn-Trace-Id")
+				require.NotZero(t, tracingHeader, "tracing header not found")
 				return tracingHeader
 			},
-			expectNumPaths:               2,
-			expectSourceTraceNumSegments: 5,
+			sleep:                        5,
+			expectNumPaths:               1,
+			expectSourceTraceNumSegments: 2,
 		},
 	}
 
 	for _, tt := range cases {
 		s.T().Run(tt.testname, func(t *testing.T) {
 			tracingHeader := tt.invoke(t)
+			t.Logf("tracing header: %v", tracingHeader)
+			t.Logf("sleeping for %v seconds", tt.sleep)
+			time.Sleep(time.Duration(tt.sleep) * time.Second)
 
 			// Get Trace Tree
 			tree := s.assertAndReturnTraceTree(tracingHeader)
 			paths := tree["paths"].([]any)
-			s.Equal(tt.expectNumPaths, len(paths), "expected num paths is different than actual")
+			assert.Equal(t, tt.expectNumPaths, len(paths), "expected num paths is different than actual")
 			sourceTrace := tree["source_trace"].(map[string]any)
-			s.Require().Contains(sourceTrace, "segments")
+			require.Contains(t, sourceTrace, "segments")
 			segments := sourceTrace["segments"].([]any)
-			s.Equal(tt.expectSourceTraceNumSegments, len(segments))
+			assert.Equal(t, tt.expectSourceTraceNumSegments, len(segments))
 		})
 	}
 }
@@ -205,12 +225,12 @@ func (s *GetTraceTreeSuite) TestErrors() {
 	}
 
 	for _, tt := range cases {
-		s.Run(tt.testname, func() {
+		s.T().Run(tt.testname, func(t *testing.T) {
 			req := tt.request()
 			res := s.invoke(req)
-			s.Require().NotNil(res.Error)
-			s.Equal(tt.expectErrCode, res.Error.Code)
-			s.Contains(res.Error.Message, tt.expectErrMsg)
+			require.NotNil(t, res.Error)
+			assert.Equal(t, tt.expectErrCode, res.Error.Code)
+			assert.Contains(t, res.Error.Message, tt.expectErrMsg)
 		})
 	}
 }
@@ -240,14 +260,15 @@ func (s *GetTraceTreeSuite) assertAndReturnTraceTree(tracingHeader string) map[s
 			"Region": %q
 		}
 	}`, test_method, tracingHeader, s.region))
-	s.T().Log("get trace tree")
+	t := s.T()
+	t.Log("get trace tree")
 	res := s.invoke(req)
-	s.Require().Nilf(res.Error, "failed to get trace tree: %w", res.Error)
-	s.Require().NotNil(res.Result)
+	require.Nilf(t, res.Error, "failed to get trace tree: %w", res.Error)
+	require.NotNil(t, res.Result)
 	output, ok := res.Result.(map[string]any)["output"].(map[string]any)
-	s.Require().True(ok, "output of get_trace_tree must be a map")
-	s.Require().Contains(output, "root")
-	s.Require().Contains(output, "paths")
-	s.Require().Contains(output, "source_trace")
+	require.True(t, ok, "output of get_trace_tree must be a map")
+	require.Contains(t, output, "root")
+	require.Contains(t, output, "paths")
+	require.Contains(t, output, "source_trace")
 	return output
 }

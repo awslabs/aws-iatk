@@ -38,10 +38,13 @@ func (p *GetTraceTreeParams) RPCMethod() (*types.Result, error) {
 	}
 
 	traceTree, err := zionxray.NewTree(ctx, zionxray.NewTreeOptions(cfg), *traceId)
+	if err != nil {
+		return nil, fmt.Errorf("error building trace tree: %w", err)
+	}
 
 	return &types.Result{
 		Output: traceTree,
-	}, err
+	}, nil
 }
 
 // Folows the logic set in the sdk https://github.com/aws/aws-xray-sdk-python/blob/master/aws_xray_sdk/core/models/trace_header.py
