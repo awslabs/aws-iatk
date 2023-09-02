@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
+	"github.com/stretchr/testify/require"
 )
 
 func Deploy(t *testing.T, cfnClient *cloudformation.Client, stackName, templatePath string, capabilities []types.Capability) error {
@@ -62,9 +63,10 @@ func Deploy(t *testing.T, cfnClient *cloudformation.Client, stackName, templateP
 		o.Retryable = createRetryable
 	})
 
-	waiter.Wait(context.TODO(), &cloudformation.DescribeStacksInput{
+	err = waiter.Wait(context.TODO(), &cloudformation.DescribeStacksInput{
 		StackName: aws.String(stackName),
 	}, *aws.Duration(maxWaitTime))
+	require.NoError(t, err, "error while waiting for stack creation")
 	t.Logf("completed create stack %q", stackName)
 	return nil
 }
@@ -72,9 +74,10 @@ func Deploy(t *testing.T, cfnClient *cloudformation.Client, stackName, templateP
 func Destroy(t *testing.T, cfnClient *cloudformation.Client, stackName string) error {
 	t.Logf("destroy stack %q", stackName)
 
-	cfnClient.DeleteStack(context.TODO(), &cloudformation.DeleteStackInput{
+	_, err := cfnClient.DeleteStack(context.TODO(), &cloudformation.DeleteStackInput{
 		StackName: aws.String(stackName),
 	})
+	require.NoError(t, err, "failed to delete stack")
 
 	waiter := cloudformation.NewStackDeleteCompleteWaiter(cfnClient, func(options *cloudformation.StackDeleteCompleteWaiterOptions) {
 		options.LogWaitAttempts = false
@@ -82,9 +85,10 @@ func Destroy(t *testing.T, cfnClient *cloudformation.Client, stackName string) e
 	})
 
 	maxWaitTime := 5 * time.Minute
-	waiter.Wait(context.TODO(), &cloudformation.DescribeStacksInput{
+	err = waiter.Wait(context.TODO(), &cloudformation.DescribeStacksInput{
 		StackName: aws.String(stackName),
 	}, maxWaitTime)
+	require.NoError(t, err, "error while waiting for stack deletion")
 	t.Logf("completed destroy stack %q", stackName)
 	return nil
 }
