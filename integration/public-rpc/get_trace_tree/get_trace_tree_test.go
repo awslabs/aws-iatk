@@ -119,7 +119,7 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 				return tracingHeader
 
 			},
-			sleep:                        5,
+			sleep:                        10,
 			expectNumPaths:               1,
 			expectSourceTraceNumSegments: 2,
 		},
