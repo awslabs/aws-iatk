@@ -80,6 +80,12 @@ func (s *GetTraceTreeSuite) SetupSuite() {
 		[]string{"ProducerFunctionName", "ApiEndpoint", "StateMachineArn"},
 		s.cfnClient,
 	)
+	s.Require().Contains(output, "ProducerFunctionName")
+	s.Require().Contains(output, "StateMachineArn")
+	s.Require().Contains(output, "ApiEndpoint")
+	s.Require().NotZero(output["ProducerFunctionName"])
+	s.Require().NotZero(output["StateMachineArn"])
+	s.Require().NotZero(output["ApiEndpoint"])
 	s.producerFunctionName = output["ProducerFunctionName"]
 	s.stateMachineArn = output["StateMachineArn"]
 	s.apiEndpoint = output["ApiEndpoint"]
