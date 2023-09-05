@@ -41,6 +41,7 @@ class TestZion_retry_fetch_until(TestCase):
             role = cls.iam_client.get_role(
                 RoleName="xray-integration-role"
                 )
+            cls.lambda_client = boto3.client("lambda",region_name=role["Role"]["RoleLastUsed"]["Region"])
             LOG.debug("creating lambda function")
             cls.lambda_client.create_function(
                 FunctionName=cls.lambda_function_name,
