@@ -21,7 +21,7 @@ class RetryGetTraceTreeUntilParams:
     ----------
     trace_header:
         x-ray trace header
-    condition : Callable[[str], bool]
+    condition : Callable[[GetTraceTreeOutput], bool]
         Callable fuction that takes a str and returns a bool
     timeout_seconds : int
         Timeout (in seconds) to stop the fetching
@@ -33,7 +33,7 @@ class RetryGetTraceTreeUntilParams:
     def __init__(
         self,
         tracing_header: str,
-        condition: Callable[[], bool],
+        condition: Callable[[GetTraceTreeOutput], bool],
         timeout_seconds: int = 30,
     ):
         self.condition = condition
