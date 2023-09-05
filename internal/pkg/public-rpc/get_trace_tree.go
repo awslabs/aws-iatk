@@ -21,7 +21,7 @@ type GetTraceTreeParams struct {
 func (p *GetTraceTreeParams) RPCMethod() (*types.Result, error) {
 
 	if p.TracingHeader == "" {
-		return nil, errors.New(`missing required param "TraceId"`)
+		return nil, errors.New(`missing required param "TracingHeader"`)
 	}
 
 	traceId, err := getTracIdFromTracingHeader(p.TracingHeader)
@@ -38,10 +38,13 @@ func (p *GetTraceTreeParams) RPCMethod() (*types.Result, error) {
 	}
 
 	traceTree, err := zionxray.NewTree(ctx, zionxray.NewTreeOptions(cfg), *traceId)
+	if err != nil {
+		return nil, fmt.Errorf("error building trace tree: %w", err)
+	}
 
 	return &types.Result{
 		Output: traceTree,
-	}, err
+	}, nil
 }
 
 // Folows the logic set in the sdk https://github.com/aws/aws-xray-sdk-python/blob/master/aws_xray_sdk/core/models/trace_header.py
@@ -50,8 +53,12 @@ func getTracIdFromTracingHeader(tracingHeader string) (*string, error) {
 	splitHeader := strings.Split(tracingHeader, ";")
 	for _, headerComponent := range splitHeader {
 		splitComponent := strings.Split(headerComponent, "=")
-		if splitComponent[0] == "Root" {
-			return &splitComponent[1], nil
+		if strings.ToLower(splitComponent[0]) == "root" {
+			if splitComponent[1] != "" {
+				return &splitComponent[1], nil
+			} else {
+				return nil, errors.New(`invalid tracing header provided`)
+			}
 		}
 	}
 	return nil, errors.New(`invalid tracing header provided`)
