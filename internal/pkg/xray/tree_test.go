@@ -90,6 +90,19 @@ func TestNewTree(t *testing.T) {
 			},
 			expectErr: errors.New("failed to fetch trace 1-64de5a99-5d09aa705e56bbd0152548cb with error: no trace segments found"),
 		},
+		"input trace not found": {
+			sourceTraceId: "1-64de5a99-5d09aa705e56bbd0152548cb",
+			mockGetTraces: func(ctx context.Context, api BatchGetTracesAPI, traceIds []string) *mockGetTracesFunc {
+				f := newMockGetTracesFunc(t)
+				f.EXPECT().Execute(ctx, api, traceIds).
+					Return(
+						map[string]*Trace{},
+						nil,
+					)
+				return f
+			},
+			expectErr: errors.New("failed to fetch trace 1-64de5a99-5d09aa705e56bbd0152548cb with error: trace not found"),
+		},
 		"get traces api failed": {
 			sourceTraceId: "1-64de5a99-5d09aa705e56bbd0152548cb",
 			mockGetTraces: func(ctx context.Context, api BatchGetTracesAPI, traceIds []string) *mockGetTracesFunc {

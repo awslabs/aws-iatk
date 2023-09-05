@@ -20,6 +20,10 @@ func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string) (*Tree
 
 	trace := traceMap[sourceTraceId]
 
+	if trace == nil {
+		return nil, fmt.Errorf("failed to fetch trace %s with error: trace not found", sourceTraceId)
+	}
+
 	// If the trace returns 0 segments, raise an error
 	if len(trace.Segments) == 0 {
 		return nil, fmt.Errorf("failed to fetch trace %s with error: no trace segments found", sourceTraceId)
