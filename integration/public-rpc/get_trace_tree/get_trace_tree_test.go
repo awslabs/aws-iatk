@@ -94,10 +94,6 @@ func (s *GetTraceTreeSuite) TearDownSuite() {
 	s.T().Log("teardown suite complete")
 }
 
-func (s *GetTraceTreeSuite) TestPass() {
-	s.Assert().Equal(1, 1)
-}
-
 func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 	cases := []struct {
 		testname                     string
