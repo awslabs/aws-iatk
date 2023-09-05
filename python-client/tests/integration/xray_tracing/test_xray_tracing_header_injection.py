@@ -42,7 +42,7 @@ class TestZion_xray_tracing_lambda(TestCase):
                 zipped_code = f.read()
             time.sleep(10)
             role = cls.iam_client.get_role(
-                RoleName="xray-integration-role"
+                RoleName="xray-integration-role-lambda"
                 )
             LOG.debug("creating lambda function")
             cls.lambda_client.create_function(
@@ -141,7 +141,7 @@ class TestZion_xray_tracing_sfn(TestCase):
         LOG.debug("creating state machine")
         try:
             role = cls.iam_client.get_role(
-                RoleName="xray-integration-role"
+                RoleName="xray-integration-role-sfn"
             )
             cls.sfn_client.create_state_machine(
                 name=cls.sfn_machine_name,

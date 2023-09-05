@@ -39,6 +39,11 @@ from .get_trace_tree import (
     GetTraceTreeParams
 )
 
+from .retry_xray_trace import (
+    RetryGetTraceTreeUntilParams,
+)
+
+
 __all__ = [
     "Zion", 
     "ZionException", 
@@ -473,6 +478,44 @@ class Zion:
             message = data_dict.get("error", {}).get("message", "")
             error_code = data_dict.get("error", {}).get("Code", 0)
             raise ZionException(message=message, error_code=error_code)
+
+        
+    def retry_get_trace_tree_until(self, params: RetryGetTraceTreeUntilParams):
+        """
+        function to retry get_trace_tree condition or timeout is met
+
+        IAM Permissions Needed
+        ----------------------
+        
+        Parameters
+        ----------
+        condition: Callable[[GetTraceTreeOutput], bool]
+        Callable function that takes any type and returns a bool
+
+        timeout: int or float
+        value that specifies how long the function will retry for until it times out
+        
+        Returns
+        -------
+        bool
+            True if the condition was met or false if the timeout is met
+
+        Raises
+        ------
+        Zionexception
+            When an exception occurs during get_trace_tree
+        """
+        @self.retry_until(condition=params.condition, timeout=params.timeout_seconds)
+        def fetch_trace_tree():
+            response = self.get_trace_tree(params=GetTraceTreeParams(
+                tracing_header=params.tracing_header
+            ))
+            return response
+        try:
+            response = fetch_trace_tree()
+            return response
+        except ZionException as e:
+            raise ZionException(e, 500)
 
 
 # Set up logging to ``/dev/null`` like a library is supposed to.
