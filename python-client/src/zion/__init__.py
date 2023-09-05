@@ -508,7 +508,7 @@ class Zion:
         @self.retry_until(condition=params.condition, timeout=params.timeout_seconds)
         def fetch_trace_tree():
             response = self.get_trace_tree(params=GetTraceTreeParams(
-                tracing_header="R" + params.tracing_header[1:]
+                tracing_header=params.tracing_header
             ))
             return response
         try:
