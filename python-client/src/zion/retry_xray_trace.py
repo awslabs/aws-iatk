@@ -13,7 +13,7 @@ LOG = logging.getLogger(__name__)
 
 
 @dataclass
-class RetryFetchXRayTraceUntilParams:
+class RetryGetTraceTreeUntilParams:
     """
     zion.wait_until_event_matched params
 
@@ -28,17 +28,17 @@ class RetryFetchXRayTraceUntilParams:
     """
     condition: Callable[[GetTraceTreeOutput], bool]    
     timeout_seconds: int
-    trace_header: str
+    tracing_header: str
 
     def __init__(
         self,
-        trace_header: str,
+        tracing_header: str,
         condition: Callable[[], bool],
         timeout_seconds: int = 30,
     ):
         self.condition = condition
         self.timeout_seconds = timeout_seconds
-        self.trace_header = trace_header
+        self.tracing_header = tracing_header
 
 
 class InvalidParamException(Exception):
