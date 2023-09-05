@@ -23,9 +23,10 @@ class TestZion_retry_fetch_until(TestCase):
     counter = 0
     xray_trace_header = ""
     dummy_trace_header = "Root=test,Sampled=1"
-    zion = zion.Zion()
-    lambda_client = boto3.client("lambda")
-    iam_client = boto3.client("iam")
+    region = "us-east-1"
+    zion = zion.Zion(region=region)
+    lambda_client = boto3.client("lambda", region_name=region)
+    iam_client = boto3.client("iam", region_name=region)
     lambda_function_name = "test_lambda" + str(random.randrange(0,100000))
 
     @classmethod
@@ -41,7 +42,6 @@ class TestZion_retry_fetch_until(TestCase):
             role = cls.iam_client.get_role(
                 RoleName="xray-integration-role"
                 )
-            cls.lambda_client = boto3.client("lambda",region_name=role["Role"]["RoleLastUsed"]["Region"])
             LOG.debug("creating lambda function")
             cls.lambda_client.create_function(
                 FunctionName=cls.lambda_function_name,
