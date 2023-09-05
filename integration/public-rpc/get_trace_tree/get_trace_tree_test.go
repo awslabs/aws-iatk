@@ -7,7 +7,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 	"testing"
 	"time"
@@ -60,7 +59,6 @@ type GetTraceTreeSuite struct {
 
 	producerFunctionName string
 	stateMachineArn      string
-	apiEndpoint          string
 }
 
 func (s *GetTraceTreeSuite) SetupSuite() {
@@ -77,18 +75,15 @@ func (s *GetTraceTreeSuite) SetupSuite() {
 	s.Require().NoError(err, "failed to create stack")
 	output, _ := zioncfn.GetStackOuput(
 		s.stackName,
-		[]string{"ProducerFunctionName", "ApiEndpoint", "StateMachineArn"},
+		[]string{"ProducerFunctionName", "StateMachineArn"},
 		s.cfnClient,
 	)
 	s.Require().Contains(output, "ProducerFunctionName")
 	s.Require().Contains(output, "StateMachineArn")
-	s.Require().Contains(output, "ApiEndpoint")
 	s.Require().NotZero(output["ProducerFunctionName"])
 	s.Require().NotZero(output["StateMachineArn"])
-	s.Require().NotZero(output["ApiEndpoint"])
 	s.producerFunctionName = output["ProducerFunctionName"]
 	s.stateMachineArn = output["StateMachineArn"]
-	s.apiEndpoint = output["ApiEndpoint"]
 	s.T().Log("setup suite complete")
 }
 
@@ -149,23 +144,6 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 			sleep:                        10,
 			expectNumPaths:               2,
 			expectSourceTraceNumSegments: 5,
-		},
-		{
-			testname: "invoke api endpoint",
-			invoke: func(t *testing.T) string {
-				client := &http.Client{}
-				req, err := http.NewRequest("GET", s.apiEndpoint, nil)
-				require.NoError(t, err, "failed to create request")
-				req.Header.Set("X-Amzn-Trace-Id", "Sampled=1")
-				res, err := client.Do(req)
-				require.NoError(t, err, "failed to do request")
-				tracingHeader := res.Header.Get("X-Amzn-Trace-Id")
-				require.NotZero(t, tracingHeader, "tracing header not found")
-				return tracingHeader
-			},
-			sleep:                        5,
-			expectNumPaths:               1,
-			expectSourceTraceNumSegments: 2,
 		},
 	}
 

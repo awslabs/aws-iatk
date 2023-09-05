@@ -56,11 +56,6 @@ Resources:
           Type: SQS
           Properties:
             Queue: !GetAtt MySQSQueue.Arn
-        Api:
-          Type: Api
-          Properties:
-            Path: /hello
-            Method: GET
 
   MyStateMachine:
     Type: AWS::Serverless::StateMachine
@@ -85,7 +80,5 @@ Resources:
 Outputs:
   ProducerFunctionName:
     Value: !Ref ProducerA
-  ApiEndpoint:
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
   StateMachineArn:
     Value: !Ref MyStateMachine
