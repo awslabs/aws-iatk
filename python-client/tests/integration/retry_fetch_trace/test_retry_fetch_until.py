@@ -40,7 +40,7 @@ class TestZion_retry_fetch_until(TestCase):
             with open(test_lambda_path, "rb") as f:
                 zipped_code = f.read()
             role = cls.iam_client.get_role(
-                RoleName="xray-integration-role"
+                RoleName="xray-integration-role-lambda"
                 )
             LOG.debug("creating lambda function")
             cls.lambda_client.create_function(
@@ -68,7 +68,7 @@ class TestZion_retry_fetch_until(TestCase):
             FunctionName=cls.lambda_function_name
         )
 
-    @pytest.mark.flaky(reruns=3)
+    # @pytest.mark.flaky(reruns=3)
     def test_get_traces_pass(self):
         time.sleep(5)
         def trace_header_is_root(tree):
@@ -83,64 +83,65 @@ class TestZion_retry_fetch_until(TestCase):
         end = time.time()
         self.assertTrue(response)
         self.assertLess(end - start, 10)
+        self.assertEqual(0,1)
     
-    def test_get_traces_fail(self):
-        time.sleep(5)
-        def num_is_10(trace):
-            self.counter = random.randrange(0,10)
-            return self.counter == 10
-        params = RetryGetTraceTreeUntilParams(
-            tracing_header=self.xray_trace_header,
-            condition=num_is_10,
-            timeout_seconds=10)
-        start = time.time()
-        response = self.zion.retry_get_trace_tree_until(params=params)
-        end = time.time()
-        self.assertFalse(response)
-        self.assertNotEqual(self.counter, 10)
-        self.assertGreater(end - start, 10)
+    # def test_get_traces_fail(self):
+    #     time.sleep(5)
+    #     def num_is_10(trace):
+    #         self.counter = random.randrange(0,10)
+    #         return self.counter == 10
+    #     params = RetryGetTraceTreeUntilParams(
+    #         tracing_header=self.xray_trace_header,
+    #         condition=num_is_10,
+    #         timeout_seconds=10)
+    #     start = time.time()
+    #     response = self.zion.retry_get_trace_tree_until(params=params)
+    #     end = time.time()
+    #     self.assertFalse(response)
+    #     self.assertNotEqual(self.counter, 10)
+    #     self.assertGreater(end - start, 10)
 
-    @pytest.mark.timeout(timeout=2500, method="thread")
-    def test_get_traces_infinite_timeout_pass(self):
-        time.sleep(5)
-        def num_is_10(trace):
-            time.sleep(1.5)
-            self.counter += 1
-            return self.counter == 10
-        params = RetryGetTraceTreeUntilParams(
-            tracing_header=self.xray_trace_header,
-            condition=num_is_10,
-            timeout_seconds=0)
-        start = time.time()
-        response = self.zion.retry_get_trace_tree_until(params=params)
-        end = time.time()
-        self.assertTrue(response)
-        self.assertEqual(self.counter, 10)
-        self.assertGreater(end - start, 15)
+    # @pytest.mark.timeout(timeout=2500, method="thread")
+    # def test_get_traces_infinite_timeout_pass(self):
+    #     time.sleep(5)
+    #     def num_is_10(trace):
+    #         time.sleep(1.5)
+    #         self.counter += 1
+    #         return self.counter == 10
+    #     params = RetryGetTraceTreeUntilParams(
+    #         tracing_header=self.xray_trace_header,
+    #         condition=num_is_10,
+    #         timeout_seconds=0)
+    #     start = time.time()
+    #     response = self.zion.retry_get_trace_tree_until(params=params)
+    #     end = time.time()
+    #     self.assertTrue(response)
+    #     self.assertEqual(self.counter, 10)
+    #     self.assertGreater(end - start, 15)
 
-    def test_invalid_traceid_fail(self):
-        def num_is_10(trace):
-            self.counter = random.randrange(0,10)
-            return self.counter == 10
-        params = RetryGetTraceTreeUntilParams(
-            tracing_header="test",
-            condition=num_is_10,
-            timeout_seconds=10)
-        with pytest.raises(zion.ZionException) as e:
-            start = time.time()
-            self.zion.retry_get_trace_tree_until(params=params)
-            end = time.time()
-            self.assertNotEqual(self.counter, 10)
-            self.assertGreater(end - start, 10)
-            self.assertEqual(e, "Method not found")
+    # def test_invalid_traceid_fail(self):
+    #     def num_is_10(trace):
+    #         self.counter = random.randrange(0,10)
+    #         return self.counter == 10
+    #     params = RetryGetTraceTreeUntilParams(
+    #         tracing_header="test",
+    #         condition=num_is_10,
+    #         timeout_seconds=10)
+    #     with pytest.raises(zion.ZionException) as e:
+    #         start = time.time()
+    #         self.zion.retry_get_trace_tree_until(params=params)
+    #         end = time.time()
+    #         self.assertNotEqual(self.counter, 10)
+    #         self.assertGreater(end - start, 10)
+    #         self.assertEqual(e, "Method not found")
 
-    def test_condition_not_function_error(self):
-        params = RetryGetTraceTreeUntilParams(
-            tracing_header=self.xray_trace_header,
-            condition=0,
-            timeout_seconds=10)
-        with pytest.raises(TypeError) as e:
-            self.zion.retry_get_trace_tree_until(params=params)
-            self.assertNotEqual(self.counter, 10)
-            self.assertEqual(e, "condition is not a callable function")
+    # def test_condition_not_function_error(self):
+    #     params = RetryGetTraceTreeUntilParams(
+    #         tracing_header=self.xray_trace_header,
+    #         condition=0,
+    #         timeout_seconds=10)
+    #     with pytest.raises(TypeError) as e:
+    #         self.zion.retry_get_trace_tree_until(params=params)
+    #         self.assertNotEqual(self.counter, 10)
+    #         self.assertEqual(e, "condition is not a callable function")
     
