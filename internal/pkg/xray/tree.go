@@ -18,9 +18,9 @@ func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string) (*Tree
 		return nil, fmt.Errorf("failed to fetch trace %s with error: %w", sourceTraceId, err)
 	}
 
-	trace, ok := traceMap[sourceTraceId]
+	trace := traceMap[sourceTraceId]
 
-	if !ok {
+	if trace == nil {
 		return nil, fmt.Errorf("failed to fetch trace %s with error: trace not found", sourceTraceId)
 	}
 
