@@ -489,7 +489,7 @@ class Zion:
         
         Parameters
         ----------
-        condition: Callable[[Tree], bool]
+        condition: Callable[[GetTraceTreeOutput], bool]
         Callable function that takes any type and returns a bool
 
         timeout: int or float
