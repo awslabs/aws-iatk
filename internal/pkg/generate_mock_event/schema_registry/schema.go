@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/schemas"
 )
 
-func GetRegistrySchema(ctx context.Context, registryName, schemaName, schemaVersion, eventRef *string, api DescribeSchemaAPI) (*Schema, error) {
+func NewSchemaFromRegistry(ctx context.Context, registryName, schemaName, schemaVersion, eventRef *string, api DescribeSchemaAPI) (*Schema, error) {
 
 	input := &schemas.DescribeSchemaInput{
 		RegistryName:  registryName,

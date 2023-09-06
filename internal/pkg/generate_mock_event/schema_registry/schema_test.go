@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetRegistrySchema(t *testing.T) {
+func TestNewSchemaFromRegistry(t *testing.T) {
 	cases := map[string]struct {
-		mockGetRegistrySchema func(ctx context.Context, registryName, schemaName, schemaVersion, eventRef *string, schemaType, schemaContent string) *MockDescribeSchemaAPI
+		mockDescribeSchemaAPI func(ctx context.Context, registryName, schemaName, schemaVersion, eventRef *string, schemaType, schemaContent string) *MockDescribeSchemaAPI
 		registryName          string
 		schemaName            string
 		schemaVersion         string
@@ -28,7 +28,7 @@ func TestGetRegistrySchema(t *testing.T) {
 			schemaContent: "{\n  \"$id\": \"https://example.com/person.schema.json\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"title\": \"Person\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"firstName\": {\n      \"type\": \"string\",\n      \"description\": \"The person's first name.\"\n    },\n    \"lastName\": {\n      \"type\": \"string\",\n      \"description\": \"The person's last name.\"\n    },\n    \"age\": {\n      \"description\": \"Age in years which must be equal to or greater than zero.\",\n      \"type\": \"integer\",\n      \"minimum\": 0\n    }\n  }\n}",
 			eventRef:      "#/definitions/Person",
 			expectErr:     nil,
-			mockGetRegistrySchema: func(ctx context.Context, registryName, schemaName, schemaVersion, eventRef *string, schemaType, schemaContent string) *MockDescribeSchemaAPI {
+			mockDescribeSchemaAPI: func(ctx context.Context, registryName, schemaName, schemaVersion, eventRef *string, schemaType, schemaContent string) *MockDescribeSchemaAPI {
 				api := NewMockDescribeSchemaAPI(t)
 				api.EXPECT().
 					DescribeSchema(ctx, &schemas.DescribeSchemaInput{
@@ -52,7 +52,7 @@ func TestGetRegistrySchema(t *testing.T) {
 			schemaContent: "{\"openapi\":\"3.0.0\",\"info\":{\"version\":\"1.0.0\",\"title\":\"SomeAwesomeSchema\"},\"paths\":{},\"components\":{\"schemas\":{\"Some Awesome Schema\":{\"type\":\"object\",\"required\":[\"foo\",\"bar\",\"baz\"],\"properties\":{\"foo\":{\"type\":\"string\"},\"bar\":{\"type\":\"string\"},\"baz\":{\"type\":\"string\"}}}}}} ",
 			eventRef:      "#/components/schemas/Person",
 			expectErr:     nil,
-			mockGetRegistrySchema: func(ctx context.Context, registryName, schemaName, schemaVersion, eventRef *string, schemaType, schemaContent string) *MockDescribeSchemaAPI {
+			mockDescribeSchemaAPI: func(ctx context.Context, registryName, schemaName, schemaVersion, eventRef *string, schemaType, schemaContent string) *MockDescribeSchemaAPI {
 				api := NewMockDescribeSchemaAPI(t)
 				api.EXPECT().
 					DescribeSchema(ctx, &schemas.DescribeSchemaInput{
@@ -73,7 +73,7 @@ func TestGetRegistrySchema(t *testing.T) {
 			schemaName:    "mock-schema-name",
 			schemaVersion: "1",
 			eventRef:      "",
-			mockGetRegistrySchema: func(ctx context.Context, registryName, schemaName, schemaVersion, eventRef *string, schemaType, schemaContent string) *MockDescribeSchemaAPI {
+			mockDescribeSchemaAPI: func(ctx context.Context, registryName, schemaName, schemaVersion, eventRef *string, schemaType, schemaContent string) *MockDescribeSchemaAPI {
 				api := NewMockDescribeSchemaAPI(t)
 				api.EXPECT().
 					DescribeSchema(ctx, &schemas.DescribeSchemaInput{
@@ -97,9 +97,9 @@ func TestGetRegistrySchema(t *testing.T) {
 			} else {
 				schemaVersion = &tt.schemaVersion
 			}
-			outputSchema, err := GetRegistrySchema(
+			outputSchema, err := NewSchemaFromRegistry(
 				ctx, &tt.registryName, &tt.schemaName, schemaVersion, &tt.eventRef,
-				tt.mockGetRegistrySchema(
+				tt.mockDescribeSchemaAPI(
 					ctx, &tt.registryName, &tt.schemaName, schemaVersion, &tt.eventRef, tt.schemaType, tt.schemaContent,
 				),
 			)
