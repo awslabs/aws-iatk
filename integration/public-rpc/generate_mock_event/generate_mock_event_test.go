@@ -8,8 +8,6 @@ import (
 	"zion/integration/zion"
 	"zion/internal/pkg/jsonrpc"
 
-	"github.com/aws/aws-sdk-go-v2/service/schemas"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -19,10 +17,6 @@ const test_method = "generate_mock_event"
 
 func TestGenerateMockEvent(t *testing.T) {
 	region := "ap-southeast-1"
-	// cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
-	// if err != nil {
-	// 	t.Fatalf("failed to get aws config: %v", err)
-	// }
 	s := new(GenerateMockEventSuite)
 	s.region = region
 
@@ -33,8 +27,6 @@ type GenerateMockEventSuite struct {
 	suite.Suite
 
 	region string
-
-	schemasClient *schemas.Client
 }
 
 func (s *GenerateMockEventSuite) SetupSuite() {
