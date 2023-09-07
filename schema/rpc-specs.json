@@ -1,5 +1,42 @@
 {
     "methods": {
+        "generate_mock_event": {
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "EventRef": {
+                        "type": "string"
+                    },
+                    "Overrides": {
+                        "type": "string"
+                    },
+                    "Profile": {
+                        "type": "string"
+                    },
+                    "Region": {
+                        "type": "string"
+                    },
+                    "RegistryName": {
+                        "type": "string"
+                    },
+                    "SchemaFile": {
+                        "type": "string"
+                    },
+                    "SchemaName": {
+                        "type": "string"
+                    },
+                    "SchemaVersion": {
+                        "type": "string"
+                    },
+                    "SkipOptional": {
+                        "type": "bool"
+                    }
+                }
+            },
+            "returns": {
+                "type": "string"
+            }
+        },
         "get_physical_id": {
             "parameters": {
                 "type": "object",
@@ -51,9 +88,6 @@
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "FetchChildLinkedTraces": {
-                        "type": "bool"
-                    },
                     "Profile": {
                         "type": "string"
                     },

@@ -38,9 +38,12 @@ from .get_trace_tree import (
     GetTraceTreeOutput,
     GetTraceTreeParams
 )
-
 from .retry_xray_trace import (
     RetryGetTraceTreeUntilParams,
+)
+from .generate_mock_event import (
+    GenerateMockEventOutput,
+    GenerateMockEventParams,
 )
 
 
@@ -60,7 +63,11 @@ __all__ = [
     "PollEventsParams",
     "WaitUntilEventMatchedParams",
     "GetTraceTreeParams",
-    "GetTraceTreeOutput"]
+    "GetTraceTreeOutput",
+    "RetryGetTraceTreeUntilParams",
+    "GenerateMockEventOutput",
+    "GenerateMockEventParams",
+]
 
 LOG = logging.getLogger(__name__)
 zion_service_logger = logging.getLogger("zion.service")
@@ -375,6 +382,39 @@ class Zion:
         LOG.debug(f"Output: {output}")
         return output
 
+    def generate_mock_event(
+        self, params: GenerateMockEventParams,
+    ) -> GenerateMockEventOutput:
+        """
+        Generate a mock event based on a schema from EventBridge Schema Registry or from a local file
+
+        IAM Permissions Needed
+        ----------------------
+        schemas:DescribeSchema
+        
+        Parameters
+        ----------
+        params : GenerateMockEventParams
+            Data Class that holds required parameters
+        
+        Returns
+        -------
+        GenerateMockEventOutput
+            Data Class that holds the trace tree structure
+
+        Raises
+        ------
+        ZionException
+            When failed to fetch a trace tree
+        """
+        input_data = params.jsonrpc_dumps(self.region, self.profile)
+        stdout_data = self._popen_zion(input_data, {})
+        self._raise_error_if_returned(stdout_data)
+
+        output = GenerateMockEventOutput(stdout_data)
+
+        LOG.debug(f"Output: {output}")
+        return output
     
     def retry_until(self, condition, timeout = 10):
         """
