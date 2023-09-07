@@ -1,6 +1,5 @@
 package event
 
-import "C"
 import (
 	"encoding/json"
 	"errors"
