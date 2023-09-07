@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package publicrpc
 
 import (
@@ -5,7 +8,12 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"zion/internal/pkg/aws/config"
+	schemaregistry "zion/internal/pkg/generate_mock_event/schema_registry"
 	"zion/internal/pkg/public-rpc/types"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/schemas"
 )
 
 type GenerateMockEventsParams struct {
@@ -30,14 +38,22 @@ func (p *GenerateMockEventsParams) RPCMethod() (*types.Result, error) {
 	}
 
 	ctx := context.TODO()
-	// cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("error loading AWS config: %w", err)
-	// }
+	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile)
+	if err != nil {
+		return nil, fmt.Errorf("error loading AWS config: %w", err)
+	}
 
-	var schema *Schema
+	var schema *schemaregistry.Schema
 	if p.RegistryName != "" {
-		schema, err = NewSchemaFromSchemaRegistry(ctx, p.RegistryName, p.SchemaName, p.SchemaVersion, nil)
+		client := schemas.NewFromConfig(cfg)
+		schema, err = schemaregistry.NewSchemaFromRegistry(
+			ctx,
+			aws.String(p.RegistryName),
+			aws.String(p.SchemaName),
+			aws.String(p.SchemaVersion),
+			aws.String(p.EventRef),
+			client,
+		)
 	} else {
 		schema, err = NewSchemaFromLocalFile()
 	}
@@ -77,23 +93,11 @@ func (p *GenerateMockEventsParams) validateParams() error {
 }
 
 // TODO: to be replaced by actual implementation (in internal pkg)
-type Schema struct {
-	Content *string
-	Type    *string
-	Ref     *string
+func NewSchemaFromLocalFile() (*schemaregistry.Schema, error) {
+	return &schemaregistry.Schema{}, nil
 }
 
 // TODO: to be replaced by actual implementation (in internal pkg)
-func NewSchemaFromSchemaRegistry(ctx context.Context, registry, schema, version string, options interface{}) (*Schema, error) {
-	return &Schema{}, nil
-}
-
-// TODO: to be replaced by actual implementation (in internal pkg)
-func NewSchemaFromLocalFile() (*Schema, error) {
-	return &Schema{}, nil
-}
-
-// TODO: to be replaced by actual implementation (in internal pkg)
-func GenerateMockEvent(schema *Schema) (string, error) {
+func GenerateMockEvent(schema *schemaregistry.Schema) (string, error) {
 	return "", nil
 }
