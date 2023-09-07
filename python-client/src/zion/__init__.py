@@ -340,13 +340,17 @@ class Zion:
         LOG.debug("no matching event found")
         return False
 
-      
+
     def get_trace_tree(
         self, params: GetTraceTreeParams
     ) -> GetTraceTreeOutput:
         """
         Fetch the trace tree structure using the provided tracing_header
 
+        IAM Permissions Needed
+        ----------------------
+        xray:BatchGetTraces
+        
         Parameters
         ----------
         params : GetTraceTreeParams
@@ -431,13 +435,12 @@ class Zion:
         """
         Patches boto3 client to register event to include generated x-ray trace id and sampling rule as part of request header before invoke/execution
 
-         Parameters
+        Parameters
         ----------
         params : client
             boto3.client for specified aws service
-               : sampled
-            int, value 0 or 1 to select if trace has been sampled or not
-            
+        sampled : int
+            value 0 to not sample the request or value 1 to sample the request
         
         Returns
         -------
@@ -486,6 +489,7 @@ class Zion:
 
         IAM Permissions Needed
         ----------------------
+        xray:BatchGetTraces
         
         Parameters
         ----------
