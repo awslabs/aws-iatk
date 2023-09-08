@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/santhosh-tekuri/jsonschema/v4"
+	"golang.org/x/exp/slices"
 	"log"
-	"slices"
 	"strings"
 	"time"
 )
