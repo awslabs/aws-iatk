@@ -5,10 +5,10 @@ from subprocess import Popen, PIPE
 from datetime import datetime
 import pathlib
 import json
-import boto3
 import logging
 from dataclasses import dataclass
 from functools import wraps
+from typing import TYPE_CHECKING, Optional
 import time
 import math
 
@@ -42,6 +42,9 @@ from .get_trace_tree import (
 from .retry_xray_trace import (
     RetryGetTraceTreeUntilParams,
 )
+
+if TYPE_CHECKING:
+    import boto3
 
 
 __all__ = [
@@ -96,8 +99,8 @@ class Zion:
     profile: str, optional
         AWS Profile used to communicate with AWS resources
     """
-    region: str = None
-    profile: str = None
+    region: Optional[str] = None
+    profile: Optional[str] = None
 
     _zion_binary_path = (
         pathlib.Path(__file__).parent.parent.joinpath("zion_service", "zion").absolute()
@@ -427,7 +430,7 @@ class Zion:
         return retry_until_decorator
     
         
-    def patch_aws_client(self, client: boto3.client, sampled = 1) -> boto3.client:
+    def patch_aws_client(self, client: "boto3.client", sampled = 1) -> "boto3.client":
         """
         Patches boto3 client to register event to include generated x-ray trace id and sampling rule as part of request header before invoke/execution
 
