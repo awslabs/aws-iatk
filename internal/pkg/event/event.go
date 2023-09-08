@@ -60,7 +60,7 @@ func GenerateEvent(schemaString string, generateRequiredOnly bool) ([]byte, erro
 	}
 	schema, err := compiler.Compile("temp.json")
 	if err != nil {
-		return nil, errors.New("error compiling schema: " + err.Error())
+		return nil, fmt.Errorf("error compiling schema: %w", err)
 	}
 
 	eventMap, err := GenerateEventObject(schema, generateRequiredOnly, 3)
