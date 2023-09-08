@@ -2,7 +2,7 @@ package event
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"github.com/santhosh-tekuri/jsonschema/v4"
 	"log"
 	"slices"
@@ -60,12 +60,12 @@ func GenerateEvent(schemaString string, generateRequiredOnly bool) ([]byte, erro
 	}
 	schema, err := compiler.Compile("temp.json")
 	if err != nil {
-		return nil, errors.New("error compiling schema: " + err.Error())
+		return nil, fmt.Errorf("error compiling schema: %w", err)
 	}
 
 	eventMap, err := GenerateEventObject(schema, generateRequiredOnly, 3)
 	if err != nil {
-		return nil, errors.New("error generating event: " + err.Error())
+		return nil, fmt.Errorf("error generating event: %w", err)
 	}
 	return json.Marshal(eventMap)
 }
