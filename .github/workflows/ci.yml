@@ -52,7 +52,7 @@ jobs:
           cd python-client
           pip install build
           make copy-service-source-for-sdist
-          make init
+          make build-client
 
       - name: Test
         shell: bash
