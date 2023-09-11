@@ -1,14 +1,19 @@
 package generatemockevent_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"testing"
+	cfn "zion/integration/cloudformation"
 	"zion/integration/zion"
 	"zion/internal/pkg/jsonrpc"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
+	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
+	"github.com/rs/xid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -18,7 +23,15 @@ const test_method = "generate_mock_event"
 
 func TestGenerateMockEvent(t *testing.T) {
 	region := "us-east-1"
+
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	if err != nil {
+		t.Fatalf("failed to get aws config: %v", err)
+	}
+	cfnClient := cloudformation.NewFromConfig(cfg)
 	s := new(GenerateMockEventSuite)
+	s.cfnClient = cfnClient
+	s.stackName = "test-stack-" + xid.New().String()
 	s.region = region
 	suite.Run(t, s)
 }
@@ -26,7 +39,10 @@ func TestGenerateMockEvent(t *testing.T) {
 type GenerateMockEventSuite struct {
 	suite.Suite
 
-	region string
+	stackName string
+	region    string
+
+	cfnClient *cloudformation.Client
 
 	registry      string
 	openapiSchema string
@@ -35,17 +51,22 @@ type GenerateMockEventSuite struct {
 
 func (s *GenerateMockEventSuite) SetupSuite() {
 	s.T().Log("setup suite start")
-
-	s.registry = os.Getenv("GEN_MOCK_EVENT_TEST_REGISTRY_NAME")
-	s.Require().NotEmpty(s.registry)
-
-	s.openapiSchema = os.Getenv("GEN_MOCK_EVENT_TEST_OPENAPI_SCHEMA_NAME")
-	s.Require().NotEmpty(s.openapiSchema)
-
-	s.jsonSchema = os.Getenv("GEN_MOCK_EVENT_TEST_JSONSCHEMA_SCHEMA_NAME")
-	s.Require().NotEmpty(s.jsonSchema)
+	err := cfn.Deploy(
+		s.T(),
+		s.cfnClient,
+		s.stackName,
+		"./template.yaml",
+		[]types.Capability{})
+	s.Require().NoError(err, "failed to create stack")
 
 	s.T().Log("setup suite complete")
+}
+
+func (s *GenerateMockEventSuite) TearDownSuite() {
+	s.T().Log("teardown suite start")
+	err := cfn.Destroy(s.T(), s.cfnClient, s.stackName)
+	s.Require().NoError(err, "failed to destroy stack")
+	s.T().Log("teardown suite complete")
 }
 
 func (s *GenerateMockEventSuite) TestGenerateMockEvent() {
