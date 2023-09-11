@@ -36,7 +36,7 @@ func GenerateEventObject(schema *jsonschema.Schema, generateRequiredOnly bool, m
 			case "null":
 				event[key] = nil
 			case "bool":
-				event[key] = 0
+				event[key] = false
 			case "object":
 				if maxDepth == 0 {
 					event[key] = nil
