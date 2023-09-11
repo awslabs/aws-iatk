@@ -4,6 +4,12 @@
             "parameters": {
                 "type": "object",
                 "properties": {
+                    "Context": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
                     "EventRef": {
                         "type": "string"
                     },
@@ -17,9 +23,6 @@
                         "type": "string"
                     },
                     "RegistryName": {
-                        "type": "string"
-                    },
-                    "SchemaFile": {
                         "type": "string"
                     },
                     "SchemaName": {
