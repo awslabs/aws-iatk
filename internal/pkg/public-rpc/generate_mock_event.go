@@ -14,6 +14,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/schemas"
+	"golang.org/x/exp/slices"
 )
 
 type GenerateMockEventsParams struct {
@@ -76,6 +77,17 @@ func (p *GenerateMockEventsParams) ReflectOutput() reflect.Value {
 func (p *GenerateMockEventsParams) validateParams() error {
 	if p.RegistryName == "" || p.SchemaName == "" {
 		return errors.New(`requires both "RegistryName" and "SchemaName"`)
+	}
+
+	supportedContext := []string{
+		"eventbridge.v0",
+	}
+	if p.Context != nil && len(p.Context) > 0 {
+		for _, c := range p.Context {
+			if !slices.Contains(supportedContext, c) {
+				return fmt.Errorf("%q is not a supported context. supported context: %v", c, supportedContext)
+			}
+		}
 	}
 
 	return nil

@@ -4,8 +4,7 @@
 import json
 import logging
 from dataclasses import dataclass
-from os import PathLike
-from typing import Optional, Union
+from typing import Optional, List
 
 from .jsonrpc import Payload
 
@@ -44,10 +43,10 @@ class GenerateMockEventParams:
         name of the schema stored in EventBridge Schema Registry
     schema_version : str
         version of the schema stored in EventBridge Schema Registry
-    schema_file : str or path-like 
-        path to a local schema file
     event_ref : str
         location to the event in the schema in json schema ref syntax, only applicable for openapi schema
+    context: List[str]
+        a list of context to apply on the generated event. Currently only support "eventbridge.v0", which applies context for an EventBridge Event.
     overrides : dict
         dictionary of overrides to apply on the generated mock event
     skip_optional : bool
@@ -56,8 +55,8 @@ class GenerateMockEventParams:
     registry_name: Optional[str] = None
     schema_name: Optional[str] = None
     schema_version: Optional[str] = None
-    schema_file: Optional[Union[str, PathLike]] = None
     event_ref: Optional[str] = None
+    context: Optional[List[str]] = None
     overrides: Optional[dict] = None
     skip_optional: Optional[bool] = None
 
@@ -71,10 +70,10 @@ class GenerateMockEventParams:
             params["SchemaName"] = self.schema_name
         if self.schema_version:
             params["SchemaVersion"] = self.schema_version
-        if self.schema_file:
-            params["SchemaFile"] = self.schema_file
         if self.event_ref:
             params["EventRef"] = self.event_ref
+        if self.context:
+            params["Context"] = self.context
         if self.overrides:
             params["Overrides"] = self.overrides
         if self.skip_optional:
