@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"github.com/santhosh-tekuri/jsonschema/v4"
 	"golang.org/x/exp/slices"
-	"log"
-	"strings"
+	"reflect"
 	"time"
 )
 
@@ -62,18 +61,53 @@ func GenerateEventObject(schema *jsonschema.Schema, generateRequiredOnly bool, m
 	}
 	return event, nil
 }
-
-func GenerateEvent(schemaString string, generateRequiredOnly bool) ([]byte, error) {
-	compiler := jsonschema.NewCompiler()
-	if err := compiler.AddResource("temp.json", strings.NewReader(schemaString)); err != nil {
-		log.Fatal(err)
+func GenerateRefSchema(schema *jsonschema.Schema, eventRef string, maxDepth int) (jsonschema.Schema, error) {
+	queueSchema := []jsonschema.Schema{*schema}
+	queueMaxDepth := []int{maxDepth}
+	for len(queueSchema) > 0 {
+		curSchema := queueSchema[len(queueSchema)-1]
+		curMaxDepth := queueMaxDepth[len(queueMaxDepth)-1]
+		queueSchema = queueSchema[:len(queueSchema)-1]
+		queueMaxDepth = queueMaxDepth[:len(queueMaxDepth)-1]
+		if curSchema.Ref != nil && curSchema.Ref.Ptr == eventRef {
+			return *curSchema.Ref, nil
+		}
+		if curMaxDepth > 0 {
+			for _, element := range curSchema.Properties {
+				queueSchema = append(queueSchema, *element)
+				queueMaxDepth = append(queueMaxDepth, curMaxDepth-1)
+			}
+			if reflect.TypeOf(curSchema.Items) == reflect.TypeOf([]*jsonschema.Schema{}) {
+				items := curSchema.Items.([]*jsonschema.Schema)
+				for _, element := range items {
+					queueSchema = append(queueSchema, *element)
+					queueMaxDepth = append(queueMaxDepth, curMaxDepth-1)
+				}
+			} else if reflect.TypeOf(curSchema.Items) == reflect.TypeOf(schema) {
+				item := curSchema.Items.(*jsonschema.Schema)
+				queueSchema = append(queueSchema, *item)
+				queueMaxDepth = append(queueMaxDepth, curMaxDepth-1)
+			}
+			if schema.Ref != nil {
+				queueSchema = append(queueSchema, *schema.Ref)
+				queueMaxDepth = append(queueMaxDepth, curMaxDepth-1)
+			}
+		}
 	}
-	schema, err := compiler.Compile("temp.json")
+	return jsonschema.Schema{}, fmt.Errorf("reference not found")
+}
+
+func GenerateEvent(schemaString string, generateRequiredOnly bool, eventRef string) ([]byte, error) {
+	schema, err := jsonschema.CompileString("temp.json", schemaString)
+	if len(eventRef) > 1 {
+		*schema, err = GenerateRefSchema(schema, eventRef, 20)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error compiling schema: %w", err)
 	}
 
-	eventMap, err := GenerateEventObject(schema, generateRequiredOnly, 3)
+	eventMap, err := GenerateEventObject(schema, generateRequiredOnly, 20)
+	fmt.Println(eventMap)
 	if err != nil {
 		return nil, fmt.Errorf("error generating event: %w", err)
 	}
