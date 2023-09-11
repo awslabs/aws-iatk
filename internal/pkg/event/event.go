@@ -45,6 +45,11 @@ func GenerateEventObject(schema *jsonschema.Schema, generateRequiredOnly bool, m
 				}
 			case "array":
 				event[key] = []string{}
+			default:
+				return nil, fmt.Errorf(
+					"invalid or unsupported property type %q found for property %q", elementType, key,
+				)
+
 			}
 		} else if len(elementType) > 1 {
 			return nil, fmt.Errorf("cannot handle mmultiple type declaration")
@@ -60,7 +65,6 @@ func GenerateEventObject(schema *jsonschema.Schema, generateRequiredOnly bool, m
 
 func GenerateEvent(schemaString string, generateRequiredOnly bool) ([]byte, error) {
 	compiler := jsonschema.NewCompiler()
-	compiler.Draft = jsonschema.Draft4
 	if err := compiler.AddResource("temp.json", strings.NewReader(schemaString)); err != nil {
 		log.Fatal(err)
 	}
