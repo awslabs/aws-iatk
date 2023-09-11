@@ -42,6 +42,8 @@ func GenerateEventObject(schema *jsonschema.Schema, generateRequiredOnly bool, m
 			case "array":
 				event[key] = []string{}
 			}
+		} else if len(elementType) > 1 {
+			return nil, fmt.Errorf("cannot handle mmultiple type declaration")
 		}
 		if schema.Properties[key].Ref != nil && maxDepth > 0 {
 			event[key], _ = GenerateEventObject(schema.Properties[key].Ref, generateRequiredOnly, maxDepth-1)
