@@ -21,9 +21,8 @@ type GenerateMockEventsParams struct {
 	SchemaName    string
 	SchemaVersion string
 
-	SchemaFile string
-
 	EventRef     string
+	Context      []string
 	Overrides    string
 	SkipOptional bool
 
@@ -44,19 +43,16 @@ func (p *GenerateMockEventsParams) RPCMethod() (*types.Result, error) {
 	}
 
 	var schema *schemaregistry.Schema
-	if p.RegistryName != "" {
-		client := schemas.NewFromConfig(cfg)
-		schema, err = schemaregistry.NewSchemaFromRegistry(
-			ctx,
-			aws.String(p.RegistryName),
-			aws.String(p.SchemaName),
-			aws.String(p.SchemaVersion),
-			aws.String(p.EventRef),
-			client,
-		)
-	} else {
-		schema, err = NewSchemaFromLocalFile()
-	}
+	client := schemas.NewFromConfig(cfg)
+	schema, err = schemaregistry.NewSchemaFromRegistry(
+		ctx,
+		aws.String(p.RegistryName),
+		aws.String(p.SchemaName),
+		aws.String(p.SchemaVersion),
+		aws.String(p.EventRef),
+		client,
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf("error reading schema: %w", err)
 	}
@@ -78,23 +74,11 @@ func (p *GenerateMockEventsParams) ReflectOutput() reflect.Value {
 }
 
 func (p *GenerateMockEventsParams) validateParams() error {
-	if p.RegistryName == "" && p.SchemaName == "" && p.SchemaFile == "" {
-		return errors.New(`missing either "RegistryName and SchemaName" or "SchemaFile"`)
-	}
-
-	if p.SchemaFile != "" && (p.SchemaName != "" || p.RegistryName != "") {
-		return errors.New(`provide either "RegistryName and SchemaName" or "SchemaFile", not both`)
-	}
-	if p.SchemaFile == "" && ((p.RegistryName == "" && p.SchemaName != "") || (p.RegistryName != "" && p.SchemaName == "")) {
+	if p.RegistryName == "" || p.SchemaName == "" {
 		return errors.New(`requires both "RegistryName" and "SchemaName"`)
 	}
 
 	return nil
-}
-
-// TODO: to be replaced by actual implementation (in internal pkg)
-func NewSchemaFromLocalFile() (*schemaregistry.Schema, error) {
-	return &schemaregistry.Schema{}, nil
 }
 
 // TODO: to be replaced by actual implementation (in internal pkg)
