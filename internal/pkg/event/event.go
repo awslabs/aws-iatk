@@ -20,14 +20,18 @@ func GenerateEventObject(schema *jsonschema.Schema, generateRequiredOnly bool, m
 		}
 		elementType := element.Types
 		if len(elementType) == 1 {
+			if len(element.Enum) > 0 {
+				event[key] = element.Enum[0]
+				continue
+			}
 			switch elementType[0] {
 			case "string":
-				if schema.Properties[key].Format == "date-time" {
+				if element.Format == "date-time" {
 					event[key] = time.Now()
 				} else {
 					event[key] = ""
 				}
-			case "number":
+			case "number", "integer":
 				event[key] = 0
 			case "null":
 				event[key] = nil

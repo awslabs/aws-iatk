@@ -20,6 +20,20 @@ func TestSuccessfulStringSchema(t *testing.T) {
 	assert.Equal(t, 1, len(eventMap))
 }
 
+func TestSuccessfulEnumSchema(t *testing.T) {
+	var eventMap Map
+	schemaString := `{ "$schema": "http://json-schema.org/draft-04/schema#",
+		"properties": { 
+			"test": { "type": "string",
+  					  "enum": ["testEnum"]}}}`
+	event, _ := GenerateEvent(schemaString, false)
+	_ = json.Unmarshal(event, &eventMap)
+	assert.Contains(t, eventMap, "test")
+	assert.IsType(t, "", eventMap["test"])
+	assert.Equal(t, "testEnum", eventMap["test"])
+	assert.Equal(t, 1, len(eventMap))
+}
+
 func TestSuccessfulRefSchema(t *testing.T) {
 	var eventMap Map
 	schemaString := `{ "$schema": "http://json-schema.org/draft-04/schema#", 
