@@ -17,7 +17,7 @@ import (
 const test_method = "generate_mock_event"
 
 func TestGenerateMockEvent(t *testing.T) {
-	region := "us-west-2"
+	region := "us-east-1"
 	s := new(GenerateMockEventSuite)
 	s.region = region
 	suite.Run(t, s)
