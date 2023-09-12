@@ -117,6 +117,40 @@ func (s *GenerateMockEventSuite) TestGenerateMockEvent() {
 				}`, test_method, s.region, s.registry, s.openapiName, s.openapiVersion))
 			},
 		},
+		{
+			testname: "openapi, without version",
+			request: func() []byte {
+				return []byte(fmt.Sprintf(`
+				{
+					"jsonrpc": "2.0",
+					"id": "43",
+					"method": %q,
+					"params": {
+						"Region": %q,
+						"RegistryName": %q,
+						"SchemaName": %q,
+						"EventRef": "#/components/schemas/MyEvent",
+						"Context": ["eventbridge.v0"]
+					}
+				}`, test_method, s.region, s.registry, s.openapiName))
+			},
+		},
+		{
+			testname: "jsonschema, no context",
+			request: func() []byte {
+				return []byte(fmt.Sprintf(`
+				{
+					"jsonrpc": "2.0",
+					"id": "43",
+					"method": %q,
+					"params": {
+						"Region": %q,
+						"RegistryName": %q,
+						"SchemaName": %q
+					}
+				}`, test_method, s.region, s.registry, s.openapiName))
+			},
+		},
 	}
 
 	for _, tt := range cases {
