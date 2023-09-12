@@ -6,6 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import List, Dict, Optional
 
+from .jsonrpc import Payload
+
 
 LOG = logging.getLogger(__name__)
 
@@ -90,22 +92,12 @@ class AddEbListenerParams:
 
     _rpc_method: str = "test_harness.eventbridge.add_listener"
 
-    def jsonrpc_dumps(self, region, profile):
-        jsonrpc_data = {
-            "jsonrpc": "2.0",
-            "id": "42",
-            "method": self._rpc_method,
-            "params": {},
-        }
-        jsonrpc_data["params"]["EventBusName"] = self.event_bus_name
-        jsonrpc_data["params"]["RuleName"] = self.rule_name
+    def jsonrpc_dumps(self, region, profile) -> bytes:
+        params = {}
+        params["EventBusName"] = self.event_bus_name
+        params["RuleName"] = self.rule_name
         if self.target_id:
-            jsonrpc_data["params"]["TargetId"] = self.target_id
+            params["TargetId"] = self.target_id
         if self.tags:
-            jsonrpc_data["params"]["Tags"] = self.tags
-        if region:
-            jsonrpc_data["params"]["Region"] = region
-        if profile:
-            jsonrpc_data["params"]["Profile"] = profile
-
-        return bytes(json.dumps(jsonrpc_data), "utf-8")
+            params["Tags"] = self.tags
+        return Payload(self._rpc_method, params, region, profile).dump_bytes()

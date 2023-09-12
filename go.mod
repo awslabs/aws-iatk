@@ -16,8 +16,13 @@ require (
 	github.com/aws/smithy-go v1.14.2
 	github.com/google/uuid v1.3.0
 	github.com/rs/xid v1.5.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
+)
+
+require (
+	github.com/google/go-cmp v0.5.9 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
 require (

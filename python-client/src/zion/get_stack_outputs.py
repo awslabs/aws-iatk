@@ -6,6 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import List, Dict
 
+from .jsonrpc import Payload
+
 
 LOG = logging.getLogger(__name__)
 
@@ -45,18 +47,8 @@ class GetStackOutputsParams:
     output_names: List[str]
     _rpc_method: str = "get_stack_outputs"
 
-    def jsonrpc_dumps(self, region, profile):
-        jsonrpc_data = {
-            "jsonrpc": "2.0",
-            "id": "42",
-            "method": self._rpc_method,
-            "params": {},
-        }
-        jsonrpc_data["params"]["StackName"] = self.stack_name
-        jsonrpc_data["params"]["OutputNames"] = self.output_names
-        if region:
-            jsonrpc_data["params"]["Region"] = region
-        if profile:
-            jsonrpc_data["params"]["Profile"] = profile
-
-        return bytes(json.dumps(jsonrpc_data), "utf-8")
+    def jsonrpc_dumps(self, region, profile) -> bytes:
+        params = {}
+        params["StackName"] = self.stack_name
+        params["OutputNames"] = self.output_names
+        return Payload(self._rpc_method, params, region, profile).dump_bytes()
