@@ -6,6 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import List, Callable
 
+from .jsonrpc import Payload
+
 
 LOG = logging.getLogger(__name__)
 
@@ -49,24 +51,14 @@ class PollEventsParams:
 
     _rpc_method: str = "test_harness.eventbridge.poll_events"
 
-    def jsonrpc_dumps(self, region, profile):
-        jsonrpc_data = {
-            "jsonrpc": "2.0",
-            "id": "42",
-            "method": self._rpc_method,
-            "params": {},
-        }
-        jsonrpc_data["params"]["ListenerId"] = self.listener_id
+    def jsonrpc_dumps(self, region, profile) -> bytes:
+        params = {}
+        params["ListenerId"] = self.listener_id
         if self.wait_time_seconds is not None:
-            jsonrpc_data["params"]["WaitTimeSeconds"] = self.wait_time_seconds
+            params["WaitTimeSeconds"] = self.wait_time_seconds
         if self.max_number_of_messages is not None:
-            jsonrpc_data["params"]["MaxNumberOfMessages"] = self.max_number_of_messages
-        if region:
-            jsonrpc_data["params"]["Region"] = region
-        if profile:
-            jsonrpc_data["params"]["Profile"] = profile
-
-        return bytes(json.dumps(jsonrpc_data), "utf-8")
+            params["MaxNumberOfMessages"] = self.max_number_of_messages
+        return Payload(self._rpc_method, params, region, profile).dump_bytes()
 
 
 @dataclass

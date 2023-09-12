@@ -6,6 +6,9 @@ import logging
 from dataclasses import dataclass
 from typing import List, Optional
 
+from .jsonrpc import Payload
+
+
 LOG = logging.getLogger(__name__)
 
 
@@ -68,22 +71,12 @@ class RemoveListenersParams:
     tag_filters: Optional[List[RemoveListeners_TagFilter]] = None
     _rpc_method: str = "test_harness.eventbridge.remove_listeners"
 
-    def jsonrpc_dumps(self, region, profile):
-        jsonrpc_data = {
-            "jsonrpc": "2.0",
-            "id": "42",
-            "method": self._rpc_method,
-            "params": {},
-        }
+    def jsonrpc_dumps(self, region, profile) -> bytes:
+        params = {}
         if self.ids:
-            jsonrpc_data["params"]["Ids"] = self.ids
+            params["Ids"] = self.ids
         if self.tag_filters:
-            jsonrpc_data["params"]["TagFilters"] = [
+            params["TagFilters"] = [
                 tag_filter.to_dict() for tag_filter in self.tag_filters
             ]
-        if region:
-            jsonrpc_data["params"]["Region"] = region
-        if profile:
-            jsonrpc_data["params"]["Profile"] = profile
-
-        return bytes(json.dumps(jsonrpc_data), "utf-8")
+        return Payload(self._rpc_method, params, region, profile).dump_bytes()

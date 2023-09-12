@@ -6,6 +6,8 @@ import logging
 from dataclasses import dataclass
 from .xray import Tree
 
+from .jsonrpc import Payload
+
 
 LOG = logging.getLogger(__name__)
 
@@ -42,17 +44,7 @@ class GetTraceTreeParams:
     tracing_header: str
     _rpc_method: str = "get_trace_tree"
 
-    def jsonrpc_dumps(self, region, profile):
-        jsonrpc_data = {
-            "jsonrpc": "2.0",
-            "id": "42",
-            "method": self._rpc_method,
-            "params": {},
-        }
-        jsonrpc_data["params"]["TracingHeader"] = self.tracing_header
-        if region:
-            jsonrpc_data["params"]["Region"] = region
-        if profile:
-            jsonrpc_data["params"]["Profile"] = profile
-
-        return bytes(json.dumps(jsonrpc_data), "utf-8")
+    def jsonrpc_dumps(self, region, profile) -> bytes:
+        params = {}
+        params["TracingHeader"] = self.tracing_header
+        return Payload(self._rpc_method, params, region, profile).dump_bytes()

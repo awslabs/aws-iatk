@@ -38,9 +38,12 @@ from .get_trace_tree import (
     GetTraceTreeOutput,
     GetTraceTreeParams
 )
-
 from .retry_xray_trace import (
     RetryGetTraceTreeUntilParams,
+)
+from .generate_mock_event import (
+    GenerateMockEventOutput,
+    GenerateMockEventParams,
 )
 
 if TYPE_CHECKING:
@@ -63,7 +66,11 @@ __all__ = [
     "PollEventsParams",
     "WaitUntilEventMatchedParams",
     "GetTraceTreeParams",
-    "GetTraceTreeOutput"]
+    "GetTraceTreeOutput",
+    "RetryGetTraceTreeUntilParams",
+    "GenerateMockEventOutput",
+    "GenerateMockEventParams",
+]
 
 LOG = logging.getLogger(__name__)
 zion_service_logger = logging.getLogger("zion.service")
@@ -343,13 +350,17 @@ class Zion:
         LOG.debug("no matching event found")
         return False
 
-      
+
     def get_trace_tree(
         self, params: GetTraceTreeParams
     ) -> GetTraceTreeOutput:
         """
         Fetch the trace tree structure using the provided tracing_header
 
+        IAM Permissions Needed
+        ----------------------
+        xray:BatchGetTraces
+        
         Parameters
         ----------
         params : GetTraceTreeParams
@@ -374,6 +385,39 @@ class Zion:
         LOG.debug(f"Output: {output}")
         return output
 
+    def generate_mock_event(
+        self, params: GenerateMockEventParams,
+    ) -> GenerateMockEventOutput:
+        """
+        Generate a mock event based on a schema from EventBridge Schema Registry or from a local file
+
+        IAM Permissions Needed
+        ----------------------
+        schemas:DescribeSchema
+        
+        Parameters
+        ----------
+        params : GenerateMockEventParams
+            Data Class that holds required parameters
+        
+        Returns
+        -------
+        GenerateMockEventOutput
+            Data Class that holds the trace tree structure
+
+        Raises
+        ------
+        ZionException
+            When failed to fetch a trace tree
+        """
+        input_data = params.jsonrpc_dumps(self.region, self.profile)
+        stdout_data = self._popen_zion(input_data, {})
+        self._raise_error_if_returned(stdout_data)
+
+        output = GenerateMockEventOutput(stdout_data)
+
+        LOG.debug(f"Output: {output}")
+        return output
     
     def retry_until(self, condition, timeout = 10):
         """
@@ -434,13 +478,12 @@ class Zion:
         """
         Patches boto3 client to register event to include generated x-ray trace id and sampling rule as part of request header before invoke/execution
 
-         Parameters
+        Parameters
         ----------
         params : client
             boto3.client for specified aws service
-               : sampled
-            int, value 0 or 1 to select if trace has been sampled or not
-            
+        sampled : int
+            value 0 to not sample the request or value 1 to sample the request
         
         Returns
         -------
@@ -489,6 +532,7 @@ class Zion:
 
         IAM Permissions Needed
         ----------------------
+        xray:BatchGetTraces
         
         Parameters
         ----------
