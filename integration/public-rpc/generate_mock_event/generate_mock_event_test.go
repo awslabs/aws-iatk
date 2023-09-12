@@ -55,7 +55,7 @@ func (s *GenerateMockEventSuite) SetupSuite() {
 		s.T(),
 		s.cfnClient,
 		s.stackName,
-		"./template.yaml",
+		"./test_stack.yaml",
 		[]types.Capability{})
 	s.Require().NoError(err, "failed to create stack")
 
