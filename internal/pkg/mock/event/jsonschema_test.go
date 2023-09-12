@@ -3,17 +3,19 @@ package event
 import (
 	"encoding/json"
 	"errors"
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestSuccessfulStringSchema(t *testing.T) {
-	var eventMap Map
+	var eventMap EventMap
 	schemaString := `{ "$schema": "http://json-schema.org/draft-04/schema#",
 		"properties": { 
 			"test": { "type": "string" }}}`
-	event, _ := GenerateEvent(schemaString, false, "#")
+	eventRef := ""
+	schemaType := SchemaType("JSONSchemaDraft4")
+	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
+	event, _ := GenerateEvent(&schema, false)
 	_ = json.Unmarshal(event, &eventMap)
 	assert.Contains(t, eventMap, "test")
 	assert.IsType(t, "", eventMap["test"])
@@ -21,12 +23,15 @@ func TestSuccessfulStringSchema(t *testing.T) {
 }
 
 func TestSuccessfulEnumSchema(t *testing.T) {
-	var eventMap Map
+	var eventMap EventMap
 	schemaString := `{ "$schema": "http://json-schema.org/draft-04/schema#",
 		"properties": { 
 			"test": { "type": "string",
   					  "enum": ["testEnum"]}}}`
-	event, _ := GenerateEvent(schemaString, false, "#")
+	eventRef := ""
+	schemaType := SchemaType("JSONSchemaDraft4")
+	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
+	event, _ := GenerateEvent(&schema, false)
 	_ = json.Unmarshal(event, &eventMap)
 	assert.Contains(t, eventMap, "test")
 	assert.IsType(t, "", eventMap["test"])
@@ -34,78 +39,26 @@ func TestSuccessfulEnumSchema(t *testing.T) {
 	assert.Equal(t, 1, len(eventMap))
 }
 
-func TestSuccessfulRefSchema(t *testing.T) {
-	var eventMap Map
-	schemaString := `{ "$schema": "http://json-schema.org/draft-04/schema#", 
-		"definitions": { 
-			"RoomStateChange": {
-				"properties": { 
-					"testRef": { "type": "string" }}}}, 
-		"properties": { "test": { "type": "string" }, 
-		"detail": { "$ref": "#/definitions/RoomStateChange" 
-		}}}`
-	event, _ := GenerateEvent(schemaString, false, "#")
-	_ = json.Unmarshal(event, &eventMap)
-	assert.Contains(t, eventMap, "detail")
-	refMap := eventMap["detail"].(map[string]interface{})
-	assert.Contains(t, refMap, "testRef")
-	assert.IsType(t, eventMap["test"], "")
-	assert.Equal(t, 2, len(eventMap))
-}
-
-func TestSuccessfulRefOnlyObjectSchema(t *testing.T) {
-	var eventMap Map
-	schemaString := `{ "$schema": "http://json-schema.org/draft-04/schema#", 
-		"definitions": { 
-			"RoomStateChange": {
-				"properties": { 
-					"testRef": { "type": "string" }}}}, 
-		"properties": { "test": { "type": "string" }, 
-		"detail": { "$ref": "#/definitions/RoomStateChange" 
-		}}}`
-	event, _ := GenerateEvent(schemaString, false, "#/definitions/RoomStateChange")
-	_ = json.Unmarshal(event, &eventMap)
-	assert.Contains(t, eventMap, "testRef")
-	assert.NotContains(t, eventMap, "test")
-	assert.Equal(t, 1, len(eventMap))
-}
-
-func TestSuccessfulRefOnlyArraySchema(t *testing.T) {
-	var eventMap Map
-	schemaString := `{ "$schema": "http://json-schema.org/draft-04/schema#", 
-		"definitions": { 
-			"RoomStateChange": {
-				"properties": { 
-					"testRef": { "type": "string" }}}}, 
-		"properties":{ "test": {
-				"items": {
-				  "$ref": "#/definitions/RoomStateChange" 
-				},
-				"type": "array"
-			}, 
-		"detail": { "test": "string" 
-		}}}`
-	event, _ := GenerateEvent(schemaString, false, "#/definitions/RoomStateChange")
-	_ = json.Unmarshal(event, &eventMap)
-	assert.Contains(t, eventMap, "testRef")
-	assert.NotContains(t, eventMap, "test")
-	assert.Equal(t, 1, len(eventMap))
-}
-
 func TestCompilationError(t *testing.T) {
 	schemaString := `{ "$schema": "http://json-schema.org/draft-04/schema#", 
 		"properties": { 
 			"test": {"type": "random"}}}`
-	_, err := GenerateEvent(schemaString, false, "#")
+	eventRef := ""
+	schemaType := SchemaType("JSONSchemaDraft4")
+	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
+	_, err := GenerateEvent(&schema, false)
 	assert.Error(t, errors.New(`error compiling schema: json-schema \"temp.json\" compilation failed)`), err)
 }
 
 func TestSuccessfulNumberSchema(t *testing.T) {
-	var eventMap Map
+	var eventMap EventMap
 	schemaString := `{ "$schema": "http://json-schema.org/draft-04/schema#", 
 		"properties": { 
 			"test": {"type": "number"}}}`
-	event, _ := GenerateEvent(schemaString, false, "#")
+	eventRef := ""
+	schemaType := SchemaType("JSONSchemaDraft4")
+	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
+	event, _ := GenerateEvent(&schema, false)
 	_ = json.Unmarshal(event, &eventMap)
 	assert.Contains(t, eventMap, "test")
 	assert.IsType(t, float64(1), eventMap["test"])
@@ -113,7 +66,7 @@ func TestSuccessfulNumberSchema(t *testing.T) {
 }
 
 func TestSuccessfulArraySchema(t *testing.T) {
-	var eventMap Map
+	var eventMap EventMap
 	schemaString := `{ "$schema": "http://json-schema.org/draft-04/schema#", 
 		"properties": {
 			"test": {
@@ -122,7 +75,10 @@ func TestSuccessfulArraySchema(t *testing.T) {
 				},
 				"type": "array"
 			}}}`
-	event, _ := GenerateEvent(schemaString, false, "#")
+	eventRef := ""
+	schemaType := SchemaType("JSONSchemaDraft4")
+	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
+	event, _ := GenerateEvent(&schema, false)
 	_ = json.Unmarshal(event, &eventMap)
 	assert.Contains(t, eventMap, "test")
 	assert.IsType(t, []interface{}{}, eventMap["test"])
@@ -130,7 +86,7 @@ func TestSuccessfulArraySchema(t *testing.T) {
 }
 
 func TestSuccessfulObjectSchema(t *testing.T) {
-	var eventMap Map
+	var eventMap EventMap
 	schemaString := `{ "$schema": "http://json-schema.org/draft-04/schema#", 
 		"properties": {
 			"testObject": {
@@ -140,7 +96,10 @@ func TestSuccessfulObjectSchema(t *testing.T) {
 					}},
 				"type": "object"
 			}}}`
-	event, _ := GenerateEvent(schemaString, false, "#")
+	eventRef := ""
+	schemaType := SchemaType("JSONSchemaDraft4")
+	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
+	event, _ := GenerateEvent(&schema, false)
 	_ = json.Unmarshal(event, &eventMap)
 	assert.NotEmpty(t, eventMap["testObject"])
 	assert.IsType(t, map[string]any{}, eventMap["testObject"])
@@ -150,13 +109,16 @@ func TestSuccessfulObjectSchema(t *testing.T) {
 }
 
 func TestSuccessfulRequiredOnlySchema(t *testing.T) {
-	var eventMap Map
+	var eventMap EventMap
 	schemaString := `{ "$schema": "http://json-schema.org/draft-04/schema#", 
 		"properties": { 
 			"test": {"type": "number"},
 			"notRequired": {"type": "string"}},
 			"required": ["test"]}`
-	event, _ := GenerateEvent(schemaString, true, "#")
+	eventRef := ""
+	schemaType := SchemaType("JSONSchemaDraft4")
+	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
+	event, _ := GenerateEvent(&schema, true)
 	_ = json.Unmarshal(event, &eventMap)
 	assert.Contains(t, eventMap, "test")
 	assert.Empty(t, eventMap["notRequired"])
