@@ -15,10 +15,13 @@ func ValidateEvent(schemaString string, event []byte) (bool, error) {
 		log.Fatal(err)
 	}
 	schema, err := compiler.Compile("temp.json")
+	if err != nil {
+		return false, fmt.Errorf("error compiling schema: %w", err)
+	}
 	_ = json.Unmarshal(event, &eventTest)
 	err = schema.ValidateInterface(eventTest)
 	if err != nil {
-		return false, fmt.Errorf("Validation Error: %w", err)
+		return false, fmt.Errorf("validation error: %w", err)
 	}
 	return true, nil
 }
