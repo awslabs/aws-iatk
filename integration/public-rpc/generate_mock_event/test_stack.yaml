@@ -152,7 +152,7 @@ Resources:
               "type": "string"
             }
           },
-          "required": ["detail-type", "resources", "id", "source", "time", "detail", "region"],
+          "required": ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"],
           "type": "object",
           "x-amazon-events-detail-type": "Status Change",
           "x-amazon-events-source": "my.event.source"
