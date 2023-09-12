@@ -8,6 +8,7 @@ import (
 	"testing"
 	cfn "zion/integration/cloudformation"
 	"zion/integration/zion"
+	zioncfn "zion/internal/pkg/cloudformation"
 	"zion/internal/pkg/jsonrpc"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -44,9 +45,11 @@ type GenerateMockEventSuite struct {
 
 	cfnClient *cloudformation.Client
 
-	registry      string
-	openapiSchema string
-	jsonSchema    string
+	registry          string
+	openapiName       string
+	openapiVersion    string
+	jsonschemaName    string
+	jsonschemaVersion string
 }
 
 func (s *GenerateMockEventSuite) SetupSuite() {
@@ -58,7 +61,28 @@ func (s *GenerateMockEventSuite) SetupSuite() {
 		"./test_stack.yaml",
 		[]types.Capability{})
 	s.Require().NoError(err, "failed to create stack")
-
+	output, err := zioncfn.GetStackOuput(
+		s.stackName,
+		[]string{
+			"TestSchemaRegistryName",
+			"TestEBEventSchemaOpenAPIName",
+			"TestEBEventSchemaOpenAPIVersion",
+			"TestEBEventSchemaJSONSchemaName",
+			"TestEBEventSchemaJSONSchemaVersion",
+		},
+		s.cfnClient,
+	)
+	s.Require().NoError(err, "failed to get stack outputs")
+	s.registry = output["TestSchemaRegistryName"]
+	s.openapiName = output["TestEBEventSchemaOpenAPIName"]
+	s.openapiVersion = output["TestEBEventSchemaOpenAPIVersion"]
+	s.jsonschemaName = output["TestEBEventSchemaJSONSchemaName"]
+	s.jsonschemaVersion = output["TestEBEventSchemaJSONSchemaVersion"]
+	s.Require().NotEmpty(s.registry)
+	s.Require().NotEmpty(s.openapiName)
+	s.Require().NotEmpty(s.openapiVersion)
+	s.Require().NotEmpty(s.jsonschemaName)
+	s.Require().NotEmpty(s.jsonschemaVersion)
 	s.T().Log("setup suite complete")
 }
 
@@ -70,7 +94,6 @@ func (s *GenerateMockEventSuite) TearDownSuite() {
 }
 
 func (s *GenerateMockEventSuite) TestGenerateMockEvent() {
-	schema_name := s.openapiSchema
 	cases := []struct {
 		testname string
 		request  func() []byte
@@ -87,11 +110,11 @@ func (s *GenerateMockEventSuite) TestGenerateMockEvent() {
 						"Region": %q,
 						"RegistryName": %q,
 						"SchemaName": %q,
-						"SchemaVersion": "1",
+						"SchemaVersion": %q,
 						"EventRef": "#/components/schemas/MyEvent",
 						"Context": ["eventbridge.v0"]
 					}
-				}`, test_method, s.region, s.registry, schema_name))
+				}`, test_method, s.region, s.registry, s.openapiName, s.openapiVersion))
 			},
 		},
 	}
