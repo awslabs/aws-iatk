@@ -1,7 +1,6 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging
 from dataclasses import dataclass
 from typing import List, Optional
@@ -24,9 +23,7 @@ class RemoveListenersOutput:
     """
     message: str
 
-    def __init__(self, jsonrpc_data_bytes: bytes) -> None:
-        jsonrpc_data = jsonrpc_data_bytes.decode("utf-8")
-        data_dict = json.loads(jsonrpc_data.strip())
+    def __init__(self, data_dict: dict) -> None:
         self.message = data_dict.get("result", {}).get("output", "")
 
 
@@ -71,7 +68,7 @@ class RemoveListenersParams:
     tag_filters: Optional[List[RemoveListeners_TagFilter]] = None
     _rpc_method: str = "test_harness.eventbridge.remove_listeners"
 
-    def jsonrpc_dumps(self, region, profile) -> bytes:
+    def to_dict(self) -> dict:
         params = {}
         if self.ids:
             params["Ids"] = self.ids
@@ -79,4 +76,7 @@ class RemoveListenersParams:
             params["TagFilters"] = [
                 tag_filter.to_dict() for tag_filter in self.tag_filters
             ]
-        return Payload(self._rpc_method, params, region, profile).dump_bytes()
+        return params
+    
+    def to_payload(self, region, profile):
+        return Payload(self._rpc_method, self.to_dict(), region, profile)

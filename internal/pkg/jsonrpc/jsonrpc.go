@@ -14,6 +14,15 @@ type Request struct {
 	Method string `json:"method"`
 	// Params contains the payload of the request. Usually parsed into a specific struct for further processing.
 	Params json.RawMessage `json:"params"`
+
+	// Metadata contains information about the client
+	Metadata Metadata `json:"metadata"`
+}
+
+type Metadata struct {
+	Client  string `json:"client"`
+	Version string `json:"version"`
+	Caller  string `json:"caller"`
 }
 
 type Response struct {
