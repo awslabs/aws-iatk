@@ -47,7 +47,7 @@ func TestMetadata_UserAgentValue(t *testing.T) {
 				Version: "1.0.0-beta",
 				Caller:  "retry_get_trace_tree_until",
 			},
-			expect: "unknown",
+			expect: "python#1.0.0-beta#retry_get_trace_tree_until",
 		},
 		{
 			name: "invalid caller",

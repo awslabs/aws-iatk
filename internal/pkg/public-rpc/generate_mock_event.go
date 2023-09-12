@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"zion/internal/pkg/aws/config"
 	schemaregistry "zion/internal/pkg/generate_mock_event/schema_registry"
+	"zion/internal/pkg/jsonrpc"
 	"zion/internal/pkg/public-rpc/types"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -31,14 +32,14 @@ type GenerateMockEventsParams struct {
 	Region  string
 }
 
-func (p *GenerateMockEventsParams) RPCMethod() (*types.Result, error) {
+func (p *GenerateMockEventsParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error) {
 	err := p.validateParams()
 	if err != nil {
 		return nil, err
 	}
 
 	ctx := context.TODO()
-	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile)
+	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile, metadata)
 	if err != nil {
 		return nil, fmt.Errorf("error loading AWS config: %w", err)
 	}

@@ -583,7 +583,7 @@ func TestDestroyMultiple(t *testing.T) {
 				destroySingle: mockDestroySingle.Execute,
 				Get:           mockGet.Execute,
 			}
-			cfg, err := config.GetAWSConfig(context.TODO(), "us-west-2", "default")
+			cfg, err := config.GetAWSConfig(context.TODO(), "us-west-2", "default", nil)
 			if err != nil {
 				t.Fatalf("error when loading AWS config: %v", err)
 			}
