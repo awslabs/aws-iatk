@@ -4,16 +4,7 @@
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "Context": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
                     "EventRef": {
-                        "type": "string"
-                    },
-                    "Overrides": {
                         "type": "string"
                     },
                     "Profile": {
