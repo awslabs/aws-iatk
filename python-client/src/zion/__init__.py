@@ -481,6 +481,33 @@ class Zion:
             message = data_dict.get("error", {}).get("message", "")
             error_code = data_dict.get("error", {}).get("Code", 0)
             raise ZionException(message=message, error_code=error_code)
+        
+    def __mock_event_parameter_overrides_object__(self, event, override):
+        try:
+            for key in event:
+                if key in override:
+                    if 
+                    event[key] = override[key]
+                    del override[key]
+        except Exception as e:
+            raise ZionException(e, 500)
+    def __mock_event_parameter_overrides_array__(self, event_array, override):
+        try:
+            for event in event_array:
+                if type(event) is dict:
+                    self.__mock_event_parameter_overrides_object__(event, override)
+                if type(event) is list:
+                    self.__mock_event_parameter_overrides_array__(event, override)
+        except Exception as e:
+            raise ZionException(e, 500)
+    def __mock_event_parameter_overrides__(self, event_string, override_string):
+        event = json.loads(event_string)
+        override = json.loads(override_string)
+        self.__mock_event_parameter_overrides_object__(event, override)
+        for key, element in override.items():
+            event[key] = element
+        return event
+        
 
         
     def retry_get_trace_tree_until(self, params: RetryGetTraceTreeUntilParams):
