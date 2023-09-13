@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"reflect"
 	"zion/internal/pkg/aws/config"
+	"zion/internal/pkg/jsonrpc"
 	mockevent "zion/internal/pkg/mock/event"
 	"zion/internal/pkg/public-rpc/types"
 
@@ -31,14 +32,14 @@ type GenerateMockEventsParams struct {
 	Region  string
 }
 
-func (p *GenerateMockEventsParams) RPCMethod() (*types.Result, error) {
+func (p *GenerateMockEventsParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error) {
 	err := p.validateParams()
 	if err != nil {
 		return nil, err
 	}
 
 	ctx := context.TODO()
-	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile)
+	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile, metadata)
 	if err != nil {
 		return nil, fmt.Errorf("error loading AWS config: %w", err)
 	}

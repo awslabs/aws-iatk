@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"zion/internal/pkg/jsonrpc"
 	"zion/internal/pkg/public-rpc/types"
 )
 
 type Method interface {
-	RPCMethod() (*types.Result, error)
+	RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error)
 	ReflectOutput() reflect.Value
 }
 

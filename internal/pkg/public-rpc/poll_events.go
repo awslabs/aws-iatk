@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"zion/internal/pkg/aws/config"
 	"zion/internal/pkg/harness/eventbridge/listener"
+	"zion/internal/pkg/jsonrpc"
 	"zion/internal/pkg/public-rpc/types"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -20,7 +21,7 @@ type PollEventsParams struct {
 	Region              string
 }
 
-func (p *PollEventsParams) RPCMethod() (*types.Result, error) {
+func (p *PollEventsParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error) {
 	p.setDefaultValues()
 
 	err := p.validateParams()
@@ -30,7 +31,7 @@ func (p *PollEventsParams) RPCMethod() (*types.Result, error) {
 
 	ctx := context.TODO()
 
-	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile)
+	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile, metadata)
 	if err != nil {
 		return nil, fmt.Errorf("error loading AWS config: %w", err)
 	}

@@ -8,6 +8,7 @@ import (
 	"zion/internal/pkg/aws/config"
 	"zion/internal/pkg/harness/eventbridge/listener"
 	"zion/internal/pkg/harness/tags"
+	"zion/internal/pkg/jsonrpc"
 	"zion/internal/pkg/public-rpc/types"
 )
 
@@ -20,7 +21,7 @@ type AddEbListenerParams struct {
 	Region       string
 }
 
-func (p *AddEbListenerParams) RPCMethod() (*types.Result, error) {
+func (p *AddEbListenerParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error) {
 	err := p.validateParams()
 	if err != nil {
 		return nil, err
@@ -33,7 +34,7 @@ func (p *AddEbListenerParams) RPCMethod() (*types.Result, error) {
 
 	ctx := context.TODO()
 
-	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile)
+	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile, metadata)
 	if err != nil {
 		return nil, fmt.Errorf("error loading AWS config: %v", err)
 	}

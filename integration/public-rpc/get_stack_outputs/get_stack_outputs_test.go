@@ -37,7 +37,7 @@ type GetStackOutputsSuite struct {
 }
 
 func (s *GetStackOutputsSuite) setAWSConfig() {
-	cfg, err := config.GetAWSConfig(context.TODO(), s.region, "")
+	cfg, err := config.GetAWSConfig(context.TODO(), s.region, "", nil)
 	if err != nil {
 		s.T().Fatalf("failed to get aws config: %v", err)
 	}
