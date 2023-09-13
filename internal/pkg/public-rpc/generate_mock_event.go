@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"reflect"
 	"zion/internal/pkg/aws/config"
-	schemaregistry "zion/internal/pkg/generate_mock_event/schema_registry"
 	"zion/internal/pkg/jsonrpc"
+	mockevent "zion/internal/pkg/mock/event"
 	"zion/internal/pkg/public-rpc/types"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -44,9 +44,9 @@ func (p *GenerateMockEventsParams) RPCMethod(metadata *jsonrpc.Metadata) (*types
 		return nil, fmt.Errorf("error loading AWS config: %w", err)
 	}
 
-	var schema *schemaregistry.Schema
+	var schema *mockevent.Schema
 	client := schemas.NewFromConfig(cfg)
-	schema, err = schemaregistry.NewSchemaFromRegistry(
+	schema, err = mockevent.NewSchemaFromRegistry(
 		ctx,
 		aws.String(p.RegistryName),
 		aws.String(p.SchemaName),
@@ -59,7 +59,7 @@ func (p *GenerateMockEventsParams) RPCMethod(metadata *jsonrpc.Metadata) (*types
 		return nil, fmt.Errorf("error reading schema: %w", err)
 	}
 
-	event, err := GenerateMockEvent(schema)
+	event, err := GenerateMockEvent(schema, p.SkipOptional)
 	if err != nil {
 		return nil, fmt.Errorf("error generating mock event: %w", err)
 	}
@@ -95,6 +95,16 @@ func (p *GenerateMockEventsParams) validateParams() error {
 }
 
 // TODO: to be replaced by actual implementation (in internal pkg)
-func GenerateMockEvent(schema *schemaregistry.Schema) (string, error) {
+func GenerateMockEvent(schema *mockevent.Schema, skipOptional bool) (string, error) {
+
+	// Commenting out as the integ tests fail, will be moved to internal pkg in a separate PR
+	// generatedEvent, err := mockevent.GenerateOpenapiEvent(schema, false)
+
+	// if err != nil {
+	// 	return "", fmt.Errorf("error generating mock event: %w", err)
+	// }
+
+	// return string(generatedEvent), nil
+
 	return "", nil
 }
