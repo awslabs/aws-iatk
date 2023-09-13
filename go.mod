@@ -20,7 +20,6 @@ require (
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 )
 
-require github.com/santhosh-tekuri/jsonschema/v4 v4.0.0 // indirect
 
 require (
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
