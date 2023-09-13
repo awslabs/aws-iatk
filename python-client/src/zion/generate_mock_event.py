@@ -1,7 +1,6 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging
 from dataclasses import dataclass
 from typing import Optional, List
@@ -24,9 +23,7 @@ class GenerateMockEventOutput:
     """
     event: str
 
-    def __init__(self, jsonrpc_data_bytes: bytes) -> None:
-        jsonrpc_data = jsonrpc_data_bytes.decode("utf-8")
-        data_dict = json.loads(jsonrpc_data.strip())
+    def __init__(self, data_dict: dict) -> None:
         self.event = data_dict.get("result", {}).get("output", "")
 
 
@@ -62,7 +59,7 @@ class GenerateMockEventParams:
 
     _rpc_method: str = "generate_mock_event"
 
-    def jsonrpc_dumps(self, region, profile) -> bytes:
+    def to_dict(self) -> dict:
         params = {}
         if self.registry_name:
             params["RegistryName"] = self.registry_name
@@ -78,4 +75,7 @@ class GenerateMockEventParams:
             params["Overrides"] = self.overrides
         if self.skip_optional:
             params["SkipOptional"] = self.skip_optional
-        return Payload(self._rpc_method, params, region, profile).dump_bytes()
+        return params
+
+    def to_payload(self, region, profile) -> Payload:
+        return Payload(self._rpc_method, self.to_dict(), region, profile)

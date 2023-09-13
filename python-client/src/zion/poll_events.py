@@ -1,7 +1,6 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging
 from dataclasses import dataclass
 from typing import List, Callable
@@ -24,9 +23,7 @@ class PollEventsOutput:
     """
     events: List[str]
 
-    def __init__(self, jsonrpc_data_bytes) -> None:
-        jsonrpc_data = jsonrpc_data_bytes.decode("utf-8")
-        data_dict = json.loads(jsonrpc_data.strip())
+    def __init__(self, data_dict) -> None:
         output = data_dict.get("result", {}).get("output", [])
         self.events = output
 
@@ -51,14 +48,17 @@ class PollEventsParams:
 
     _rpc_method: str = "test_harness.eventbridge.poll_events"
 
-    def jsonrpc_dumps(self, region, profile) -> bytes:
+    def to_dict(self):
         params = {}
         params["ListenerId"] = self.listener_id
         if self.wait_time_seconds is not None:
             params["WaitTimeSeconds"] = self.wait_time_seconds
         if self.max_number_of_messages is not None:
             params["MaxNumberOfMessages"] = self.max_number_of_messages
-        return Payload(self._rpc_method, params, region, profile).dump_bytes()
+        return params
+
+    def to_payload(self, region, profile):
+        return Payload(self._rpc_method, self.to_dict(), region, profile)
 
 
 @dataclass

@@ -56,9 +56,7 @@ class AddEbListenerOutput:
     target_under_test: AddEbListener_Resource
     components: List[AddEbListener_Resource]
 
-    def __init__(self, jsonrpc_data_bytes) -> None:
-        jsonrpc_data = jsonrpc_data_bytes.decode("utf-8")
-        data_dict = json.loads(jsonrpc_data.strip())
+    def __init__(self, data_dict: dict) -> None:
         output = data_dict.get("result", {}).get("output", {})
         self.id = output.get("Id", "")
         self.target_under_test = AddEbListener_Resource(
@@ -92,7 +90,7 @@ class AddEbListenerParams:
 
     _rpc_method: str = "test_harness.eventbridge.add_listener"
 
-    def jsonrpc_dumps(self, region, profile) -> bytes:
+    def to_dict(self) -> dict:
         params = {}
         params["EventBusName"] = self.event_bus_name
         params["RuleName"] = self.rule_name
@@ -100,4 +98,7 @@ class AddEbListenerParams:
             params["TargetId"] = self.target_id
         if self.tags:
             params["Tags"] = self.tags
-        return Payload(self._rpc_method, params, region, profile).dump_bytes()
+        return params
+
+    def to_payload(self, region, profile) -> Payload:
+        return Payload(self._rpc_method, self.to_dict(), region, profile)

@@ -52,7 +52,7 @@ func main() {
 		exitWithResponse(resp, jsonrpcData)
 	}
 
-	respString, errRPC := rpcStruct.RPCMethod()
+	respString, errRPC := rpcStruct.RPCMethod(jsonrpcData.Metadata)
 
 	if errRPC != nil {
 		var oe *smithy.OperationError

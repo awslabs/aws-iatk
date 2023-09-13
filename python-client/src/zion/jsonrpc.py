@@ -3,9 +3,16 @@
 import json
 import logging
 from uuid import uuid4
+from typing import Optional
+
+try:
+    from importlib.metadata import version 
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 
 LOG = logging.getLogger(__name__)
+MODULE_NAME = "zion"
 
 
 class Payload:
@@ -13,6 +20,8 @@ class Payload:
     id: str
     method: str
     params: dict
+    _client: str = "python"
+    _version: str = version(MODULE_NAME)
 
     def __init__(self, method: str, params: dict, region: str = None, profile: str = None):
         self.id = str(uuid4())
@@ -23,13 +32,19 @@ class Payload:
         if profile:
             self.params["Profile"] = profile
 
-    def to_dict(self):
-        return {
+    def to_dict(self, caller: Optional[str]=None):
+        _dict = {
             "jsonrpc": self.jsonrpc,
             "id": self.id,
             "method": self.method,
             "params": self.params,
+            "metadata": {
+                "client": self._client,
+                "version": self._version,
+                "caller": caller if caller else self.method,
+            }
         }
+        return _dict
 
-    def dump_bytes(self):
-        return bytes(json.dumps(self.to_dict()), "utf-8")
+    def dump_bytes(self, caller: Optional[str]=None):
+        return bytes(json.dumps(self.to_dict(caller)), "utf-8")
