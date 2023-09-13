@@ -111,8 +111,7 @@ func (s *GenerateMockEventSuite) TestGenerateMockEvent() {
 						"RegistryName": %q,
 						"SchemaName": %q,
 						"SchemaVersion": %q,
-						"EventRef": "#/components/schemas/MyEvent",
-						"Context": ["eventbridge.v0"]
+						"EventRef": "MyEvent"
 					}
 				}`, test_method, s.region, s.registry, s.openapiName, s.openapiVersion))
 			},
