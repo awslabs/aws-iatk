@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"testing"
@@ -311,23 +309,30 @@ func TestCreateSubSegIdtoSegMap(t *testing.T) {
 }
 
 func TestBuildTreeFromTraceDoc(t *testing.T) {
-	filebytes, err := os.ReadFile("./testdata/trace01.json")
-	require.NoError(t, err)
-	var trace Trace
-	err = json.Unmarshal(filebytes, &trace)
-
-	traceMap := map[string]*Trace{
-		*trace.Id: &trace,
+	cases := []struct {
+		name           string
+		expectNumPaths int
+	}{
+		{
+			name:           "./testdata/trace01.json",
+			expectNumPaths: 28,
+		},
 	}
-	tree, err := buildTree(traceMap, &trace)
-	require.NoError(t, err)
-	log.Println(tree.Paths)
-	for _, p := range tree.Paths {
-		o := []string{}
-		for _, n := range p {
-			st := fmt.Sprintf("%v(%v/%v)", *n.Origin, *n.Id, *n.Name)
-			o = append(o, st)
-		}
-		log.Println(o)
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			filebytes, err := os.ReadFile(tt.name)
+			require.NoError(t, err)
+			var trace Trace
+			err = json.Unmarshal(filebytes, &trace)
+			require.NoError(t, err)
+
+			traceMap := map[string]*Trace{
+				*trace.Id: &trace,
+			}
+			tree, err := buildTree(traceMap, &trace)
+			require.NoError(t, err)
+			assert.Len(t, tree.Paths, tt.expectNumPaths)
+		})
 	}
 }

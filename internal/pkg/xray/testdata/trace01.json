@@ -5,16 +5,16 @@
     "Segments": [
         {
             "id": "b7895bbc399a6a0a",
-            "name": "logs-comptroller-runner",
+            "name": "state-machine-02",
             "start_time": 1694461253.163,
             "trace_id": "1-64ff6d44-aea567060462405d5ce05581",
             "end_time": 1694461256.421,
             "parent_id": "7c393f52cf950a66",
             "aws": {
-                "resource_arn": "arn:aws:states:us-east-1:123456789012:express:logs-comptroller-runner:4d124a6e-5282-4ae8-bb30-801cce649ddb:eceb53c2-7082-4733-af7a-c3a5b17a306a"
+                "resource_arn": "arn:aws:states:us-east-1:123456789012:express:state-machine-02:4d124a6e-5282-4ae8-bb30-801cce649ddb:eceb53c2-7082-4733-af7a-c3a5b17a306a"
             },
             "origin": "AWS::StepFunctions::StateMachine",
-            "resource_arn": "arn:aws:states:us-east-1:123456789012:stateMachine:logs-comptroller-runner",
+            "resource_arn": "arn:aws:states:us-east-1:123456789012:stateMachine:state-machine-02",
             "cause": {},
             "subsegments": [
                 {
@@ -4095,15 +4095,15 @@
         },
         {
             "id": "d593b4404f8c5a1c",
-            "name": "logs-comptroller-iterator",
+            "name": "state-machine-01",
             "start_time": 1694461252.453,
             "trace_id": "1-64ff6d44-aea567060462405d5ce05581",
             "end_time": 1694461258.866,
             "aws": {
-                "resource_arn": "arn:aws:states:us-east-1:123456789012:execution:logs-comptroller-iterator:b5266c9f-18ca-4290-ac1c-a7f571afceca"
+                "resource_arn": "arn:aws:states:us-east-1:123456789012:execution:state-machine-01:b5266c9f-18ca-4290-ac1c-a7f571afceca"
             },
             "origin": "AWS::StepFunctions::StateMachine",
-            "resource_arn": "arn:aws:states:us-east-1:123456789012:stateMachine:logs-comptroller-iterator",
+            "resource_arn": "arn:aws:states:us-east-1:123456789012:stateMachine:state-machine-01",
             "cause": {},
             "subsegments": [
                 {
@@ -4257,16 +4257,16 @@
         },
         {
             "id": "dadd1f16c6ea1927",
-            "name": "logs-comptroller-runner",
+            "name": "state-machine-02",
             "start_time": 1694461256.953,
             "trace_id": "1-64ff6d44-aea567060462405d5ce05581",
             "end_time": 1694461258.726,
             "parent_id": "3724caeb1973f4ca",
             "aws": {
-                "resource_arn": "arn:aws:states:us-east-1:123456789012:express:logs-comptroller-runner:583fa7bd-3c77-4c85-a71b-e063f33a0307:a279dc7e-65f4-4b44-8ebd-7548a6429075"
+                "resource_arn": "arn:aws:states:us-east-1:123456789012:express:state-machine-02:583fa7bd-3c77-4c85-a71b-e063f33a0307:a279dc7e-65f4-4b44-8ebd-7548a6429075"
             },
             "origin": "AWS::StepFunctions::StateMachine",
-            "resource_arn": "arn:aws:states:us-east-1:123456789012:stateMachine:logs-comptroller-runner",
+            "resource_arn": "arn:aws:states:us-east-1:123456789012:stateMachine:state-machine-02",
             "cause": {},
             "subsegments": [
                 {
