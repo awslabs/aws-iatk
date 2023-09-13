@@ -19,9 +19,9 @@ func GenerateOpenapiEvent(schema *Schema, skipOptional bool) ([]byte, error) {
 	var schemaByteArray []byte
 	if schema.SchemaContent == nil {
 		return nil, fmt.Errorf("failed while loading schema due to error: invalid schema provided")
-	} else {
-		schemaByteArray = []byte(*schema.SchemaContent)
 	}
+
+	schemaByteArray = []byte(*schema.SchemaContent)
 
 	openApiSchema, err := openapi3.NewLoader().LoadFromData(schemaByteArray)
 	if err != nil {
