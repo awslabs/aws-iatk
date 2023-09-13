@@ -1,10 +1,11 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging
 from dataclasses import dataclass
 from typing import List, Callable
+
+from .jsonrpc import Payload
 
 
 LOG = logging.getLogger(__name__)
@@ -22,9 +23,7 @@ class PollEventsOutput:
     """
     events: List[str]
 
-    def __init__(self, jsonrpc_data_bytes) -> None:
-        jsonrpc_data = jsonrpc_data_bytes.decode("utf-8")
-        data_dict = json.loads(jsonrpc_data.strip())
+    def __init__(self, data_dict) -> None:
         output = data_dict.get("result", {}).get("output", [])
         self.events = output
 
@@ -49,24 +48,17 @@ class PollEventsParams:
 
     _rpc_method: str = "test_harness.eventbridge.poll_events"
 
-    def jsonrpc_dumps(self, region, profile):
-        jsonrpc_data = {
-            "jsonrpc": "2.0",
-            "id": "42",
-            "method": self._rpc_method,
-            "params": {},
-        }
-        jsonrpc_data["params"]["ListenerId"] = self.listener_id
+    def to_dict(self):
+        params = {}
+        params["ListenerId"] = self.listener_id
         if self.wait_time_seconds is not None:
-            jsonrpc_data["params"]["WaitTimeSeconds"] = self.wait_time_seconds
+            params["WaitTimeSeconds"] = self.wait_time_seconds
         if self.max_number_of_messages is not None:
-            jsonrpc_data["params"]["MaxNumberOfMessages"] = self.max_number_of_messages
-        if region:
-            jsonrpc_data["params"]["Region"] = region
-        if profile:
-            jsonrpc_data["params"]["Profile"] = profile
+            params["MaxNumberOfMessages"] = self.max_number_of_messages
+        return params
 
-        return bytes(json.dumps(jsonrpc_data), "utf-8")
+    def to_payload(self, region, profile):
+        return Payload(self._rpc_method, self.to_dict(), region, profile)
 
 
 @dataclass

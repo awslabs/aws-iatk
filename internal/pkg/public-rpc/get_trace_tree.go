@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"zion/internal/pkg/aws/config"
+	"zion/internal/pkg/jsonrpc"
 	"zion/internal/pkg/public-rpc/types"
 	zionxray "zion/internal/pkg/xray"
 )
@@ -18,7 +19,7 @@ type GetTraceTreeParams struct {
 	Region        string `json:"Region,omitempty"`
 }
 
-func (p *GetTraceTreeParams) RPCMethod() (*types.Result, error) {
+func (p *GetTraceTreeParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error) {
 
 	if p.TracingHeader == "" {
 		return nil, errors.New(`missing required param "TracingHeader"`)
@@ -31,7 +32,7 @@ func (p *GetTraceTreeParams) RPCMethod() (*types.Result, error) {
 	}
 
 	ctx := context.TODO()
-	cfg, err := config.GetAWSConfig(context.TODO(), p.Region, p.Profile)
+	cfg, err := config.GetAWSConfig(context.TODO(), p.Region, p.Profile, metadata)
 
 	if err != nil {
 		return nil, fmt.Errorf("error when loading AWS config: %v", err)

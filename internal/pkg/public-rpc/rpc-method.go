@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"zion/internal/pkg/jsonrpc"
 	"zion/internal/pkg/public-rpc/types"
 )
 
 type Method interface {
-	RPCMethod() (*types.Result, error)
+	RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error)
 	ReflectOutput() reflect.Value
 }
 
@@ -22,6 +23,7 @@ func init() {
 	MethodMap["test_harness.eventbridge.remove_listeners"] = new(RemoveEbListenersParams)
 	MethodMap["test_harness.eventbridge.poll_events"] = new(PollEventsParams)
 	MethodMap["get_trace_tree"] = new(GetTraceTreeParams)
+	MethodMap["generate_mock_event"] = new(GenerateMockEventsParams)
 }
 
 func GetRPCStruct(methodName string, params json.RawMessage) (Method, error) {

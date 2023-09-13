@@ -1,4 +1,4 @@
-package schemaregistry
+package event
 
 import (
 	"context"

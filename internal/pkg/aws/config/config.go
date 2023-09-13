@@ -5,6 +5,7 @@ package config
 
 import (
 	"context"
+	"zion/internal/pkg/jsonrpc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
@@ -12,16 +13,18 @@ import (
 	smithymiddleware "github.com/aws/smithy-go/middleware"
 )
 
-func GetAWSConfig(ctx context.Context, region string, profile string) (aws.Config, error) {
+func GetAWSConfig(ctx context.Context, region string, profile string, metadata *jsonrpc.Metadata) (aws.Config, error) {
+	uaVal := "unknown"
+	if metadata != nil {
+		uaVal = metadata.UserAgentValue()
+	}
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
 		config.WithSharedConfigProfile(profile),
 		config.WithRegion(region),
 		config.WithClientLogMode(aws.LogRetries|aws.LogRequest|aws.LogResponse|aws.LogRequest),
 		config.WithAPIOptions([]func(*smithymiddleware.Stack) error{
-			// (@jfuss) Feels like we may want to know what client language the customer is using. Making
-			// A note for later
-			awsmiddleware.AddUserAgentKeyValue("aws-zion", "0.1"),
+			awsmiddleware.AddUserAgentKeyValue("aws-zion", uaVal),
 		}),
 	)
 

@@ -1,10 +1,9 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging
 from dataclasses import dataclass
-from typing import List, Callable
+from typing import Callable
 from .get_trace_tree import (
     GetTraceTreeOutput
 )

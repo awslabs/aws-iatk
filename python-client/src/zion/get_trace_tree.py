@@ -1,10 +1,11 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging
 from dataclasses import dataclass
 from .xray import Tree
+
+from .jsonrpc import Payload
 
 
 LOG = logging.getLogger(__name__)
@@ -22,9 +23,7 @@ class GetTraceTreeOutput:
     """
     trace_tree: Tree
 
-    def __init__(self, jsonrpc_data_bytes) -> None:
-        jsonrpc_data = jsonrpc_data_bytes.decode("utf-8")
-        data_dict = json.loads(jsonrpc_data.strip())
+    def __init__(self, data_dict) -> None:
         trace_tree_output = data_dict.get("result", {}).get("output", {})
         self.trace_tree = Tree(trace_tree_output)
 
@@ -42,17 +41,10 @@ class GetTraceTreeParams:
     tracing_header: str
     _rpc_method: str = "get_trace_tree"
 
-    def jsonrpc_dumps(self, region, profile):
-        jsonrpc_data = {
-            "jsonrpc": "2.0",
-            "id": "42",
-            "method": self._rpc_method,
-            "params": {},
+    def to_dict(self) -> dict:
+        return {
+            "TracingHeader": self.tracing_header,
         }
-        jsonrpc_data["params"]["TracingHeader"] = self.tracing_header
-        if region:
-            jsonrpc_data["params"]["Region"] = region
-        if profile:
-            jsonrpc_data["params"]["Profile"] = profile
 
-        return bytes(json.dumps(jsonrpc_data), "utf-8")
+    def to_payload(self, region, profile) -> Payload:
+        return Payload(self._rpc_method, self.to_dict(), region, profile)
