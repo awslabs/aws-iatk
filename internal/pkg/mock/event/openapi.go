@@ -25,7 +25,7 @@ func GenerateOpenapiEvent(schema *Schema, skipOptional bool) ([]byte, error) {
 
 	openApiSchema, err := openapi3.NewLoader().LoadFromData(schemaByteArray)
 	if err != nil {
-		return nil, fmt.Errorf("failed while loading schema due to error: invalid schema provided")
+		return nil, fmt.Errorf("failed while loading schema due to error: %v", err)
 	}
 
 	schemaComponents := openApiSchema.Components
@@ -69,9 +69,7 @@ func ConstructOpenapiEvent(schema *openapi3.Schema, skipOptional bool, maxDepth 
 			} else {
 				event[propertyName] = ""
 			}
-		case "number":
-			event[propertyName] = 0
-		case "integer":
+		case "number", "integer":
 			event[propertyName] = 0
 		case "boolean":
 			event[propertyName] = false

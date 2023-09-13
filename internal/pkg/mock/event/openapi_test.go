@@ -28,7 +28,7 @@ func TestGenerateOpenApiEventErrors(t *testing.T) {
 		"error while loading schema": {
 			schemaContent: "invalid json content",
 			eventRef:      "RandomEvent",
-			expectErr:     errors.New("failed while loading schema due to error: invalid schema provided"),
+			expectErr:     errors.New("failed while loading schema due to error: error unmarshaling JSON"),
 		},
 		"missing components in schema": {
 			schemaContent: `{"openapi": "3.0.0"}`,
@@ -92,7 +92,7 @@ func TestGenerateOpenApiEventErrors(t *testing.T) {
 			}
 
 			generatedEvent, err := GenerateOpenapiEvent(schema, false)
-			assert.EqualError(t, err, tt.expectErr.Error())
+			assert.Contains(t, err.Error(), tt.expectErr.Error())
 			assert.Nil(t, generatedEvent)
 		})
 	}
