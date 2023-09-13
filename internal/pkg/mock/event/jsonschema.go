@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func GenerateEventObject(schema *jsonschema.Schema, generateRequiredOnly bool, maxDepth int) (EventMap, error) {
+func ConstructJsonschemaEvent(schema *jsonschema.Schema, generateRequiredOnly bool, maxDepth int) (EventMap, error) {
 	event := EventMap{}
 	for key, element := range schema.Properties {
 		if schema.Required != nil && generateRequiredOnly && !slices.Contains(schema.Required, key) {
