@@ -118,7 +118,7 @@ func TestSuccessfulRequiredOnlySchema(t *testing.T) {
 	eventRef := ""
 	schemaType := SchemaType("JSONSchemaDraft4")
 	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
-	event, _ := GenerateEvent(&schema, true)
+	event, _ := GenerateJsonschemaEvent(&schema, true)
 	_ = json.Unmarshal(event, &eventMap)
 	assert.Contains(t, eventMap, "test")
 	assert.Empty(t, eventMap["notRequired"])
