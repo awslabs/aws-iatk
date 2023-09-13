@@ -63,7 +63,7 @@ func ConstructJsonschemaEvent(schema *jsonschema.Schema, generateRequiredOnly bo
 	return event, nil
 }
 
-func GenerateEvent(rawSchema *Schema, generateRequiredOnly bool) ([]byte, error) {
+func GenerateJsonschemaEvent(rawSchema *Schema, skipOptional bool) ([]byte, error) {
 	if len(*rawSchema.SchemaContent) < 1 {
 		return nil, fmt.Errorf("failed while loading schema due to error: invalid schema provided")
 	}
