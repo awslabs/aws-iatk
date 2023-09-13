@@ -46,7 +46,7 @@ func TestCompilationError(t *testing.T) {
 	eventRef := ""
 	schemaType := SchemaType("JSONSchemaDraft4")
 	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
-	_, err := GenerateEvent(&schema, false)
+	_, err := GenerateJsonschemaEvent(&schema, false)
 	assert.Error(t, errors.New(`error compiling schema: json-schema \"temp.json\" compilation failed)`), err)
 }
 
