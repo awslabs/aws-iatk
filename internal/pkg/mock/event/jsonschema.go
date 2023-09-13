@@ -37,7 +37,11 @@ func GenerateEventObject(schema *jsonschema.Schema, generateRequiredOnly bool, m
 				if maxDepth == 0 {
 					event[key] = nil
 				} else {
-					event[key], _ = GenerateEventObject(schema.Properties[key], generateRequiredOnly, maxDepth-1)
+					var err error
+					event[key], err = GenerateEventObject(schema.Properties[key], generateRequiredOnly, maxDepth-1)
+					if err != nil {
+						return nil, fmt.Errorf("error generated event object: %w", err)
+					}
 				}
 			case "array":
 				event[key] = []string{}
@@ -48,7 +52,7 @@ func GenerateEventObject(schema *jsonschema.Schema, generateRequiredOnly bool, m
 
 			}
 		} else if len(elementType) > 1 {
-			return nil, fmt.Errorf("cannot handle mmultiple type declaration")
+			return nil, fmt.Errorf("cannot handle multiple type declaration")
 		}
 		if schema.Properties[key].Ref != nil && maxDepth > 0 {
 			event[key], _ = GenerateEventObject(schema.Properties[key].Ref, generateRequiredOnly, maxDepth-1)
@@ -72,7 +76,6 @@ func GenerateEvent(rawSchema *Schema, generateRequiredOnly bool) ([]byte, error)
 	}
 
 	eventMap, err := GenerateEventObject(schema, generateRequiredOnly, 20)
-	fmt.Println(eventMap)
 	if err != nil {
 		return nil, fmt.Errorf("error generating event: %w", err)
 	}
