@@ -78,7 +78,7 @@ func TestSuccessfulArraySchema(t *testing.T) {
 	eventRef := ""
 	schemaType := SchemaType("JSONSchemaDraft4")
 	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
-	event, _ := GenerateEvent(&schema, false)
+	event, _ := GenerateJsonschemaEvent(&schema, false)
 	_ = json.Unmarshal(event, &eventMap)
 	assert.Contains(t, eventMap, "test")
 	assert.IsType(t, []interface{}{}, eventMap["test"])
