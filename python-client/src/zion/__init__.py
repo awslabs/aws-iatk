@@ -11,6 +11,7 @@ from functools import wraps
 from typing import TYPE_CHECKING, Optional
 import time
 import math
+import inspect
 
 from .get_physical_id_from_stack import (
     PhysicalIdFromStackOutput,
@@ -527,32 +528,34 @@ class Zion:
             error_code = data_dict.get("error", {}).get("Code", 0)
             raise ZionException(message=message, error_code=error_code)
         
-    def __mock_event_parameter_overrides_object__(self, event, override):
-        try:
-            for key in event:
-                if key in override:
-                    if 
-                    event[key] = override[key]
-                    del override[key]
-        except Exception as e:
-            raise ZionException(e, 500)
-    def __mock_event_parameter_overrides_array__(self, event_array, override):
-        try:
-            for event in event_array:
-                if type(event) is dict:
-                    self.__mock_event_parameter_overrides_object__(event, override)
-                if type(event) is list:
-                    self.__mock_event_parameter_overrides_array__(event, override)
-        except Exception as e:
-            raise ZionException(e, 500)
-    def __mock_event_parameter_overrides__(self, event_string, override_string):
-        event = json.loads(event_string)
-        override = json.loads(override_string)
-        self.__mock_event_parameter_overrides_object__(event, override)
-        for key, element in override.items():
-            event[key] = element
-        return event
+    def _mock_event_parameter_overrides_object(self, event, override):
+        for key, value in event.items():
+            if key in override:
+                print(key, value)
+                print(type(override[key]))
+                if callable(override[key]) or inspect.isclass(override[key]):
+                    raise ZionException("json does not support non-serializable value provided such as class instances or functions", 500)
+                event[key] = override[key]
+                del override[key]
+            elif type(value) is dict:
+                self._mock_event_parameter_overrides_object(value, override)
+            elif type(value) is list:
+                self._mock_event_parameter_overrides_array(value, override)
         
+    def _mock_event_parameter_overrides_array(self, event_array, override):
+        for event in event_array:
+            if type(event) is dict:
+                self._mock_event_parameter_overrides_object(event, override)
+            if type(event) is list:
+                self._mock_event_parameter_overrides_array(event, override)
+        
+    def _construct_mock_event_parameter_overrides(self, event, override):
+        self._mock_event_parameter_overrides_object(event, override)
+        for key, value in override.items():
+            if type(value) is callable or inspect.isclass(value):
+                    raise ZionException("json does not support non-serializable value provided such as class instances or functions", 500)
+            event[key] = value
+        return event
 
         
     def retry_get_trace_tree_until(self, params: RetryGetTraceTreeUntilParams):
