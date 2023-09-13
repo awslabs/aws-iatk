@@ -13,7 +13,7 @@ func TestSuccessfulStringSchema(t *testing.T) {
 		"properties": { 
 			"test": { "type": "string" }}}`
 	eventRef := ""
-	schemaType := SchemaType("JSONSchemaDraft4")
+	schemaType := "JSONSchemaDraft4"
 	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
 	event, _ := GenerateJsonschemaEvent(&schema, false)
 	_ = json.Unmarshal(event, &eventMap)
@@ -29,7 +29,7 @@ func TestSuccessfulEnumSchema(t *testing.T) {
 			"test": { "type": "string",
   					  "enum": ["testEnum"]}}}`
 	eventRef := ""
-	schemaType := SchemaType("JSONSchemaDraft4")
+	schemaType := "JSONSchemaDraft4"
 	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
 	event, _ := GenerateJsonschemaEvent(&schema, false)
 	_ = json.Unmarshal(event, &eventMap)
@@ -44,7 +44,7 @@ func TestCompilationError(t *testing.T) {
 		"properties": { 
 			"test": {"type": "random"}}}`
 	eventRef := ""
-	schemaType := SchemaType("JSONSchemaDraft4")
+	schemaType := "JSONSchemaDraft4"
 	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
 	_, err := GenerateJsonschemaEvent(&schema, false)
 	assert.Error(t, errors.New(`error compiling schema: json-schema \"temp.json\" compilation failed)`), err)
@@ -56,7 +56,7 @@ func TestSuccessfulNumberSchema(t *testing.T) {
 		"properties": { 
 			"test": {"type": "number"}}}`
 	eventRef := ""
-	schemaType := SchemaType("JSONSchemaDraft4")
+	schemaType := "JSONSchemaDraft4"
 	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
 	event, _ := GenerateJsonschemaEvent(&schema, false)
 	_ = json.Unmarshal(event, &eventMap)
@@ -76,7 +76,7 @@ func TestSuccessfulArraySchema(t *testing.T) {
 				"type": "array"
 			}}}`
 	eventRef := ""
-	schemaType := SchemaType("JSONSchemaDraft4")
+	schemaType := "JSONSchemaDraft4"
 	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
 	event, _ := GenerateJsonschemaEvent(&schema, false)
 	_ = json.Unmarshal(event, &eventMap)
@@ -97,7 +97,7 @@ func TestSuccessfulObjectSchema(t *testing.T) {
 				"type": "object"
 			}}}`
 	eventRef := ""
-	schemaType := SchemaType("JSONSchemaDraft4")
+	schemaType := "JSONSchemaDraft4"
 	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
 	event, _ := GenerateJsonschemaEvent(&schema, false)
 	_ = json.Unmarshal(event, &eventMap)
@@ -116,7 +116,7 @@ func TestSuccessfulRequiredOnlySchema(t *testing.T) {
 			"notRequired": {"type": "string"}},
 			"required": ["test"]}`
 	eventRef := ""
-	schemaType := SchemaType("JSONSchemaDraft4")
+	schemaType := "JSONSchemaDraft4"
 	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
 	event, _ := GenerateJsonschemaEvent(&schema, true)
 	_ = json.Unmarshal(event, &eventMap)
