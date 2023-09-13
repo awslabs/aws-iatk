@@ -99,7 +99,7 @@ func TestSuccessfulObjectSchema(t *testing.T) {
 	eventRef := ""
 	schemaType := SchemaType("JSONSchemaDraft4")
 	schema := Schema{SchemaContent: &schemaString, SchemaType: &schemaType, EventRef: &eventRef}
-	event, _ := GenerateEvent(&schema, false)
+	event, _ := GenerateJsonschemaEvent(&schema, false)
 	_ = json.Unmarshal(event, &eventMap)
 	assert.NotEmpty(t, eventMap["testObject"])
 	assert.IsType(t, map[string]any{}, eventMap["testObject"])
