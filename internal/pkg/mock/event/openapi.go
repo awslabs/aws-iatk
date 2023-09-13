@@ -25,7 +25,7 @@ func GenerateOpenapiEvent(schema *Schema, skipOptional bool) ([]byte, error) {
 
 	openApiSchema, err := openapi3.NewLoader().LoadFromData(schemaByteArray)
 	if err != nil {
-		return nil, fmt.Errorf("failed while loading schema due to error: %v", err)
+		return nil, fmt.Errorf("failed while loading schema due to error: %w", err)
 	}
 
 	schemaComponents := openApiSchema.Components
@@ -44,7 +44,7 @@ func GenerateOpenapiEvent(schema *Schema, skipOptional bool) ([]byte, error) {
 
 	eventMap, err := ConstructOpenapiEvent(eventComponentRef.Value, skipOptional, 20)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate a mock event for the provided schema due to error: %v", err)
+		return nil, fmt.Errorf("failed to generate a mock event for the provided schema due to error: %w", err)
 	}
 
 	return json.Marshal(eventMap)

@@ -59,7 +59,7 @@ func (p *GenerateMockEventsParams) RPCMethod(metadata *jsonrpc.Metadata) (*types
 		return nil, fmt.Errorf("error reading schema: %w", err)
 	}
 
-	event, err := GenerateMockEvent(schema, p.SkipOptional)
+	event, err := mockevent.GenerateMockEvent(schema, p.SkipOptional)
 	if err != nil {
 		return nil, fmt.Errorf("error generating mock event: %w", err)
 	}
@@ -70,7 +70,7 @@ func (p *GenerateMockEventsParams) RPCMethod(metadata *jsonrpc.Metadata) (*types
 }
 
 func (p *GenerateMockEventsParams) ReflectOutput() reflect.Value {
-	ft := reflect.TypeOf(GenerateMockEvent)
+	ft := reflect.TypeOf(mockevent.GenerateMockEvent)
 	out0 := ft.Out(0)
 	return reflect.New(out0).Elem()
 }
@@ -92,19 +92,4 @@ func (p *GenerateMockEventsParams) validateParams() error {
 	}
 
 	return nil
-}
-
-// TODO: to be replaced by actual implementation (in internal pkg)
-func GenerateMockEvent(schema *mockevent.Schema, skipOptional bool) (string, error) {
-
-	// Commenting out as the integ tests fail, will be moved to internal pkg in a separate PR
-	// generatedEvent, err := mockevent.GenerateOpenapiEvent(schema, false)
-
-	// if err != nil {
-	// 	return "", fmt.Errorf("error generating mock event: %w", err)
-	// }
-
-	// return string(generatedEvent), nil
-
-	return "", nil
 }
