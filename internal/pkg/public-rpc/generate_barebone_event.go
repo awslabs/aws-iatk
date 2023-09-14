@@ -17,7 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/schemas"
 )
 
-type GenerateMockEventsParams struct {
+type GenerateBareboneEventsParams struct {
 	RegistryName  string
 	SchemaName    string
 	SchemaVersion string
@@ -29,7 +29,7 @@ type GenerateMockEventsParams struct {
 	Region  string
 }
 
-func (p *GenerateMockEventsParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error) {
+func (p *GenerateBareboneEventsParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error) {
 	err := p.validateParams()
 	if err != nil {
 		return nil, err
@@ -66,13 +66,13 @@ func (p *GenerateMockEventsParams) RPCMethod(metadata *jsonrpc.Metadata) (*types
 	}, nil
 }
 
-func (p *GenerateMockEventsParams) ReflectOutput() reflect.Value {
+func (p *GenerateBareboneEventsParams) ReflectOutput() reflect.Value {
 	ft := reflect.TypeOf(mockevent.GenerateMockEvent)
 	out0 := ft.Out(0)
 	return reflect.New(out0).Elem()
 }
 
-func (p *GenerateMockEventsParams) validateParams() error {
+func (p *GenerateBareboneEventsParams) validateParams() error {
 	if p.RegistryName == "" || p.SchemaName == "" {
 		return errors.New(`requires both "RegistryName" and "SchemaName"`)
 	}
