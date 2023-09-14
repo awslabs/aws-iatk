@@ -11,7 +11,6 @@ from functools import wraps
 from typing import TYPE_CHECKING, Optional
 import time
 import math
-import uuid
 from typing import List, Callable
 
 from .get_physical_id_from_stack import (
