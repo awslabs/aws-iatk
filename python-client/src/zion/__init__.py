@@ -429,7 +429,7 @@ class Zion:
         )
         event = out.event
 
-        # TODO: apply context
+        event = self._apply_contexts(event, params.contexts)
 
         return GenerateMockEventOutput(event)
     
@@ -497,27 +497,21 @@ class Zion:
         if not event_dict.get("source") or event_dict.get("source") == "":
             event_dict["source"] = "source"
         if not event_dict.get("account"):
-            event_dict["account"] = "1234567891012"
+            event_dict["account"] = "123456789101"
         if not event_dict.get("time"):
             event_dict["time"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         if not event_dict.get("region"):
             event_dict["region"] = "us-east-1"
         if not event_dict.get("resources"):
             event_dict["resources"] = []
-
+            
         return event_dict
-
-    def _check_event_valid_types(self, event: dict):
-        if event is None:
-            raise ZionException("event is empty, make sure function returns a valid event", 500)
-        for value in list(event.values()):
-            if callable(value) or inspect.isclass(value):
-                    raise ZionException("json does not support non-serializable value provided such as class instances or functions", 500)
 
     def _apply_contexts(self, generated_event: dict, callable_contexts: List[Callable]) -> dict:
         for func in callable_contexts:
             generated_event = func(generated_event)
-        self._check_event_valid_types(generated_event)
+        if generated_event is None:
+            raise ZionException("event is empty, make sure function returns a valid event", 500)
         return generated_event
         
     def patch_aws_client(self, client: "boto3.client", sampled = 1) -> "boto3.client":

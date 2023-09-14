@@ -44,28 +44,6 @@ class TestZion_eventbridge_context(TestCase):
         self.assertEqual("after", event["test"])
         self.assertEqual(1, len(event))
 
-    def test_override_invalid_type_function(self):
-        def override(event) :
-            def test_func():
-                pass
-            event["test"] = test_func
-            return event
-        with pytest.raises(zion.ZionException) as e: 
-            event_input = {"test":"before"}
-            event = self.zion._apply_contexts(generated_event=event_input, callable_contexts=[override])
-        self.assertEqual(str(e.value), "json does not support non-serializable value provided such as class instances or functions")
-
-    def test_override_invalid_type_class(self):
-        def override(event) :
-            class test_class(object):
-                pass
-            event["test"] = test_class
-            return event
-        with pytest.raises(zion.ZionException) as e: 
-            event_input = {"test":"before"}
-            event = self.zion._apply_contexts(generated_event=event_input, callable_contexts=[override])
-        self.assertEqual(str(e.value), "json does not support non-serializable value provided such as class instances or functions")
-
     def test_override_invalid_type_return(self):
         def override(event) :
             event["test"] = "after"
@@ -73,4 +51,33 @@ class TestZion_eventbridge_context(TestCase):
             event_input = {"test":"before"}
             event = self.zion._apply_contexts(generated_event=event_input, callable_contexts=[override])
         self.assertEqual(str(e.value), "event is empty, make sure function returns a valid event")
+    
+    def test_default_eb_context(self):
+        event_input = {}
+        event = self.zion._apply_contexts(generated_event=event_input, callable_contexts=[self.zion.eventbridge_event_context])
+        context = ["version", "id", "account", "time", "detail-type", "source", "resources", "region"]
+        self.assertEqual(len(context), len(event))
+        for key in context:
+            self.assertIn(key, event)
+        self.assertEqual(12, len(event["account"]))
+
+    def test_eb_context_existing(self):
+        event_input = {"version": "5", "account" : "123123123123", "region": "us-west-10000"}
+        event = self.zion._apply_contexts(generated_event=event_input, callable_contexts=[self.zion.eventbridge_event_context])
+        context = ["version", "id", "account", "time", "detail-type", "source", "resources", "region"]
+        self.assertEqual(len(context), len(event))
+        for key in context:
+            self.assertIn(key, event)
+        self.assertEqual("5", event["version"])
+        self.assertEqual("123123123123", event["account"])
+        self.assertEqual("us-west-10000", event["region"])
+
+    def test_eb_context_doesnt_erase(self):
+        event_input = {"testing": 1}
+        event = self.zion._apply_contexts(generated_event=event_input, callable_contexts=[self.zion.eventbridge_event_context])
+        context = ["version", "id", "account", "time", "detail-type", "source", "resources", "region"]
+        self.assertEqual(len(context) + 1, len(event))
+        for key in context:
+            self.assertIn(key, event)
+        self.assertEqual(1, event["testing"])
            
