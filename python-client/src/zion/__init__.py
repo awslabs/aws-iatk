@@ -42,6 +42,8 @@ from .retry_xray_trace import (
     RetryGetTraceTreeUntilParams,
 )
 from .generate_mock_event import (
+    GenerateBareboneEventOutput,
+    GenerateBareboneEventParams,
     GenerateMockEventOutput,
     GenerateMockEventParams,
 )
@@ -68,6 +70,8 @@ __all__ = [
     "GetTraceTreeParams",
     "GetTraceTreeOutput",
     "RetryGetTraceTreeUntilParams",
+    "GenerateBareboneEventOutput",
+    "GenerateBareboneEventParams",
     "GenerateMockEventOutput",
     "GenerateMockEventParams",
 ]
@@ -376,11 +380,21 @@ class Zion:
         LOG.debug(f"Output: {output}")
         return output
 
+    # TODO (lauwing): make it a "private" method since there's no strong use case for using it alone
+    def generate_barebone_event(
+        self, params: GenerateBareboneEventParams,
+    ) -> GenerateBareboneEventOutput:
+        payload = params.to_payload(self.region, self.profile)
+        response = self._invoke_zion(payload)
+        output = GenerateBareboneEventOutput(response)
+        LOG.debug(f"Output: {output}")
+        return output
+
     def generate_mock_event(
-        self, params: GenerateMockEventParams,
+        self, params: GenerateMockEventParams
     ) -> GenerateMockEventOutput:
         """
-        Generate a mock event based on a schema from EventBridge Schema Registry or from a local file
+        Generate a mock event based on a schema from EventBridge Schema Registry
 
         IAM Permissions Needed
         ----------------------
@@ -401,11 +415,20 @@ class Zion:
         ZionException
             When failed to fetch a trace tree
         """
-        payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_zion(payload)
-        output = GenerateMockEventOutput(response)
-        LOG.debug(f"Output: {output}")
-        return output
+        out = self.generate_barebone_event(
+            GenerateBareboneEventParams(
+                registry_name=params.registry_name,
+                schema_name=params.schema_name,
+                schema_version=params.schema_version,
+                event_ref=params.event_ref,
+                skip_optional=params.skip_optional,
+            )
+        )
+        event = out.event
+
+        # TODO: apply context
+
+        return GenerateMockEventOutput(event)
     
     def retry_until(self, condition, timeout = 10):
         """

@@ -23,7 +23,7 @@ func init() {
 	MethodMap["test_harness.eventbridge.remove_listeners"] = new(RemoveEbListenersParams)
 	MethodMap["test_harness.eventbridge.poll_events"] = new(PollEventsParams)
 	MethodMap["get_trace_tree"] = new(GetTraceTreeParams)
-	MethodMap["generate_mock_event"] = new(GenerateMockEventsParams)
+	MethodMap["mock.generate_barebone_event"] = new(GenerateBareboneEventsParams)
 }
 
 func GetRPCStruct(methodName string, params json.RawMessage) (Method, error) {
