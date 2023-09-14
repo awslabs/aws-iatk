@@ -42,13 +42,15 @@ from .retry_xray_trace import (
     RetryGetTraceTreeUntilParams,
 )
 from .generate_mock_event import (
+    GenerateBareboneEventOutput,
+    GenerateBareboneEventParams,
     GenerateMockEventOutput,
     GenerateMockEventParams,
 )
+from .jsonrpc import Payload
 
 if TYPE_CHECKING:
     import boto3
-
 
 __all__ = [
     "Zion", 
@@ -68,6 +70,8 @@ __all__ = [
     "GetTraceTreeParams",
     "GetTraceTreeOutput",
     "RetryGetTraceTreeUntilParams",
+    "GenerateBareboneEventOutput",
+    "GenerateBareboneEventParams",
     "GenerateMockEventOutput",
     "GenerateMockEventParams",
 ]
@@ -76,7 +80,7 @@ LOG = logging.getLogger(__name__)
 zion_service_logger = logging.getLogger("zion.service")
 
 
-def log_duration(func):
+def _log_duration(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         start = datetime.now()
@@ -138,12 +142,9 @@ class Zion:
         ZionException
             When failed to fetch Phsyical Id
         """
-        input_data = params.jsonrpc_dumps(self.region, self.profile)
-        stdout_data = self._popen_zion(input_data, {})
-        self._raise_error_if_returned(stdout_data)
-
-        output = PhysicalIdFromStackOutput(stdout_data)
-
+        payload = params.to_payload(self.region, self.profile)
+        response = self._invoke_zion(payload)
+        output = PhysicalIdFromStackOutput(response)
         LOG.debug(f"Physical id: {output.physical_id}, Logical id: {params.logical_resource_id}")
         return output
 
@@ -170,14 +171,10 @@ class Zion:
         ZionException
             When failed to fetch Stack Outputs
         """
-        input_data = params.jsonrpc_dumps(self.region, self.profile)
-        stdout_data = self._popen_zion(input_data, {})
-        self._raise_error_if_returned(stdout_data)
-
-        output = GetStackOutputsOutput(stdout_data)
-
+        payload = params.to_payload(self.region, self.profile)
+        response = self._invoke_zion(payload)
+        output = GetStackOutputsOutput(response)
         LOG.debug(f"Output: {output}")
-
         return output
 
     def add_listener(self, params: AddEbListenerParams) -> AddEbListenerOutput:
@@ -215,14 +212,10 @@ class Zion:
         ZionException
             When failed to add listener
         """
-        input_data = params.jsonrpc_dumps(self.region, self.profile)
-        stdout_data = self._popen_zion(input_data, {})
-        self._raise_error_if_returned(stdout_data)
-
-        output = AddEbListenerOutput(stdout_data)
-
+        payload = params.to_payload(self.region, self.profile)
+        response = self._invoke_zion(payload)
+        output = AddEbListenerOutput(response)
         LOG.debug(f"Output: {output}")
-
         return output
 
     def remove_listeners(self, params: RemoveListenersParams) -> RemoveListenersOutput:
@@ -257,14 +250,19 @@ class Zion:
         ZionException
             When failed to remove listener(s)
         """
-        input_data = params.jsonrpc_dumps(self.region, self.profile)
-        stdout_data = self._popen_zion(input_data, {})
-        self._raise_error_if_returned(stdout_data)
-
-        output = RemoveListenersOutput(stdout_data)
-
+        payload = params.to_payload(self.region, self.profile)
+        response = self._invoke_zion(payload)
+        output = RemoveListenersOutput(response)
         LOG.debug(f"Output: {output}")
+        return output
 
+    def _poll_events(self, params: PollEventsParams, caller: str=None) -> PollEventsOutput:
+        """
+        underlying implementation for poll_events and wait_until_event_matched
+        """
+        payload = params.to_payload(self.region, self.profile)
+        response = self._invoke_zion(payload, caller)
+        output = PollEventsOutput(response)
         return output
 
     def poll_events(self, params: PollEventsParams) -> PollEventsOutput:
@@ -296,14 +294,8 @@ class Zion:
         ZionException
             When failed to Poll Events
         """
-        input_data = params.jsonrpc_dumps(self.region, self.profile)
-        stdout_data = self._popen_zion(input_data, {})
-        self._raise_error_if_returned(stdout_data)
-
-        output = PollEventsOutput(stdout_data)
-
+        output = self._poll_events(params)
         LOG.debug(f"Output: {output}")
-
         return output
 
     def wait_until_event_matched(self, params: WaitUntilEventMatchedParams) -> bool:
@@ -338,7 +330,7 @@ class Zion:
         start = datetime.now()
         elapsed = lambda _: (datetime.now() - start).total_seconds()
         while elapsed(None) < params.timeout_seconds:
-            out = self.poll_events(params=params._poll_event_params)
+            out = self._poll_events(params=params._poll_event_params, caller="wait_until_event_matched")
             events = out.events
             if events:
                 for event in events:
@@ -350,6 +342,14 @@ class Zion:
         LOG.debug("no matching event found")
         return False
 
+    def _get_trace_tree(self, params: GetTraceTreeParams, caller: str=None) -> GetTraceTreeOutput:
+        """
+        underlying implementation for get_trace_tree and retry_get_trace_tree_until
+        """
+        payload = params.to_payload(self.region, self.profile)
+        response = self._invoke_zion(payload, caller)
+        output = GetTraceTreeOutput(response)
+        return output
 
     def get_trace_tree(
         self, params: GetTraceTreeParams
@@ -376,20 +376,25 @@ class Zion:
         ZionException
             When failed to fetch a trace tree
         """
-        input_data = params.jsonrpc_dumps(self.region, self.profile)
-        stdout_data = self._popen_zion(input_data, {})
-        self._raise_error_if_returned(stdout_data)
+        output = self._get_trace_tree(params)
+        LOG.debug(f"Output: {output}")
+        return output
 
-        output = GetTraceTreeOutput(stdout_data)
-
+    # TODO (lauwing): make it a "private" method since there's no strong use case for using it alone
+    def generate_barebone_event(
+        self, params: GenerateBareboneEventParams,
+    ) -> GenerateBareboneEventOutput:
+        payload = params.to_payload(self.region, self.profile)
+        response = self._invoke_zion(payload)
+        output = GenerateBareboneEventOutput(response)
         LOG.debug(f"Output: {output}")
         return output
 
     def generate_mock_event(
-        self, params: GenerateMockEventParams,
+        self, params: GenerateMockEventParams
     ) -> GenerateMockEventOutput:
         """
-        Generate a mock event based on a schema from EventBridge Schema Registry or from a local file
+        Generate a mock event based on a schema from EventBridge Schema Registry
 
         IAM Permissions Needed
         ----------------------
@@ -410,14 +415,20 @@ class Zion:
         ZionException
             When failed to fetch a trace tree
         """
-        input_data = params.jsonrpc_dumps(self.region, self.profile)
-        stdout_data = self._popen_zion(input_data, {})
-        self._raise_error_if_returned(stdout_data)
+        out = self.generate_barebone_event(
+            GenerateBareboneEventParams(
+                registry_name=params.registry_name,
+                schema_name=params.schema_name,
+                schema_version=params.schema_version,
+                event_ref=params.event_ref,
+                skip_optional=params.skip_optional,
+            )
+        )
+        event = out.event
 
-        output = GenerateMockEventOutput(stdout_data)
+        # TODO: apply context
 
-        LOG.debug(f"Output: {output}")
-        return output
+        return GenerateMockEventOutput(event)
     
     def retry_until(self, condition, timeout = 10):
         """
@@ -504,9 +515,23 @@ class Zion:
         
         return client
 
+    @_log_duration
+    def _invoke_zion(self, payload: Payload, caller: str=None) -> dict:
+        input_data = payload.dump_bytes(caller)
+        LOG.debug("payload: %s", input_data)
+        stdout_data = self._popen_zion(input_data)
+        jsonrpc_data = stdout_data.decode("utf-8")
+        data_dict = json.loads(jsonrpc_data.strip())
 
-    @log_duration
-    def _popen_zion(self, input, env_vars):
+        # Error is only returned in the response if one happened. Otherwise it is omitted
+        if data_dict.get("error", None):
+            message = data_dict.get("error", {}).get("message", "")
+            error_code = data_dict.get("error", {}).get("Code", 0)
+            raise ZionException(message=message, error_code=error_code)
+        
+        return data_dict
+
+    def _popen_zion(self, input: bytes, env_vars: Optional[dict]=None) -> bytes:
         LOG.debug("calling zion rpc with input %s", input)
         p = Popen([self._zion_binary_path], stdout=PIPE, stdin=PIPE, stderr=PIPE)
 
@@ -554,9 +579,10 @@ class Zion:
         """
         @self.retry_until(condition=params.condition, timeout=params.timeout_seconds)
         def fetch_trace_tree():
-            response = self.get_trace_tree(params=GetTraceTreeParams(
-                tracing_header=params.tracing_header
-            ))
+            response = self._get_trace_tree(
+                params=GetTraceTreeParams(tracing_header=params.tracing_header),
+                caller="retry_get_trace_tree_until",
+            )
             return response
         try:
             response = fetch_trace_tree()

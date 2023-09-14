@@ -9,43 +9,41 @@ import (
 	"fmt"
 	"reflect"
 	"zion/internal/pkg/aws/config"
-	schemaregistry "zion/internal/pkg/generate_mock_event/schema_registry"
+	"zion/internal/pkg/jsonrpc"
+	mockevent "zion/internal/pkg/mock/event"
 	"zion/internal/pkg/public-rpc/types"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/schemas"
-	"golang.org/x/exp/slices"
 )
 
-type GenerateMockEventsParams struct {
+type GenerateBareboneEventsParams struct {
 	RegistryName  string
 	SchemaName    string
 	SchemaVersion string
 
 	EventRef     string
-	Context      []string
-	Overrides    string
 	SkipOptional bool
 
 	Profile string
 	Region  string
 }
 
-func (p *GenerateMockEventsParams) RPCMethod() (*types.Result, error) {
+func (p *GenerateBareboneEventsParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error) {
 	err := p.validateParams()
 	if err != nil {
 		return nil, err
 	}
 
 	ctx := context.TODO()
-	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile)
+	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile, metadata)
 	if err != nil {
 		return nil, fmt.Errorf("error loading AWS config: %w", err)
 	}
 
-	var schema *schemaregistry.Schema
+	var schema *mockevent.Schema
 	client := schemas.NewFromConfig(cfg)
-	schema, err = schemaregistry.NewSchemaFromRegistry(
+	schema, err = mockevent.NewSchemaFromRegistry(
 		ctx,
 		aws.String(p.RegistryName),
 		aws.String(p.SchemaName),
@@ -58,7 +56,7 @@ func (p *GenerateMockEventsParams) RPCMethod() (*types.Result, error) {
 		return nil, fmt.Errorf("error reading schema: %w", err)
 	}
 
-	event, err := GenerateMockEvent(schema)
+	event, err := mockevent.GenerateMockEvent(schema, p.SkipOptional)
 	if err != nil {
 		return nil, fmt.Errorf("error generating mock event: %w", err)
 	}
@@ -68,32 +66,15 @@ func (p *GenerateMockEventsParams) RPCMethod() (*types.Result, error) {
 	}, nil
 }
 
-func (p *GenerateMockEventsParams) ReflectOutput() reflect.Value {
-	ft := reflect.TypeOf(GenerateMockEvent)
+func (p *GenerateBareboneEventsParams) ReflectOutput() reflect.Value {
+	ft := reflect.TypeOf(mockevent.GenerateMockEvent)
 	out0 := ft.Out(0)
 	return reflect.New(out0).Elem()
 }
 
-func (p *GenerateMockEventsParams) validateParams() error {
+func (p *GenerateBareboneEventsParams) validateParams() error {
 	if p.RegistryName == "" || p.SchemaName == "" {
 		return errors.New(`requires both "RegistryName" and "SchemaName"`)
 	}
-
-	supportedContext := []string{
-		"eventbridge.v0",
-	}
-	if p.Context != nil && len(p.Context) > 0 {
-		for _, c := range p.Context {
-			if !slices.Contains(supportedContext, c) {
-				return fmt.Errorf("%q is not a supported context. supported context: %v", c, supportedContext)
-			}
-		}
-	}
-
 	return nil
-}
-
-// TODO: to be replaced by actual implementation (in internal pkg)
-func GenerateMockEvent(schema *schemaregistry.Schema) (string, error) {
-	return "", nil
 }

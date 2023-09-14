@@ -1,7 +1,6 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging
 from dataclasses import dataclass
 
@@ -23,9 +22,7 @@ class PhysicalIdFromStackOutput:
     """
     physical_id: str
 
-    def __init__(self, jsonrpc_data_btyes) -> None:
-        jsonrpc_data = jsonrpc_data_btyes.decode("utf-8")
-        data_dict = json.loads(jsonrpc_data.strip())
+    def __init__(self, data_dict) -> None:
         self.physical_id = data_dict.get("result", {}).get("output", "")
 
 
@@ -45,8 +42,12 @@ class PhysicalIdFromStackParams:
     stack_name: str
     _rpc_method: str = "get_physical_id"
 
-    def jsonrpc_dumps(self, region, profile) -> bytes:
-        params = {}
-        params["LogicalResourceId"] = self.logical_resource_id
-        params["StackName"] = self.stack_name
-        return Payload(self._rpc_method, params, region, profile).dump_bytes()
+    def to_dict(self) -> dict:
+        return {
+            "LogicalResourceId": self.logical_resource_id,
+            "StackName": self.stack_name,
+        }
+
+    def to_payload(self, region, profile) -> Payload:
+        return Payload(self._rpc_method, self.to_dict(), region, profile)
+        

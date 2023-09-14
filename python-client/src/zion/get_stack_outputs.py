@@ -1,7 +1,6 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging
 from dataclasses import dataclass
 from typing import List, Dict
@@ -25,9 +24,7 @@ class GetStackOutputsOutput:
     """
     outputs: Dict[str, str]
 
-    def __init__(self, jsonrpc_data_bytes: bytes) -> None:
-        jsonrpc_data = jsonrpc_data_bytes.decode("utf-8")
-        data_dict = json.loads(jsonrpc_data.strip())
+    def __init__(self, data_dict: dict) -> None:
         self.outputs = data_dict.get("result", {}).get("output", {})
 
 
@@ -47,8 +44,11 @@ class GetStackOutputsParams:
     output_names: List[str]
     _rpc_method: str = "get_stack_outputs"
 
-    def jsonrpc_dumps(self, region, profile) -> bytes:
-        params = {}
-        params["StackName"] = self.stack_name
-        params["OutputNames"] = self.output_names
-        return Payload(self._rpc_method, params, region, profile).dump_bytes()
+    def to_dict(self) -> dict:
+        return {
+            "StackName": self.stack_name,
+            "OutputNames": self.output_names,
+        }
+
+    def to_payload(self, region, profile) -> Payload:
+        return Payload(self._rpc_method, self.to_dict(), region, profile)

@@ -7,6 +7,7 @@ import (
 
 	"zion/internal/pkg/aws/config"
 	zioncfn "zion/internal/pkg/cloudformation"
+	"zion/internal/pkg/jsonrpc"
 	"zion/internal/pkg/public-rpc/types"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
@@ -22,8 +23,8 @@ type GetPhysicalIdParams struct {
 	Region string `json:"Region,omitempty"`
 }
 
-func (p *GetPhysicalIdParams) RPCMethod() (*types.Result, error) {
-	cfg, err := config.GetAWSConfig(context.TODO(), p.Region, p.Profile)
+func (p *GetPhysicalIdParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error) {
+	cfg, err := config.GetAWSConfig(context.TODO(), p.Region, p.Profile, metadata)
 
 	if err != nil {
 		return nil, fmt.Errorf("error when loading AWS config: %v", err)

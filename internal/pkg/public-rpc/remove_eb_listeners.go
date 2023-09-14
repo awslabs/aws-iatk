@@ -10,6 +10,7 @@ import (
 	"zion/internal/pkg/aws/config"
 	"zion/internal/pkg/harness/eventbridge/listener"
 	"zion/internal/pkg/harness/tags"
+	"zion/internal/pkg/jsonrpc"
 	"zion/internal/pkg/public-rpc/types"
 
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
@@ -23,14 +24,14 @@ type RemoveEbListenersParams struct {
 	Region     string
 }
 
-func (p *RemoveEbListenersParams) RPCMethod() (*types.Result, error) {
+func (p *RemoveEbListenersParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error) {
 	if p.IDs != nil && p.TagFilters != nil {
 		return nil, errors.New("only one of Ids and TagFilters is needed, not both")
 	}
 
 	ctx := context.TODO()
 
-	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile)
+	cfg, err := config.GetAWSConfig(ctx, p.Region, p.Profile, metadata)
 	if err != nil {
 		return nil, fmt.Errorf("error when loading AWS config: %v", err)
 	}
