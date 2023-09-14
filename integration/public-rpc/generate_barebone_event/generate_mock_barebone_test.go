@@ -1,4 +1,4 @@
-package generatemockevent_test
+package generatebareboneevent_test
 
 import (
 	"context"
@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-const test_method = "generate_mock_event"
+const test_method = "mock.generate_barebone_event"
 
 func TestGenerateMockEvent(t *testing.T) {
 	region := "us-east-1"
