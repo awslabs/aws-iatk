@@ -11,6 +11,9 @@ from functools import wraps
 from typing import TYPE_CHECKING, Optional
 import time
 import math
+import inspect
+import uuid
+from typing import List, Callable
 
 from .get_physical_id_from_stack import (
     PhysicalIdFromStackOutput,
@@ -461,6 +464,38 @@ class Zion:
             return _wrapper
         return retry_until_decorator
     
+    def eventbridge_event_context(self, event_dict: dict) -> dict:
+        if not event_dict.get("version"):
+            event_dict["version"] = "0"
+        if not event_dict.get("id") or event_dict.get("id") == "":
+            event_dict["id"] = str(uuid.uuid4())
+        if not event_dict.get("detail-type") or event_dict.get("detail-type") == "":
+            event_dict["detail-type"] = "detail-type"
+        if not event_dict.get("source") or event_dict.get("source") == "":
+            event_dict["source"] = "source"
+        if not event_dict.get("account"):
+            event_dict["account"] = "1234567891012"
+        if not event_dict.get("time"):
+            event_dict["time"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        if not event_dict.get("region"):
+            event_dict["region"] = "us-east-1"
+        if not event_dict.get("resources"):
+            event_dict["resources"] = []
+
+        return event_dict
+
+    def _check_event_valid_types(self, event: dict):
+        if event is None:
+            raise ZionException("event is empty, make sure function returns a valid event", 500)
+        for value in list(event.values()):
+            if callable(value) or inspect.isclass(value):
+                    raise ZionException("json does not support non-serializable value provided such as class instances or functions", 500)
+
+    def _apply_contexts(self, generated_event: dict, callable_contexts: List[Callable]) -> dict:
+        for func in callable_contexts:
+            generated_event = func(generated_event)
+        self._check_event_valid_types(generated_event)
+        return generated_event
         
     def patch_aws_client(self, client: "boto3.client", sampled = 1) -> "boto3.client":
         """
