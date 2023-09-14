@@ -11,7 +11,6 @@ from functools import wraps
 from typing import TYPE_CHECKING, Optional
 import time
 import math
-import inspect
 import uuid
 from typing import List, Callable
 
@@ -488,6 +487,19 @@ class Zion:
         return retry_until_decorator
     
     def eventbridge_event_context(self, event_dict: dict) -> dict:
+        """
+        Function that adds default values for event bridge specific event key/value pairs if they don't exist already
+
+        Parameters
+        ----------
+        event_dict : dict
+        dictionary that represents the event that will be passed into event bridge
+        
+        Returns
+        -------
+        dict
+            same dictionary with the event bridge specfic values added 
+        """
         if not event_dict.get("version"):
             event_dict["version"] = "0"
         if not event_dict.get("id") or event_dict.get("id") == "":
@@ -504,10 +516,13 @@ class Zion:
             event_dict["region"] = "us-east-1"
         if not event_dict.get("resources"):
             event_dict["resources"] = []
-            
+
         return event_dict
 
     def _apply_contexts(self, generated_event: dict, callable_contexts: List[Callable]) -> dict:
+        """
+        function for looping through provided functions, modifying the event as the client specifies
+        """
         for func in callable_contexts:
             generated_event = func(generated_event)
         if generated_event is None:
