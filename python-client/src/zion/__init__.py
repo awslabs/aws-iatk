@@ -11,6 +11,7 @@ from functools import wraps
 from typing import TYPE_CHECKING, Optional
 import time
 import math
+from typing import List, Callable
 
 from .get_physical_id_from_stack import (
     PhysicalIdFromStackOutput,
@@ -426,7 +427,8 @@ class Zion:
         )
         event = out.event
 
-        # TODO: apply context
+        if params.contexts is not None and type(params.contexts) == list:
+            event = self._apply_contexts(event, params.contexts)
 
         return GenerateMockEventOutput(event)
     
@@ -483,7 +485,20 @@ class Zion:
                 return False
             return _wrapper
         return retry_until_decorator
-    
+
+    def _apply_contexts(self, generated_event: dict, callable_contexts: List[Callable]) -> dict:
+        """
+        function for looping through provided functions, modifying the event as the client specifies
+        """
+        for func in callable_contexts:
+            generated_event = func(generated_event)
+            try:
+                json.dumps(generated_event)
+            except TypeError:
+                raise ZionException(f"context applier {func.__name__} returns a non-JSON-serializable result", 400)
+        if generated_event is None:
+            raise ZionException("event is empty, make sure function returns a valid event", 404)
+        return generated_event
         
     def patch_aws_client(self, client: "boto3.client", sampled = 1) -> "boto3.client":
         """
