@@ -3,9 +3,10 @@ package event
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/santhosh-tekuri/jsonschema/v4"
 	"golang.org/x/exp/slices"
-	"time"
 )
 
 func ConstructJsonschemaEvent(schema *jsonschema.Schema, generateRequiredOnly bool, maxDepth int) (EventMap, error) {
@@ -67,7 +68,7 @@ func GenerateJsonschemaEvent(rawSchema *Schema, skipOptional bool) ([]byte, erro
 	if len(*rawSchema.SchemaContent) < 1 {
 		return nil, fmt.Errorf("failed while loading schema due to error: invalid schema provided")
 	}
-	if len(*rawSchema.EventRef) > 0 {
+	if rawSchema.EventRef != nil {
 		return nil, fmt.Errorf("failed while loading schema due to error: event ref not supported for json schemas")
 	}
 	schema, err := jsonschema.CompileString("temp.json", *rawSchema.SchemaContent)

@@ -88,7 +88,9 @@ func TestGenerateOpenApiEventErrors(t *testing.T) {
 			schema := &Schema{
 				SchemaContent: schemaContent,
 				SchemaType:    &schemaType,
-				EventRef:      &tt.eventRef,
+			}
+			if tt.eventRef != "" {
+				schema.EventRef = &tt.eventRef
 			}
 
 			generatedEvent, err := GenerateOpenapiEvent(schema, false)

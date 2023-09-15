@@ -11,9 +11,11 @@ import (
 func NewSchemaFromRegistry(ctx context.Context, registryName, schemaName, schemaVersion, eventRef *string, api DescribeSchemaAPI) (*Schema, error) {
 
 	input := &schemas.DescribeSchemaInput{
-		RegistryName:  registryName,
-		SchemaName:    schemaName,
-		SchemaVersion: schemaVersion,
+		RegistryName: registryName,
+		SchemaName:   schemaName,
+	}
+	if schemaVersion != nil {
+		input.SchemaVersion = schemaVersion
 	}
 	describeSchemaOutput, err := api.DescribeSchema(ctx, input)
 
