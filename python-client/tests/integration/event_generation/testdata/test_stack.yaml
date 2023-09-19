@@ -1,0 +1,173 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Test Stack for generate_mock_event
+
+Resources:
+  # Testing Infra for testing `generate_mock_event`
+  TestSchemaRegistry:
+    Type: AWS::EventSchemas::Registry
+
+  # Testing Infra for testing `generate_mock_event`
+  TestEBEventSchemaOpenAPI:
+    Type: AWS::EventSchemas::Schema
+    Properties:
+      Type: "OpenApi3"
+      Content: |-
+        {
+          "openapi": "3.0.0",
+          "info": {
+            "version": "1.0.0",
+            "title": "TicketCreated"
+          },
+          "paths": {},
+          "components": {
+            "schemas": {
+              "MyEvent": {
+                "type": "object",
+                "required": ["detail-type", "resources", "detail", "region"],
+                "x-amazon-events-detail-type": "MongoDB Trigger for my_store.reviews",
+                "x-amazon-events-source": "my.partner.event.source",
+                "properties": {
+                  "detail": {
+                    "$ref": "#/components/schemas/TicketCreated"
+                  },
+                  "detail-type": {
+                    "type": "string"
+                  },
+                  "resources": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "time": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "region": {
+                    "type": "string",
+                    "enum": ["ap-south-1", "eu-west-3", "eu-north-1", "eu-west-2", "eu-west-1", "ap-northeast-2", "ap-northeast-1", "me-south-1", "sa-east-1", "ca-central-1", "ap-east-1", "cn-north-1", "us-gov-west-1", "ap-southeast-1", "ap-southeast-2", "eu-central-1", "us-east-1", "us-west-1", "cn-northwest-1", "us-west-2"]
+                  },
+                  "version": {
+                    "type": "string"
+                  },
+                  "account": {
+                    "type": "string"
+                  }
+                }
+              },
+              "TicketCreated": {
+                "type": "object",
+                "required": ["creator", "department", "ticketId"],
+                "properties": {
+                  "creator": {
+                    "type": "string"
+                  },
+                  "department": {
+                    "type": "string"
+                  },
+                  "ticketId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      RegistryName: !Ref TestSchemaRegistry 
+
+  # Testing Infra for testing `generate_mock_event`
+  TestEBEventSchemaJSONSchema:
+    Type: AWS::EventSchemas::Schema
+    Properties:
+      Type: "JSONSchemaDraft4"
+      Content: |-
+        {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "title": "EMRStepStatusChange",
+          "definitions": {
+            "EMRStepStatusChange": {
+              "properties": {
+                "actionOnFailure": {
+                  "type": "string"
+                },
+                "clusterId": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "severity": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                },
+                "stepId": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "detail": {
+              "$ref": "#/definitions/EMRStepStatusChange"
+            },
+            "detail-type": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "region": {
+              "type": "string"
+            },
+            "resources": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "source": {
+              "type": "string"
+            },
+            "time": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "required": ["detail-type", "resources", "detail", "region"],
+          "type": "object",
+          "x-amazon-events-detail-type": "Status Change",
+          "x-amazon-events-source": "my.event.source"
+        }
+      RegistryName: !Ref TestSchemaRegistry 
+
+Outputs:
+  TestSchemaRegistryName:
+    Value: !GetAtt TestSchemaRegistry.RegistryName
+  TestEBEventSchemaOpenAPIName:
+    Value: !GetAtt TestEBEventSchemaOpenAPI.SchemaName
+  TestEBEventSchemaOpenAPIVersion:
+    Value: !GetAtt TestEBEventSchemaOpenAPI.SchemaVersion
+  TestEBEventSchemaJSONSchemaName:
+    Value: !GetAtt TestEBEventSchemaJSONSchema.SchemaName
+  TestEBEventSchemaJSONSchemaVersion:
+    Value: !GetAtt TestEBEventSchemaJSONSchema.SchemaVersion
+  
