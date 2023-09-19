@@ -2,25 +2,20 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Integration tests for zion.patch_aws_client
+Integration tests for zion.generate_mock_event
 """
 import json
 import logging
 from uuid import uuid4
 from unittest import TestCase
-from typing import List, Dict, Callable
 from dataclasses import dataclass
 from zion import Zion
 from zion import GenerateMockEventParams, context_generation, ZionException
-from pathlib import Path
 import time
 import os
 import boto3
-from botocore.exceptions import ClientError
-from parameterized import parameterized
 import pytest
 import random
-import yaml
 import yaml_helper
 
 
