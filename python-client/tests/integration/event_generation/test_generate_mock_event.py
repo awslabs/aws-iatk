@@ -14,9 +14,7 @@ import time
 import os
 import boto3
 import pytest
-import random
-import yaml_helper
-
+import uuid
 
 
 LOG = logging.getLogger(__name__)
@@ -26,23 +24,28 @@ boto3.set_stream_logger(name="zion", level=logging.DEBUG)
 class TestZion_generate_mock_event(TestCase):
     zion = Zion(region="us-east-1")
     cfn_client = boto3.client("cloudformation", region_name="us-east-1")
-    test_stack_name = "testMockEventStack" + str(random.randrange(0,100000))
+    test_stack_name = "testMockEventStack" + str(uuid4())
     schema_details = {}
     @classmethod
     def setUpClass(cls) -> None:
         LOG.debug("creating stack")
         try:
             current_path = os.path.realpath(__file__)
+            waiter = cls.cfn_client.get_waiter('stack_create_complete')
             current_dir = os.path.dirname(current_path)
             test_stack_path = os.path.join(current_dir, "testdata","test_stack.yaml")
-            with open(test_stack_path, 'rb') as content_file:
-                content = yaml_helper.yaml_parse(content_file.read())
-            content = json.dumps(content)
+            with open(test_stack_path, 'r') as content_file:
+                content = content_file.read()
             cls.cfn_client.create_stack(
                 StackName=cls.test_stack_name,
                 TemplateBody=content
             )
-            time.sleep(10)
+            waiter.wait(
+                StackName=cls.test_stack_name,
+                WaiterConfig={
+                    "Delay": 3,
+                    "MaxAttempts": 10
+                })
             output = cls.cfn_client.describe_stacks(StackName=cls.test_stack_name)
             for detail in output["Stacks"][0]["Outputs"]:
                 cls.schema_details[detail["OutputKey"]] = detail["OutputValue"]
@@ -54,7 +57,15 @@ class TestZion_generate_mock_event(TestCase):
     def tearDownClass(cls) -> None:
         LOG.debug("remove stack")
         try:
+            waiter = cls.cfn_client.get_waiter('stack_delete_complete')
             cls.cfn_client.delete_stack(StackName=cls.test_stack_name)
+            waiter.wait(
+                StackName=cls.test_stack_name,
+                WaiterConfig={
+                    "Delay": 3,
+                    "MaxAttempts": 10
+                })
+            LOG.debug("stack succesfully deleted")
         except Exception as e:
             LOG.debug(e)
         
@@ -241,9 +252,3 @@ class TestZion_generate_mock_event(TestCase):
         with pytest.raises(ZionException) as e:
             self.zion.generate_mock_event(params=params).event
         self.assertEqual(str(e.value), "error generating mock event: error generating mock event: no eventRef specified to generate a mock event")
-
-
-    
-
-    
-    
