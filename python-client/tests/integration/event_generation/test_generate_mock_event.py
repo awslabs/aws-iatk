@@ -9,8 +9,7 @@ import logging
 from uuid import uuid4
 from unittest import TestCase
 from dataclasses import dataclass
-from zion import Zion
-from zion import GenerateMockEventParams, context_generation, ZionException
+from zion import Zion, GenerateMockEventParams, context_generation, ZionException
 import time
 import os
 import boto3
