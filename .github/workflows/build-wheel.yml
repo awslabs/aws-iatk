@@ -1,0 +1,35 @@
+name: build-wheel
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  cancel-in-progress: true
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Used to host cibuildwheel
+      - uses: actions/setup-python@v3
+
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel
+
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir wheelhouse
+        strategy:
+          matrix:
+            os: [linux, windows, darwin]
+            architecture: [amd64, arm64]
+            
+        # to supply options, put them in 'env', like:
+        env:
+          CIBW_SOME_OPTION: OS="${{ matrix.os }}" ARCHITECTURE="${{ matrix.architecture }}"
