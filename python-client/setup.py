@@ -11,7 +11,9 @@ from setuptools.command.editable_wheel import editable_wheel
 from setuptools.command.sdist import sdist
 
 def build_and_install_zion(packages: List[str]) -> None:
-    cmd = ['go', 'build', '-C', './src/zion_src', '-o', '../zion_service/', './cmd/zion']
+    build_os = 'GOOS={}'.format(os.getenv("OS"))
+    build_architecture = 'GOARCH={}'.format(os.getenv("ARCHITECTURE"))
+    cmd = ["env", build_os, build_architecture ,'go', 'build', '-C', './src/zion_src', '-o', '../zion_service/', './cmd/zion']
     out = call(cmd)
     if out != 0:
         raise CompileError("Failed to build Zion Service. Golang version >1.20 required and on PATH")
