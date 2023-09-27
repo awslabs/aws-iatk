@@ -28,7 +28,8 @@ test = [
   "pytest-xdist",
   "boto3",
   "parameterized",
-  "black"
+  "black",
+  "os"
 ]
 
 [pytest]
