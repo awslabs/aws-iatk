@@ -36,13 +36,8 @@ jobs:
         run: python -m cibuildwheel --output-dir wheels
 
         # to supply options, put them in 'env', like:
-        env:
-          CIBW_ENVIRONMENT: ARCHITECTURE="${{ matrix.architecture }}"
-
-      - name: action-zip
-        uses: montudor/action-zip@v1.0.0
-        with:
-          args: zip -qq -r wheels.zip wheels
+        # env:
+        #   CIBW_ENVIRONMENT: ARCHITECTURE="${{ matrix.architecture }}"
       
       - uses: actions/upload-artifact@v3
         with:
