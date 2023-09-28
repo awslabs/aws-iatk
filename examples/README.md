@@ -3,32 +3,87 @@
 Below lists the examples to showcase how you can use Zion to write integration against the cloud more easily.
 
 To run the examples in Python (3.7+):
-```
-$ cd examples
+```bash
+# navigate into the examples dir from project root
+cd examples
 
 # setup venv
-$ python -m venv .venv
-$ source .venv/bin/activate
+python -m venv .venv
+source .venv/bin/activate
 
 # install dependencies
-$ pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Example01 - retrieving information from a deployed stack
 
 This example shows how to use `get_stack_outputs` and `get_physical_id_from_stack` to retrieve information from a deployed stack. They are useful if you deploy your stack directly with a CloudFormation template.
 
-We will use SAM CLI to deploy a [stack](./examples/example01/template.json) to CloudFormation. Then we will use `pytest` to run the [test code](./examples/example01/test_example_01.py).
+We will use SAM CLI to deploy a [stack](./example01/template.json) to CloudFormation. For Python, we will use `pytest` to run the [test code](./example01/test_example_01.py).
 
 To run the example:
 
 ```bash
-# To deploy the stack under test using SAM CLI:
-$ sam deploy --stack-name example-01 --template ./examples/example01/template.json
+# navigate into the example01 dir
+cd example01
 
-# After deploy completes, run:
-$ pytest examples/example01
+# To deploy the stack under test using SAM CLI:
+sam deploy --stack-name example-01 --template ./template.json
+
+# Run the Python example:
+pytest test_example_01.py
 ```
+
+To clean up the stack after running the example:
+
+```bash
+sam destroy --stack-name example-01
+```
+
+## Example02 - Example04
+
+To run example02 - example04, we will first deploy a couple of stacks using CDK:
+
+```bash
+# navigate to the example02-04 dir
+cd example02-04
+
+# install dependencies for building and deploying
+npm install
+
+# Deploy the stack using cdk, see package.json for definition of the command:
+npm run deploy
+
+```
+
+Note that, after deploy completes, an output file `outputs.json` is created, with contents similar to below:
+
+```json
+{
+  "example-stack-01": {
+    "EventBusName": "examplestack01EB321ED36B",
+    "ApiEndpoint": "https://xxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod/orders",
+    "APIEndpoint1793E782": "https://xxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod/",
+    "RuleName": "examplestack01EB321ED36B|example-stack-01-ConsumerRuleEE1F6314-12K2NOJQRM8A6",
+    "TargetId": "Target0"
+  },
+  "example-stack-02": {
+    "StateMachineArn": "arn:aws:states:us-east-1:123456789012:stateMachine:MyStateMachine6C968CA5-Ybusf26S5Oir",
+    "StateMachineName": "MyStateMachine6C968CA5-Ybusf26S5Oir"
+  }
+}
+
+```
+
+To clean up the stacks after running the examples:
+
+```bash
+npm run destroy
+```
+
+### Example02 - Testing EventBridge Event Bus with a "Listener"
+
+This example shows how to use a "Listener" to test a Rule on a given Event Bus.
 
 
 
