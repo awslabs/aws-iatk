@@ -35,7 +35,7 @@ jobs:
         run: python -m cibuildwheel --output-dir wheels
         env: 
           CIBW_ARCHS_MACOS: "x86_64 arm64"
-          CIBW_BEFORE_ALL_LINUX: snap install go --channel=1.16/stable --classic
+          CIBW_BEFORE_ALL_LINUX: apt install snapd \ snap install go --channel=1.20/stable --classic
 
         # to supply options, put them in 'env', like:
         # env:
