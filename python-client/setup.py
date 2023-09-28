@@ -14,7 +14,7 @@ def build_and_install_zion(packages: List[str]) -> None:
     # build_os = 'GOOS={}'.format(os.getenv("OS"))
     # build_architecture = 'GOARCH={}'.format(os.getenv("ARCHITECTURE"))
     cmd = ['go', 'build', '-C', './src/zion_src', '-o', '../zion_service/', './cmd/zion']
-    out = call(cmd[2:len(cmd)])
+    out = call(cmd)
     if out != 0:
         raise CompileError("Failed to build Zion Service. Golang version >1.20 required and on PATH")
     
