@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         architecture: [amd64, arm64]
 
     steps:
@@ -38,11 +38,6 @@ jobs:
         # to supply options, put them in 'env', like:
         env:
           CIBW_ENVIRONMENT: ARCHITECTURE="${{ matrix.architecture }}"
-
-      - name: action-zip
-        uses: montudor/action-zip@v1.0.0
-        with:
-          args: zip -qq -r wheels.zip wheels
       
       - uses: actions/upload-artifact@v3
         with:
