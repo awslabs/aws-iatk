@@ -1,0 +1,5 @@
+pytest
+pytest-xdist
+boto3
+parametrized
+requests
