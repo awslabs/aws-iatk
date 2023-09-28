@@ -33,7 +33,9 @@ jobs:
 
       - name: Build wheels
         working-directory: ./python-client
-        run: python -m cibuildwheel --output-dir wheels
+        run: python -m cibuildwheel --output-dir 
+        env:
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
 
         # to supply options, put them in 'env', like:
         # env:
