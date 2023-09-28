@@ -21,6 +21,8 @@ This example shows how to use `get_stack_outputs` and `get_physical_id_from_stac
 
 We will use SAM CLI to deploy a [stack](./example01/template.json) to CloudFormation. For Python, we will use `pytest` to run the [test code](./example01/test_example_01.py).
 
+To setup SAM CLI, see [here](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
+
 To run the example:
 
 ```bash
@@ -42,7 +44,11 @@ sam destroy --stack-name example-01
 
 ## Example02 - Example04
 
-To run example02 - example04, we will first deploy a couple of stacks using CDK:
+To run example02 - example04, we will use CDK to define and deploy the stacks under test.
+
+To setup CDK, see [here](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html)
+
+To deploy the stacks:
 
 ```bash
 # navigate to the example02-04 dir
@@ -75,6 +81,8 @@ Note that, after deploy completes, an output file `outputs.json` is created, wit
 
 ```
 
+This is one of the ways to pass deployed values into the tests. Alternatively, you can also use Zion's `get_stack_outputs` method to retrieve stack outputs.
+
 To clean up the stacks after running the examples:
 
 ```bash
@@ -83,7 +91,12 @@ npm run destroy
 
 ### Example02 - Testing EventBridge Event Bus with a "Listener"
 
-This example shows how to use a "Listener" to test a Rule on a given Event Bus.
+Test code:
+- [Python](./example02-04/tests/python/test_example_02.py)
 
+This example shows how to use a "Listener" to test a Rule on a given Event Bus. Three methods are used in this example:
 
-
+- `add_listener` - create a listener on the provided event bus by replicating a provided rule and target transformation
+- `remove_listener` - destroy listener(s)
+- `wait_until_event_matched` - wait until a received event matches the provided `condition` function
+- `poll_events` - poll events from the listener
