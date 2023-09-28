@@ -10,8 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest]
-        os-build: [linux, windows, darwin]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         architecture: [amd64, arm64]
 
     steps:
@@ -34,15 +33,20 @@ jobs:
 
       - name: Build wheels
         working-directory: ./python-client
-        run: python -m cibuildwheel --output-dir wheelhouse
+        run: python -m cibuildwheel --output-dir wheels
 
         # to supply options, put them in 'env', like:
         env:
-          CIBW_ENVIRONMENT: OS="${{ matrix.os-build }}" ARCHITECTURE="${{ matrix.architecture }}"
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
+          CIBW_ENVIRONMENT: ARCHITECTURE="${{ matrix.architecture }}"
+
+      - name: action-zip
+        uses: montudor/action-zip@v1.0.0
         with:
-          name: dist-without-markdown
-          path: |
-            dist
+          args: zip -qq -r wheels.zip wheels
+      
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pyinstaller-macos-zip
+          path: ./wheels.zip
+          retention-days: 15
 

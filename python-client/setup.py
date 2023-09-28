@@ -11,10 +11,10 @@ from setuptools.command.editable_wheel import editable_wheel
 from setuptools.command.sdist import sdist
 
 def build_and_install_zion(packages: List[str]) -> None:
-    build_os = 'GOOS={}'.format(os.getenv("OS"))
+    # build_os = 'GOOS={}'.format(os.getenv("OS"))
     build_architecture = 'GOARCH={}'.format(os.getenv("ARCHITECTURE"))
-    cmd = ["env", build_os, build_architecture ,'go', 'build', '-C', './src/zion_src', '-o', '../zion_service/', './cmd/zion']
-    if os.getenv("OS") and os.getenv("ARCHITECTURE"):
+    cmd = ["env", build_architecture ,'go', 'build', '-C', './src/zion_src', '-o', '../zion_service/', './cmd/zion']
+    if os.getenv("ARCHITECTURE"):
         out = call(cmd)
     else:
         out = call(cmd[3:len(cmd)])
