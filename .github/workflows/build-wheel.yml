@@ -3,7 +3,6 @@ name: build-wheel
 on:
   workflow_dispatch:
   pull_request:
-  push:
 
 jobs:
   build_wheels:
@@ -11,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest]
         architecture: [amd64, arm64]
 
     steps:
