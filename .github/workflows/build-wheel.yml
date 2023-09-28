@@ -39,4 +39,10 @@ jobs:
         # to supply options, put them in 'env', like:
         env:
           CIBW_ENVIRONMENT: OS="${{ matrix.os-build }}" ARCHITECTURE="${{ matrix.architecture }}"
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-without-markdown
+          path: |
+            dist
 
