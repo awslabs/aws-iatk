@@ -63,7 +63,9 @@ jobs:
         run: python -c "import sys; print(sys.version)"
 
       - name: Install Pip
-        run: python -m ensurepip --upgrade
+        run: |
+            chmod +x ./installer/get-pip.py
+            python ./installer/get-pip.py
 
       - name: build application
         working-directory: ./python-client
