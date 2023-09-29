@@ -104,6 +104,7 @@ This example shows how to use a "Listener" to test a Rule on a given Event Bus. 
 ### Example03 - Testing end-to-end with X-Ray Traces
 
 Test code:
+
 - [Python](./example02-04/tests/python/test_example_03.py)
 
 This example shows how to test end-to-end with X-Ray Traces. The stack under test is called "cdk-example-sfnStack". Two methods are used in this example:
@@ -111,3 +112,96 @@ This example shows how to test end-to-end with X-Ray Traces. The stack under tes
 - `retry_get_trace_tree_until` - retry getting trace tree of given trace ID until it matches the provided `condition`
 - `get_trace_tree` - get trace tree of given trace ID. This performs the action once only
 
+### Example04 - Mock Event Generation
+
+Test code:
+
+- [Python](./example02-04/tests/python/test_example_04.py)
+
+This example shows how to generate mock event. An example EventBrige Schema Registry and Schema are deployed through the "cdk-example-schemaStack". In the example, we use the `generate_mock_event` to generate a mock event from given Registry and Schema. The three test cases showcases the followings:
+
+#### `test_generate_barebone_event`
+
+Generate a barebone event without any context. In this test case, the resultant mock event looks like:
+
+```json
+{
+    "address": "",
+    "customerId": "",
+    "datetime": "2023-09-29T08:04:48.791605-07:00",
+    "membershipType": "A",
+    "orderItems": []
+}
+```
+
+#### `test_generate_contextful_event`
+
+Generate a contextful event by supplying `contexts`. You can specify a list of "context" to apply on the barebone event. Each "context" is a function accepting an event and returning the modified event. The resultant mock event looks like:
+
+```json
+{
+    "address": "99 Some Street",
+    "customerId": "d09c95e2-8b67-4e1a-a957-49b5d3d12af2",
+    "datetime": "2023-09-29T08:07:21.18875-07:00",
+    "membershipType": "A",
+    "orderItems": [
+        {
+            "unitPrice": 2,
+            "count": 1
+        },
+        {
+            "unitPrice": 4,
+            "count": 2
+        },
+        {
+            "unitPrice": 6,
+            "count": 3
+        },
+        {
+            "unitPrice": 8,
+            "count": 4
+        },
+        {
+            "unitPrice": 10,
+            "count": 5
+        }
+    ]
+}
+```
+
+This example also shows that you can use the generated event as a payload to invoke a Lambda Function. Similarly, you can generate an event and use it as payload to invoke any event consumer, like Lambda Function or Step Function State Machine.
+
+#### `test_generate_eventbridge_event`
+
+You can generate event from any schema in the "aws.events" Registry. The "aws.events" Registry stores schemas for AWS events sent to the default Event Bus from your AWS resources. For EventBridge events, you can apply the `eventbridge_event_context` context. The resultant event looks like:
+
+```json
+{
+    "account": "123456789101",
+    "detail": {
+        "ActivityId": "",
+        "AutoScalingGroupName": "",
+        "Cause": "",
+        "Description": "",
+        "Destination": "",
+        "Details": {
+            "Availability Zone": "",
+            "Subnet ID": ""
+        },
+        "EC2InstanceId": "",
+        "EndTime": "2023-09-29T08:10:27.837869-07:00",
+        "Origin": "",
+        "RequestId": "",
+        "StartTime": "2023-09-29T08:10:27.837874-07:00",
+        "StatusCode": "",
+        "StatusMessage": ""
+    },
+    "detail-type": "detail-type",
+    "id": "cb37b81c-5640-45c8-87eb-6eee4a667866",
+    "region": "us-east-1",
+    "resources": [],
+    "source": "source",
+    "time": "2023-09-29T08:10:27.837867-07:00",
+    "version": "0"
+}
+```
