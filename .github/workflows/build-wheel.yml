@@ -61,8 +61,9 @@ jobs:
 
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
+
       - name: Install Pip
-        run: sudo apt install python3-pip
+        run: python -m ensurepip --upgrade
 
       - name: build application
         working-directory: ./python-client
