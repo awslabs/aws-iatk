@@ -12,8 +12,8 @@
     "lint": "eslint '*.ts' --quiet --fix",
     "compile": "tsc",
     "test": "npm run compile && npm run unit",
-    "deploy": "npm run build && cd infra && npm run cdk deploy -- --all --outputs-file ../outputs.json",
-    "destroy": "cd infra && npm run cdk destroy -- --all"
+    "deploy": "npm run build && cd cdk && npm run cdk deploy -- --all --outputs-file ../outputs.json",
+    "destroy": "cd cdk && npm run cdk destroy -- --all"
   },
   "dependencies": {
     "@aws-sdk/client-eventbridge": "^3.379.1",

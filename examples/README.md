@@ -94,9 +94,20 @@ npm run destroy
 Test code:
 - [Python](./example02-04/tests/python/test_example_02.py)
 
-This example shows how to use a "Listener" to test a Rule on a given Event Bus. Three methods are used in this example:
+This example shows how to use a "Listener" to test a Rule on a given Event Bus. The stack under test is called "cdk-example-ebStack". Three methods are used in this example:
 
 - `add_listener` - create a listener on the provided event bus by replicating a provided rule and target transformation
 - `remove_listener` - destroy listener(s)
-- `wait_until_event_matched` - wait until a received event matches the provided `condition` function
-- `poll_events` - poll events from the listener
+- `wait_until_event_matched` -  wait until a received event matches the provided `condition` function
+- `poll_events` - poll events from the listener and return the received events
+
+### Example03 - Testing end-to-end with X-Ray Traces
+
+Test code:
+- [Python](./example02-04/tests/python/test_example_03.py)
+
+This example shows how to test end-to-end with X-Ray Traces. The stack under test is called "cdk-example-sfnStack". Two methods are used in this example:
+
+- `retry_get_trace_tree_until` - retry getting trace tree of given trace ID until it matches the provided `condition`
+- `get_trace_tree` - get trace tree of given trace ID. This performs the action once only
+

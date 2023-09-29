@@ -17,7 +17,7 @@ def read_cdk_outputs() -> dict:
     return outputs
 
 class Example02(TestCase):
-    stack_name: str = "example-stack-01"
+    stack_name: str = "cdk-example-ebStack"
     stack_outputs: dict = read_cdk_outputs().get(stack_name, {}) 
     z: zion.Zion = zion.Zion()
 
