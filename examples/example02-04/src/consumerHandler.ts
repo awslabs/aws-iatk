@@ -1,4 +1,4 @@
-import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge'
+import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
 import { randomUUID } from 'crypto';
 import { captureAWSv3Client } from 'aws-xray-sdk';
 
