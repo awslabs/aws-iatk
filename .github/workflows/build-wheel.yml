@@ -35,7 +35,7 @@ jobs:
         run: python -m cibuildwheel --output-dir wheels
         env: 
           CIBW_ARCHS_MACOS: "x86_64 arm64"
-          CIBW_BEFORE_ALL_LINUX:  curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && tar -C /usr/local/bin -xzf go1.21.1.linux-amd64.tar.gz && go version && chmod -R 777 /usr/local/go && echo "succesfully downloaded"
+          CIBW_BEFORE_ALL_LINUX:  curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && tar -xf go1.21.1.linux-amd64.tar.gz && pwd && ls && ln -s go /usr/local/bin/go && go version && echo "succesfully downloaded"
         # to supply options, put them in 'env', like:
         # env:
         #   CIBW_ENVIRONMENT: ARCHITECTURE="${{ matrix.architecture }}"
