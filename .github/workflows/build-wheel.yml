@@ -65,10 +65,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       
-      - name: run generate-linx-wheel
-        run: cd python-client && bash build-linux.sh
+      - uses: uraimo/run-on-arch-action@v2
+        name: Run commands
+        id: runcmd
+        with:
+          arch: ${{ matrix.architecture }}
+          distro: ubuntu-latest
+          run: cd python-client && bash build-linux.sh
         env:
           GO_ARCH: ${{ matrix.architecture }}
+      # - name: run generate-linx-wheel
+      #   run: cd python-client && bash build-linux.sh
+      #   env:
+      #     GO_ARCH: ${{ matrix.architecture }}
       - uses: actions/upload-artifact@v3
         with:
           name: wheels-test-artifact
