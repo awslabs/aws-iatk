@@ -53,6 +53,7 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.7', '3.8', '3.9', '3.10']
+        architecture: ['amd64', 'arm64', 'ppc64le', 'ppc64', 's390x']
     steps:
       - uses: actions/checkout@v4
 
@@ -66,7 +67,8 @@ jobs:
       
       - name: run generate-linx-wheel
         run: cd python-client && bash build-linux.sh
-      
+        env:
+          GO_ARCH: ${{ matrix.architecture }}
       - uses: actions/upload-artifact@v3
         with:
           name: wheels-test-artifact
