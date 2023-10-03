@@ -71,8 +71,6 @@ jobs:
           arch: ${{ matrix.architecture }}
           distro: ubuntu-latest
           run: cd python-client && bash build-linux.sh
-        env:
-          GO_ARCH: ${{ matrix.architecture }}
       # - name: run generate-linx-wheel
       #   run: cd python-client && bash build-linux.sh
       #   env:
