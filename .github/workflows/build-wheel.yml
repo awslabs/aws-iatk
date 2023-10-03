@@ -68,7 +68,7 @@ jobs:
         if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: x86_64, i686
+          platforms: all
   
       - name: run generate-linx-wheel
         run: cd python-client && bash build-linux.sh
