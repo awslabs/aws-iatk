@@ -49,4 +49,4 @@ class Sdist(sdist):
 setup(cmdclass={"build": Build, "editable_wheel": EditableWheel}, 
       # We set this since we are embedding a go binary into the python package.
       # This ensures the whls are platform specific, as the go binary is.
-      has_ext_modules=lambda: True)
+      has_ext_modules=lambda: True, build_golang={'root': ''},)
