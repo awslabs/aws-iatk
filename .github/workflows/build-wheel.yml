@@ -64,30 +64,16 @@ jobs:
       - uses: actions/setup-python@v3 
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: uraimo/run-on-arch-action@v2
-        name: Run commands
-        id: runcmd
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v3
         with:
-          arch: armv7
-          distro: ubuntu18.04
-
-          # Not required, but speeds up builds by storing container images in
-          # a GitHub package registry.
-          # Set an output parameter `uname` for use in subsequent steps
-          run: |
-            uname -a
-            echo ::set-output name=uname::$(uname -a)
+          platforms: x86_64, i686
   
-      # - uses: uraimo/run-on-arch-action@v2
-      #   name: Run commands
-      #   with:
-      #     arch: ${{ matrix.architecture }}
-      #     distro: ubuntu-latest
-      #     run: cd python-client && bash build-linux.sh
-      # - name: run generate-linx-wheel
-      #   run: cd python-client && bash build-linux.sh
-      #   env:
-      #     GO_ARCH: ${{ matrix.architecture }}
+      - name: run generate-linx-wheel
+        run: cd python-client && bash build-linux.sh
+        env:
+          GO_ARCH: ${{ matrix.architecture }}
       - uses: actions/upload-artifact@v3
         with:
           name: wheels-test-artifact
