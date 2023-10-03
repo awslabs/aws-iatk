@@ -35,7 +35,7 @@ jobs:
         run: python -m cibuildwheel --output-dir wheels
         env: 
           CIBW_ARCHS_MACOS: "x86_64 arm64"
-          CIBW_BEFORE_ALL_LINUX: curl -O -L "https://golang.org/dl/go1.20.8.linux-amd64.tar.gz" && tar -xf go1.20.8.linux-amd64.tar.gz && chmod 777 go && lm -s go /usr/local/bin/go && echo "succesfully downloaded" && source $HOME/.bashrc
+          CIBW_BEFORE_ALL_LINUX: curl -O -L "https://golang.org/dl/go1.20.8.linux-amd64.tar.gz" && tar -xf go1.20.8.linux-amd64.tar.gz && chmod 777 go && ln -s go /usr/local/bin/go && echo "succesfully downloaded" && source $HOME/.bashrc
           # CIBW_BEFORE_ALL_LINUX:  curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && tar -xf go1.21.1.linux-amd64.tar.gz && pwd && ls && ln -s go /usr/local/bin/go && chmod 777 go && echo "succesfully downloaded" && source $HOME/.bashrc
         # to supply options, put them in 'env', like:
         # env:
