@@ -14,7 +14,7 @@ def build_and_install_zion(packages: List[str]) -> None:
     build_os = 'GOOS={}'.format(os.getenv("OS"))
     if os.getenv("GOARCH"):
         build_architecture = 'GOARCH={}'.format(os.getenv("GOARCH"))
-        cmd = ['env', 'GOOS=linux', 'GOARCH={}'.format(build_architecture), 'go', 'build', '-C', './src/zion_src', '-o', '../zion_service/', './cmd/zion']
+        cmd = ['env', 'GOOS=linux', build_architecture, 'go', 'build', '-C', './src/zion_src', '-o', '../zion_service/', './cmd/zion']
     else:
         cmd = ['go', 'build', '-C', './src/zion_src', '-o', '../zion_service/', './cmd/zion']
     out = call(cmd)
