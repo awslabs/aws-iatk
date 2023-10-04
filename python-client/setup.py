@@ -11,8 +11,6 @@ from setuptools.command.editable_wheel import editable_wheel
 from setuptools.command.sdist import sdist
 
 def build_and_install_zion(packages: List[str]) -> None:
-    print("hi\n\n\n\n\n")
-    print(os.getenv("GOARCH"))
     cmd = ['go', 'build', '-C', './src/zion_src', '-o', '../zion_service/', './cmd/zion']
     if not os.getenv("GOARCH"):
         out = call(cmd)
