@@ -40,7 +40,7 @@ jobs:
           CIBW_SKIP: cp37-* *-musllinux*
           CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.LINUX_ARCHITECTURE }}"
           CIBW_ARCHS_LINUX: "x86_64"
-          CIBW_BEFORE_ALL_LINUX: curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && export PATH=$PATH:/usr/local/go/bin && go version && env GOOS=linux GOARCH=${{ matrix.LINUX_ARCHITECTURE }} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion
+          CIBW_BEFORE_ALL_LINUX: export LINUX_ARCHITECTURE="${{ matrix.LINUX_ARCHITECTURE }}" && make install-go-build-binary
       
       - uses: actions/upload-artifact@v3
         with:
