@@ -7,7 +7,7 @@ name = "zion"
 version = "0.0.3"
 dependencies = []
 license = {text = "Apache-2.0"}
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Topic :: Software Development :: Testing",
