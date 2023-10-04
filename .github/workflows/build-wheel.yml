@@ -37,7 +37,7 @@ jobs:
         env: 
           CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.architecture }}"
           CIBW_ARCHS_LINUX: "x86_64"
-          CIBW_SKIP: cp37-*
+          CIBW_SKIP: cp37-* *-musllinux*
           CIBW_BEFORE_ALL_LINUX: curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && export PATH=$PATH:/usr/local/go/bin && go version && env GOOS=linux GOARCH=${{matrix.ARCHITECTURE}} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion
         # to supply options, put them in 'env', like:
         # env:
@@ -81,6 +81,7 @@ jobs:
         env: 
           CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.architecture }}"
           CIBW_ARCHS_LINUX: "i686"
+          CIBW_SKIP: cp37-* *-musllinux*
           CIBW_BEFORE_ALL_LINUX: curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && export PATH=$PATH:/usr/local/go/bin && go version && env GOOS=linux GOARCH=${{matrix.ARCHITECTURE}} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion
         # to supply options, put them in 'env', like:
         # env:
