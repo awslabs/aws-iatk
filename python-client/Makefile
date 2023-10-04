@@ -34,4 +34,4 @@ install-go-build-binary:
 	curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" 
 	tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz 
 	export PATH=$PATH:/usr/local/go/bin 
-	env GOOS=linux GOARCH=${LINUX_ARCHITECHTURE} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion	
+	env GOOS=linux GOARCH=$(LINUX_ARCHITECHTURE) go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion	
