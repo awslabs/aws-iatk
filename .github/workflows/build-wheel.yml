@@ -5,12 +5,13 @@ on:
   pull_request:
 
 jobs:
-  build_wheels_amd:
-    name: Build wheels on ${{ matrix.os }}
+  build_wheels_linux_amd64:
+    name: Build wheels on ${{ matrix.os }}-${{matrix.ARCHITECTURE}}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
+        ARCHITECTURE: [amd64]
 
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +49,7 @@ jobs:
           retention-days: 15
 
   build_wheels_linux_arm:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels on ${{ matrix.os }}-${{matrix.ARCHITECTURE}}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
