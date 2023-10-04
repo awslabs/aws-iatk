@@ -35,8 +35,7 @@ jobs:
         working-directory: ./python-client
         run: python -m cibuildwheel --output-dir wheels
         env: 
-          GOARCH: ${{matrix.ARCHITECTURE}}
-          CIBW_BEFORE_ALL_LINUX: curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && export PATH=$PATH:/usr/local/go/bin && go version && env GOOS=linux GOARCH=${{matrix.ARCHITECTURE}} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion
+          CIBW_BEFORE_ALL_LINUX: curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && export PATH=$PATH:/usr/local/go/bin && go version && export GOARCH=${{matrix.ARCHITECTURE}} && env GOOS=linux GOARCH=${{matrix.ARCHITECTURE}} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion
         # to supply options, put them in 'env', like:
         # env:
         #   CIBW_ENVIRONMENT: ARCHITECTURE="${{ matrix.architecture }}"
