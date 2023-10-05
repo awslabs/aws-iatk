@@ -4,7 +4,8 @@
   "main": "app.js",
   "license": "MIT",
   "scripts": {
-    "deploy": "cd cdk && npm run cdk deploy -- --all --outputs-file ../outputs.json",
+    "build": "rm -rf dist && esbuild ./src/* --entry-names=[dir]/[name]/index --bundle --minify --sourcemap --platform=node --outdir=dist",
+    "deploy": "npm run build && cd cdk && npm install && npm run cdk deploy -- --all --outputs-file ../outputs.json",
     "destroy": "cd cdk && npm run cdk destroy -- --all"
   },
   "dependencies": {
