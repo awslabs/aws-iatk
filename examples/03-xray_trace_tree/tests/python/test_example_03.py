@@ -17,7 +17,7 @@ def read_cdk_outputs() -> dict:
         outputs = json.load(f)
     return outputs
 
-class Example02(TestCase):
+class Example03(TestCase):
     stack_name: str = "cdk-example-sfnStack"
     stack_outputs: dict = read_cdk_outputs().get(stack_name, {}) 
     statemachine_arn: str = stack_outputs["StateMachineArn"]
@@ -73,6 +73,8 @@ class Example02(TestCase):
             status = res["status"]
             if not tracing_header:
                 tracing_header = res["traceHeader"]
+
+        time.sleep(5)
 
         def condition(output: zion.GetTraceTreeOutput) -> bool:
             tree = output.trace_tree
