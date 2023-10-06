@@ -3,7 +3,7 @@ import zion
 
 def test_zion_utils():
     stack_name = os.getenv("STACK_NAME", "example-01")
-    region = os.getenv("REGION", "us-east-1")
+    region = os.getenv("AWS_REGION", "us-east-1")
     z = zion.Zion(region=region)
 
     outputs = z.get_stack_outputs(
