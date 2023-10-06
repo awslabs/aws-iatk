@@ -12,8 +12,7 @@ export class SchemaStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-
-        this.registry = new eventschemas.CfnRegistry(this, 'MyRegsitry', {});
+        this.registry = new eventschemas.CfnRegistry(this, 'MyRegistry', {});
         this.schema = new eventschemas.CfnSchema(this, 'MySchema', {
             registryName: this.registry.attrRegistryName,
             type: 'OpenApi3',

@@ -1,7 +1,5 @@
 import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
-import { randomUUID } from 'crypto';
 import { captureAWSv3Client } from 'aws-xray-sdk';
-
 
 const EVENTBUS_NAME = process.env.EVENTBUS_NAME;
 
@@ -14,13 +12,13 @@ export const newOrderHandler = async (customerId): Promise<Object> => {
     const input = {
         Entries: [
             {
-                Source: 'com.hello-world.new-order-concusmer',
+                Source: 'com.hello-world.new-order-consumer',
                 DetailType: 'CreatedOrder',
                 Detail: JSON.stringify({ customerId, orderId }),
                 EventBusName: EVENTBUS_NAME,
-            }
-        ]
-    }
+            },
+        ],
+    };
     try {
         const command = new PutEventsCommand(input);
         const response = await ebClientPatched.send(command);
@@ -40,5 +38,4 @@ export const newOrderHandler = async (customerId): Promise<Object> => {
             }),
         };
     }
-
-}
+};

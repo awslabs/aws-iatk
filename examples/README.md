@@ -36,7 +36,7 @@ pytest test_example_01.py
 To clean up the stack after running the example:
 
 ```bash
-sam destroy --stack-name example-01
+sam delete --stack-name example-01
 ```
 
 ## Example02 - Testing EventBridge Event Bus with "Listener"
@@ -63,16 +63,12 @@ Note that, after deploy completes, an output file `outputs.json` is created, wit
 
 ```json
 {
-  "example-stack-01": {
+  "example-ebStack": {
     "EventBusName": "examplestack01EB321ED36B",
     "ApiEndpoint": "https://xxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod/orders",
     "APIEndpoint1793E782": "https://xxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod/",
     "RuleName": "examplestack01EB321ED36B|example-stack-01-ConsumerRuleEE1F6314-12K2NOJQRM8A6",
     "TargetId": "Target0"
-  },
-  "example-stack-02": {
-    "StateMachineArn": "arn:aws:states:us-east-1:123456789012:stateMachine:MyStateMachine6C968CA5-Ybusf26S5Oir",
-    "StateMachineName": "MyStateMachine6C968CA5-Ybusf26S5Oir"
   }
 }
 
@@ -127,14 +123,7 @@ Note that, after deploy completes, an output file `outputs.json` is created, wit
 
 ```json
 {
-  "example-stack-01": {
-    "EventBusName": "examplestack01EB321ED36B",
-    "ApiEndpoint": "https://xxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod/orders",
-    "APIEndpoint1793E782": "https://xxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod/",
-    "RuleName": "examplestack01EB321ED36B|example-stack-01-ConsumerRuleEE1F6314-12K2NOJQRM8A6",
-    "TargetId": "Target0"
-  },
-  "example-stack-02": {
+  "example-sfnStack": {
     "StateMachineArn": "arn:aws:states:us-east-1:123456789012:stateMachine:MyStateMachine6C968CA5-Ybusf26S5Oir",
     "StateMachineName": "MyStateMachine6C968CA5-Ybusf26S5Oir"
   }
@@ -189,18 +178,13 @@ Note that, after deploy completes, an output file `outputs.json` is created, wit
 
 ```json
 {
-  "example-stack-01": {
-    "EventBusName": "examplestack01EB321ED36B",
-    "ApiEndpoint": "https://xxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod/orders",
-    "APIEndpoint1793E782": "https://xxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod/",
-    "RuleName": "examplestack01EB321ED36B|example-stack-01-ConsumerRuleEE1F6314-12K2NOJQRM8A6",
-    "TargetId": "Target0"
-  },
-  "example-stack-02": {
-    "StateMachineArn": "arn:aws:states:us-east-1:123456789012:stateMachine:MyStateMachine6C968CA5-Ybusf26S5Oir",
-    "StateMachineName": "MyStateMachine6C968CA5-Ybusf26S5Oir"
+  "example-schemaStack": {
+    "CalculatorFunction": "cdk-example-schemaStack-CalculatorBxxxxF40-5SYJsAlTscGC",
+    "RegistryName": "MyRegsitry-xx5rNdAMGJL1",
+    "SchemaName": "MySchema-xxKd3I1NbYAu"
   }
 }
+
 
 ```
 
