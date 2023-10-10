@@ -48,6 +48,13 @@ jobs:
         run: |
             python -m pip install --upgrade pip
                 pip install setuptools wheel twine awscli
-                aws codeartifact login --tool twine --repository zion-wheels --domain aws --domain-owner 010155974629 --region us-east-1
-                twine upload dist/*
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.AWS_CA_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_CA_SECRET_ACCESS_KEY }}
+            aws-region: eu-central-1
+                    
+                    aws codeartifact login --tool twine --repository zion-wheels --domain aws --domain-owner 010155974629 --region us-east-1
+                    twine upload dist/*
       
