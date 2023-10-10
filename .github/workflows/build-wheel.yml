@@ -2,6 +2,7 @@ name: build-wheel
 
 on:
   workflow_dispatch:
+  pull_request:
 
 jobs:
   build_wheels:
@@ -65,7 +66,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@326560df218a7ea9cf6ab49bbc88b8b306bb437e
         with:
           platforms: all
 
