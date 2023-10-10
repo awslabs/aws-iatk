@@ -14,12 +14,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up QEMU
-        if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: all
 
       - name: Set up Go
         uses: actions/setup-go@v3
