@@ -5,7 +5,7 @@ on:
 
 jobs:
   check_version_bump:
-    name: Release on macos-latest
+    name: check version on macos-latest
     runs-on: macos-latest
 
     steps:
@@ -38,7 +38,7 @@ jobs:
                 fi
     
   release:
-    name: Release on macos-latest
+    name: release on macos-latest
     runs-on: macos-latest
     needs: check_version_bump
     steps:
@@ -47,4 +47,7 @@ jobs:
       - name: Install dependencies
         run: |
             python -m pip install --upgrade pip
-                pip install setuptools wheel twine
+                pip install setuptools wheel twine awscli
+                aws codeartifact login --tool twine --repository zion-wheels --domain aws --domain-owner 010155974629 --region us-east-1
+                twine upload dist/*
+      
