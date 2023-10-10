@@ -5,24 +5,31 @@ on:
 
 jobs:
   build_wheels:
-    name: Release on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest]
+    name: Release on macos-latest
+    runs-on: macos-latest
 
     steps:
       - name: checkout develop branch
         uses: actions/checkout@v4
         with:
             ref: develop
-      - name: print version
+      - id: version-develop
+        name: print version
         working-directory: ./python-client
-        run: awk '/version =/ {print $3}' pyproject.toml
+        run: echo "VERSION_DEVELOP=$(awk '/version =/ {print $3}' pyproject.toml)" >> "$GITHUB_ENV"
 
       - name: checkout source branch
         uses: actions/checkout@v4
 
-      - name: print version
+      - id: version-source
+        name: print version
         working-directory: ./python-client
-        run: awk '/version =/ {print $3}' pyproject.toml
+        run: echo "VERSION_SOURCE=$(awk '/version =/ {print $3}' pyproject.toml)" >> "$GITHUB_ENV"
+
+      - name: Check if versions are the same
+        run: 
+            if [ $VERSION_SOURCE = $VERSION_DEVELOP ]; then 
+                  echo "No version change, exiting!";
+                else
+                  echo Versions are different;
+                fi
