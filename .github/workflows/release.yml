@@ -12,9 +12,17 @@ jobs:
         os: [macos-latest]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: checkout develop branch
+        uses: actions/checkout@v4
         with:
             ref: develop
+      - name: print version
+        working-directory: ./python-client
+        run: awk '/version =/ {print $3}' pyproject.toml
+
+      - name: checkout source branch
+        uses: actions/checkout@v4
+
       - name: print version
         working-directory: ./python-client
         run: awk '/version =/ {print $3}' pyproject.toml

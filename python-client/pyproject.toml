@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zion"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = []
 license = {text = "Apache-2.0"}
 requires-python = ">=3.7"
