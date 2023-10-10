@@ -4,7 +4,7 @@ on:
   pull_request:
 
 jobs:
-  build_wheels:
+  check_version_bump:
     name: Release on macos-latest
     runs-on: macos-latest
 
@@ -25,11 +25,26 @@ jobs:
         name: print version
         working-directory: ./python-client
         run: echo "VERSION_SOURCE=$(awk '/version =/ {print $3}' pyproject.toml)" >> "$GITHUB_ENV"
+          
 
       - name: Check if versions are the same
         run: 
             if [ $VERSION_SOURCE = $VERSION_DEVELOP ]; then 
                   echo "No version change, exiting!";
+                  exit 0;
                 else
                   echo Versions are different;
+                  exit 1;
                 fi
+    
+  release:
+    name: Release on macos-latest
+    runs-on: macos-latest
+    needs: check_version_bump
+    steps:
+      - uses: actions/setup-python@v3
+
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+                pip install setuptools wheel twine
