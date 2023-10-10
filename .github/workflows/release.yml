@@ -31,10 +31,10 @@ jobs:
         run: 
             if [ $VERSION_SOURCE = $VERSION_DEVELOP ]; then 
                   echo "No version change, exiting!";
-                  exit 0;
+                  exit 1;
                 else
                   echo Versions are different;
-                  exit 1;
+                  exit 0;
                 fi
     
   release:
