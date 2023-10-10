@@ -1,0 +1,20 @@
+name: release
+
+on:
+  pull_request:
+
+jobs:
+  build_wheels:
+    name: Release on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+            ref: develop
+      - name: print version
+        working-directory: ./python-client
+        run: awk '/version =/ {print $3}' pyproject.toml
