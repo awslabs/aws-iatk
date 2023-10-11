@@ -45,7 +45,7 @@ jobs:
   check_version_bump:
     name: check version on macos-latest
     runs-on: macos-latest
-    
+    needs: build_wheels
     steps:
       - name: checkout develop branch
         uses: actions/checkout@v4
