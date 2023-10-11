@@ -84,7 +84,9 @@ jobs:
         uses: actions/checkout@v4
 
       - uses: actions/setup-python@v3
-
+      - uses: actions/download-artifact@v3
+        with:
+          name: wheels-test-artifact
       - name: Install dependencies
         run: |
             python -m pip install --upgrade pip
