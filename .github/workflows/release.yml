@@ -55,16 +55,14 @@ jobs:
             ref: develop
       - id: version-develop
         name: print version
-        working-directory: ./python-client
-        run: echo "VERSION_DEVELOP=$(awk '/version =/ {print $3}' pyproject.toml)" >> "$GITHUB_ENV"
+        run: echo "VERSION_DEVELOP=$(awk '/_version =/ {print $3}' python-client/src/zion/version.py)" >> "$GITHUB_ENV"
 
       - name: checkout source branch
         uses: actions/checkout@v4
 
       - id: version-source
         name: print version
-        working-directory: ./python-client
-        run: echo "VERSION_SOURCE=$(awk '/version =/ {print $3}' pyproject.toml)" >> "$GITHUB_ENV"
+        run: echo "VERSION_SOURCE=$(awk '/_version =/ {print $3}' python-client/src/zion/version.py)" >> "$GITHUB_ENV"
           
 
       - name: Check if versions are the same
