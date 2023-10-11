@@ -89,7 +89,7 @@ jobs:
       - name: Configure AWS Credentials 1
         uses: aws-actions/configure-aws-credentials@v4
         with:
-            role-to-assume: ${{ secrets.ZION_TEST_RELEASE_IAM_ARN}}
+            role-to-assume: arn:aws:iam::461630630816:role/GithubExecutionRole
             role-session-name: CiReleaseTest
             aws-region: us-east-1
 
