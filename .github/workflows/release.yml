@@ -80,14 +80,15 @@ jobs:
     runs-on: macos-latest
     needs: check_version_bump
     steps:
+      - name: checkout source branch
+        uses: actions/checkout@v4
+        
       - uses: actions/setup-python@v3
 
       - name: Install dependencies
         run: |
             python -m pip install --upgrade pip
                 pip install setuptools wheel twine awscli
-      - name: test
-        run: pwd && ls
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -95,16 +96,13 @@ jobs:
             role-session-name: CiReleaseTest
             aws-region: us-east-1
 
-      - name: test
-        run: pwd && ls
-
-      # - name: Upload CodeArtifact
-      #   run: 
-      #       |      
-      #       export TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain aws --domain-owner 461630630816 --repository zion-wheels-jysheng --region us-east-1 --format pypi --query repositoryEndpoint --output text`
-      #       export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner 461630630816 --region us-east-1 --query authorizationToken --output text`
-      #       export TWINE_USERNAME=aws
-      #       python -m twine upload --verbose dist/*.whl      
+      - name: Upload CodeArtifact
+        run: 
+            |      
+            export TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain aws --domain-owner 461630630816 --repository zion-wheels-jysheng --region us-east-1 --format pypi --query repositoryEndpoint --output text`
+            export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner 461630630816 --region us-east-1 --query authorizationToken --output text`
+            export TWINE_USERNAME=aws
+            python -m twine upload --verbose dist/*.whl      
 
     #   - name: Upload PyPi
     #     run: twine upload dist/*
