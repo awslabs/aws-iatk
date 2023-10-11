@@ -92,6 +92,9 @@ jobs:
             role-to-assume: arn:aws:iam::461630630816:role/GithubExecutionRole
             role-session-name: CiReleaseTest
             aws-region: us-east-1
+            
+      - name: test
+        run: ls
 
       - name: Upload CodeArtifact
         run: 
