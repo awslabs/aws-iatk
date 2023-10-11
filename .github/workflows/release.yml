@@ -99,7 +99,6 @@ jobs:
             export TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain aws --domain-owner 461630630816 --repository zion-wheels-jysheng --region us-east-1 --format pypi --query repositoryEndpoint --output text`
             export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner 461630630816 --region us-east-1 --query authorizationToken --output text`
             export TWINE_USERNAME=aws
-            cd python-client
             ls
             python -m twine upload --verbose dist/*.whl      
 
