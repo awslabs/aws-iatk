@@ -5,11 +5,7 @@ import logging
 from uuid import uuid4
 from typing import Optional
 
-try:
-    from importlib.metadata import version 
-except ModuleNotFoundError:
-    from importlib_metadata import version
-
+from zion.version import _version
 
 LOG = logging.getLogger(__name__)
 MODULE_NAME = "zion"
@@ -21,7 +17,7 @@ class Payload:
     method: str
     params: dict
     _client: str = "python"
-    _version: str = version(MODULE_NAME)
+    _version: str = _version
 
     def __init__(self, method: str, params: dict, region: str = None, profile: str = None):
         self.id = str(uuid4())

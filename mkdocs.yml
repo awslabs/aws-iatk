@@ -1,0 +1,87 @@
+site_name: AWS Zion
+site_description: AWS Zion
+site_author: Amazon Web Services
+repo_url: https://github.com/awslabs/aws-zion-private
+edit_uri: edit/develop/docs
+
+nav:
+  - Homepage:
+      - index.md
+      - Changelog: changelog.md
+      - Python API reference: api/python" target="_blank
+      - Roadmap: roadmap.md
+  - Tutorial: tutorial/index.md
+  - Processes:
+      - Security: security.md
+      - Roadmap: roadmap.md
+      - Contributing:
+          - Development environment: contributing/setup.md
+          - Your first contribution: contributing/getting_started.md
+          - Conventions: contributing/conventions.md
+theme:
+  name: material
+  font:
+    text: Ubuntu
+  palette:
+    - scheme: default
+      primary: deep purple
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+  features:
+    - header.autohide
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - navigation.indexes
+    - navigation.tracking
+    - navigation.tabs
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+  icon:
+    repo: fontawesome/brands/github
+  logo: media/aws-logo-light.svg
+  favicon: media/aws-logo-light.svg
+  custom_dir: docs/overrides
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - abbr
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - meta
+  - toc:
+      permalink: true
+      toc_depth: 4
+  - attr_list
+
+copyright: Copyright &copy; 2023 Amazon Web Services
+
+plugins:
+  - git-revision-date
+  - search
+
+extra_css:
+  - stylesheets/extra.css
+extra_javascript:
+  - javascript/extra.js
+
+extra:
+  version:
+    provider: mike
+    default: latest
