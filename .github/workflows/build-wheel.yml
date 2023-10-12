@@ -2,7 +2,7 @@ name: build-wheel
 
 on:
   workflow_dispatch:
-    
+
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
@@ -131,6 +131,8 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      AWS_REGION: "us-east-1"
     steps:
       - uses: actions/checkout@v4
 
@@ -154,7 +156,7 @@ jobs:
         with:
             role-to-assume: ${{secrets.ZION_TEST_RELEASE_IAM_ARN}}
             role-session-name: CiReleaseTest
-            aws-region: us-east-1
+            aws-region: ${{env.AWS_REGION}}
 
       - name: Upload to CodeArtifact
         run: 
