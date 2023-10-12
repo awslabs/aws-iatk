@@ -1,6 +1,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 from distutils.errors import CompileError
 from subprocess import call
 from typing import List
@@ -12,10 +13,11 @@ from setuptools.command.sdist import sdist
 
 def build_and_install_zion(packages: List[str]) -> None:
     cmd = ['go', 'build', '-C', './src/zion_src', '-o', '../zion_service/', './cmd/zion']
-    out = call(cmd)
-    if out != 0:
-        raise CompileError("Failed to build Zion Service. Golang version >1.20 required and on PATH")
-    
+    if not os.getenv("GOARCH"):
+        out = call(cmd)
+        if out != 0:
+            raise CompileError("Failed to build Zion Service. Golang version >1.20 required and on PATH")
+
     # Add zion_service package to the packages list. This ensures it is included in the python whl/sdist
     packages.extend(["zion_service"])
     list_to_remove = []
