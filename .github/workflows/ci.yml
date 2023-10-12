@@ -27,7 +27,6 @@ jobs:
           - ubuntu-latest
           - windows-latest
         python:
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.11"
@@ -114,7 +113,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.7"
+          python-version: "3.8"
 
       - name: Check out code
         uses: actions/checkout@v4
@@ -148,7 +147,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.7"
+          python-version: "3.8"
 
       - name: Check out code
         uses: actions/checkout@v4
