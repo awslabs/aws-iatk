@@ -98,6 +98,9 @@ class ZionException(Exception):
 
         self.error_code = error_code
 
+class RetryableException(Exception):
+    def __init__(self, message) -> None:
+        super().__init__(message)
 
 @dataclass
 class Zion:
@@ -432,7 +435,7 @@ class Zion:
 
         return GenerateMockEventOutput(event)
     
-    def retry_until(self, condition, timeout = 10):
+    def retry_until(self, condition, timeout = 10, retryable_exceptions = (RetryableException)):
         """
         Decorator function to retry until condition or timeout is met
 
@@ -475,7 +478,10 @@ class Zion:
                 if timeout == 0:
                     elapsed = lambda _: -1
                 while elapsed(None) < timeout:
-                    output = func(*args, **kwargs)
+                    try:
+                        output = func(*args, **kwargs)
+                    except retryable_exceptions:
+                        continue
                     if condition(output):
                         return True
                     time.sleep(math.pow(2, attempt) * delay)
@@ -594,11 +600,18 @@ class Zion:
         """
         @self.retry_until(condition=params.condition, timeout=params.timeout_seconds)
         def fetch_trace_tree():
-            response = self._get_trace_tree(
-                params=GetTraceTreeParams(tracing_header=params.tracing_header),
-                caller="retry_get_trace_tree_until",
-            )
-            return response
+            try:
+                response = self._get_trace_tree(
+                    params=GetTraceTreeParams(tracing_header=params.tracing_header),
+                    caller="retry_get_trace_tree_until",
+                )
+                return response
+            except ZionException as e:
+                 if "trace not found" in str(e):
+                    pass
+                    raise RetryableException(e)
+                 else:
+                    raise ZionException(e, 500)
         try:
             response = fetch_trace_tree()
             return response
