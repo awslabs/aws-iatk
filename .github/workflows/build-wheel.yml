@@ -133,6 +133,7 @@ jobs:
       contents: read
     env:
       AWS_REGION: "us-east-1"
+      ACCOUNT_ID: ${{ secrets.ZION_GH_RELEASE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -154,14 +155,14 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-            role-to-assume: ${{secrets.ZION_TEST_RELEASE_IAM_ARN}}
+            role-to-assume: ${{secrets.ZION_TEST_RELEASE_IAM_ARN}} 
             role-session-name: CiReleaseTest
             aws-region: ${{env.AWS_REGION}}
 
       - name: Upload to CodeArtifact
         run: 
             |      
-            export TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain aws --domain-owner 461630630816 --repository zion-wheels-jysheng --region us-east-1 --format pypi --query repositoryEndpoint --output text`
-            export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner 461630630816 --region us-east-1 --query authorizationToken --output text`
+            export TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain aws --domain-owner $ACCOUNT_ID --repository zion-release --region us-east-1 --format pypi --query repositoryEndpoint --output text`
+            export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner $ACCOUNT_ID --region us-east-1 --query authorizationToken --output text`
             export TWINE_USERNAME=aws
             python -m twine upload --verbose wheels/*.whl      
