@@ -27,6 +27,6 @@ Here is a general flow to run a test written with Testing SDK:
 
 3.	Tear down System Under Test
 
-Here is a recommended pattern assuming you use Python’s `unittest.TestCase`:
+Here is a recommended pattern assuming you use Python’s [`unittest.TestCase`](https://docs.python.org/3/library/unittest.html#unittest.TestCase):
 •	Create Test Harness resources in `setUpClass` method or in `setUp` method
 •	Tear down Test Harness resources in `tearDownClass` method or in `tearDown` method
