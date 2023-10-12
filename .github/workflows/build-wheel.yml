@@ -101,6 +101,7 @@ jobs:
         uses: actions/checkout@v4
         with:
             ref: develop
+            
       - id: version-develop
         name: get zion version develop
         run: echo "VERSION_DEVELOP=$(awk '/_version =/ {print $3}' python-client/src/zion/version.py)" >> "$GITHUB_ENV"
@@ -129,6 +130,7 @@ jobs:
     needs: check_version_bump
     permissions:
       id-token: write
+      contents: read
     steps:
       - name: checkout source branch
         uses: actions/checkout@v4
