@@ -1,4 +1,4 @@
-name: build-wheel
+name: release
 
 on:
   workflow_dispatch:
