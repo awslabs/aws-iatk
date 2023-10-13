@@ -435,7 +435,7 @@ class Zion:
 
         return GenerateMockEventOutput(event)
     
-    def retry_until(self, condition, timeout = 10, retryable_exceptions = (RetryableException)):
+    def retry_until(self, condition, timeout = 10, retryable_exceptions = (RetryableException,)):
         """
         Decorator function to retry until condition or timeout is met
 
