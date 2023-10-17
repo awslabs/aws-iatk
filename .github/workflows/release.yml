@@ -87,20 +87,10 @@ jobs:
             export PATH=$PATH:/usr/local/go/bin && 
             env GOOS=linux GOARCH=${{ matrix.GO_ARCHITECTURE }} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion
 
-      - name: list directory
-        working-directory: ./python-client
-        run: cd wheels && ls -a
-
       - uses: actions/upload-artifact@v3
         with:
           name: wheels-test-artifact
           path: ./python-client/wheels/*.whl
-          retention-days: 15
-      
-      - uses: actions/upload-artifact@v3
-        with:
-          name: sdist-artifact
-          path: ./python-client/dist
           retention-days: 15
 
   check_version_bump:
@@ -156,6 +146,16 @@ jobs:
 
       - uses: actions/setup-python@v3
 
+      - name: copy go source codebase
+        working-directory: ./python-client
+        run: make copy-service-source-for-sdist
+
+      - name: create sdist for zion
+        working-directory: ./python-client
+        run: |
+            pip install build
+            make build-client
+
       - name: Make Wheels Directory
         run: mkdir wheels
 
@@ -163,11 +163,6 @@ jobs:
         with:
           name: wheels-test-artifact
           path: wheels
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: sdist-artifact
-          path: sdist
 
       - name: Install dependencies
         run: |
@@ -188,4 +183,4 @@ jobs:
             export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner 461630630816 --region $AWS_REGION --query authorizationToken --output text`
             export TWINE_USERNAME=aws
             python -m twine upload --verbose wheels/*.whl
-            python -m twine upload --verbose sdist      
+            python -m twine upload --verbose dist/*.tar.gz     
