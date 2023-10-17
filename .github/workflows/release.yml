@@ -86,7 +86,11 @@ jobs:
             tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && 
             export PATH=$PATH:/usr/local/go/bin && 
             env GOOS=linux GOARCH=${{ matrix.GO_ARCHITECTURE }} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion
-      
+
+      - name: list directory
+        working-directory: ./python-client
+        run: ls -a
+
       - uses: actions/upload-artifact@v3
         with:
           name: wheels-test-artifact
@@ -145,7 +149,8 @@ jobs:
     env:
       AWS_REGION: "us-east-1"
       ACCOUNT_ID: ${{ secrets.ZION_GH_RELEASE_ACCOUNT_ID }}
-      CODEARTIFACT_REPO: "zion-release"
+      # CODEARTIFACT_REPO: "zion-release"
+      CODEARTIFACT_REPO: "zion-wheels-jysheng"
     steps:
       - uses: actions/checkout@v4
 
@@ -179,8 +184,8 @@ jobs:
       - name: Upload to CodeArtifact
         run: 
             |      
-            export TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain aws --domain-owner $ACCOUNT_ID --repository $CODEARTIFACT_REPO --region $AWS_REGION --format pypi --query repositoryEndpoint --output text`
-            export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner $ACCOUNT_ID --region $AWS_REGION --query authorizationToken --output text`
+            export TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain aws --domain-owner 461630630816 --repository $CODEARTIFACT_REPO --region $AWS_REGION --format pypi --query repositoryEndpoint --output text`
+            export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner 461630630816 --region $AWS_REGION --query authorizationToken --output text`
             export TWINE_USERNAME=aws
             python -m twine upload --verbose wheels/*.whl
             python -m twine upload --verbose sdist      
