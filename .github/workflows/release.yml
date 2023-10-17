@@ -5,98 +5,98 @@ on:
   pull_request:
 
 jobs:
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest]
+  # build_wheels:
+  #   name: Build wheels on ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [windows-latest, macos-latest]
 
-    steps:
-      - uses: actions/checkout@v4
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: "1.20"
+  #     - name: Set up Go
+  #       uses: actions/setup-go@v3
+  #       with:
+  #         go-version: "1.20"
 
-      # Used to host cibuildwheel
-      - uses: actions/setup-python@v3
+  #     # Used to host cibuildwheel
+  #     - uses: actions/setup-python@v3
 
-      - name: copy go source codebase
-        working-directory: ./python-client
-        run: make copy-service-source-for-sdist
+  #     - name: copy go source codebase
+  #       working-directory: ./python-client
+  #       run: make copy-service-source-for-sdist
 
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel
+  #     - name: Install cibuildwheel
+  #       run: python -m pip install cibuildwheel
 
-      - name: Build wheels
-        working-directory: ./python-client
-        run: python -m cibuildwheel --output-dir wheels
-        env: 
-          CIBW_ARCHS_MACOS: "x86_64 arm64"
-          CIBW_ARCHS_WINDOWS: "AMD64 ARM64"
+  #     - name: Build wheels
+  #       working-directory: ./python-client
+  #       run: python -m cibuildwheel --output-dir wheels
+  #       env: 
+  #         CIBW_ARCHS_MACOS: "x86_64 arm64"
+  #         CIBW_ARCHS_WINDOWS: "AMD64 ARM64"
       
-      - uses: actions/upload-artifact@v3
-        with:
-          name: wheels-test-artifact
-          path: ./python-client/wheels/*.whl
-          retention-days: 15
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: wheels-test-artifact
+  #         path: ./python-client/wheels/*.whl
+  #         retention-days: 15
 
-  build_wheels_linux:
-    name: Build wheels on ubuntu-latest
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        GO_ARCHITECTURE: [amd64, arm64]
-        LINUX_ARCHITECTURE: [x86_64, aarch64]
-        exclude:
-          - GO_ARCHITECTURE: amd64
-            LINUX_ARCHITECTURE: aarch64
-          - GO_ARCHITECTURE: arm64
-            LINUX_ARCHITECTURE: x86_64
+  # build_wheels_linux:
+  #   name: Build wheels on ubuntu-latest
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       GO_ARCHITECTURE: [amd64, arm64]
+  #       LINUX_ARCHITECTURE: [x86_64, aarch64]
+  #       exclude:
+  #         - GO_ARCHITECTURE: amd64
+  #           LINUX_ARCHITECTURE: aarch64
+  #         - GO_ARCHITECTURE: arm64
+  #           LINUX_ARCHITECTURE: x86_64
 
-    steps:
-      - uses: actions/checkout@v4
+  #   steps:
+  #     - uses: actions/checkout@v4
       
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@326560df218a7ea9cf6ab49bbc88b8b306bb437e
-        with:
-          platforms: all
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@326560df218a7ea9cf6ab49bbc88b8b306bb437e
+  #       with:
+  #         platforms: all
 
-      # Used to host cibuildwheel
-      - uses: actions/setup-python@v3
+  #     # Used to host cibuildwheel
+  #     - uses: actions/setup-python@v3
 
-      - name: copy go source codebase
-        working-directory: ./python-client
-        run: make copy-service-source-for-sdist
+  #     - name: copy go source codebase
+  #       working-directory: ./python-client
+  #       run: make copy-service-source-for-sdist
 
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel
+  #     - name: Install cibuildwheel
+  #       run: python -m pip install cibuildwheel
 
-      - name: Build wheels
-        working-directory: ./python-client
-        run: python -m cibuildwheel --output-dir wheels
-        env: 
-          CIBW_SKIP: "*-musllinux*" 
-          CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.GO_ARCHITECTURE }}"
-          CIBW_ARCHS_LINUX: "${{matrix.LINUX_ARCHITECTURE}}"
-          CIBW_BEFORE_ALL_LINUX: 
-            curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && 
-            tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && 
-            export PATH=$PATH:/usr/local/go/bin && 
-            env GOOS=linux GOARCH=${{ matrix.GO_ARCHITECTURE }} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion
+  #     - name: Build wheels
+  #       working-directory: ./python-client
+  #       run: python -m cibuildwheel --output-dir wheels
+  #       env: 
+  #         CIBW_SKIP: "*-musllinux*" 
+  #         CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.GO_ARCHITECTURE }}"
+  #         CIBW_ARCHS_LINUX: "${{matrix.LINUX_ARCHITECTURE}}"
+  #         CIBW_BEFORE_ALL_LINUX: 
+  #           curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && 
+  #           tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && 
+  #           export PATH=$PATH:/usr/local/go/bin && 
+  #           env GOOS=linux GOARCH=${{ matrix.GO_ARCHITECTURE }} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: wheels-test-artifact
-          path: ./python-client/wheels/*.whl
-          retention-days: 15
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: wheels-test-artifact
+  #         path: ./python-client/wheels/*.whl
+  #         retention-days: 15
 
   check_version_bump:
     name: check version on macos-latest
     runs-on: macos-latest
-    needs: [build_wheels, build_wheels_linux]
+    # needs: [build_wheels, build_wheels_linux]
     steps:
       - name: checkout develop branch
         uses: actions/checkout@v4
@@ -156,13 +156,13 @@ jobs:
             pip install build
             make build-client
 
-      - name: Make Wheels Directory
-        run: mkdir wheels
+      # - name: Make Wheels Directory
+      #   run: mkdir wheels
 
-      - uses: actions/download-artifact@v3
-        with:
-          name: wheels-test-artifact
-          path: wheels
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: wheels-test-artifact
+      #     path: wheels
 
       - name: Install dependencies
         run: |
@@ -182,5 +182,5 @@ jobs:
             export TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain aws --domain-owner 461630630816 --repository $CODEARTIFACT_REPO --region $AWS_REGION --format pypi --query repositoryEndpoint --output text`
             export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner 461630630816 --region $AWS_REGION --query authorizationToken --output text`
             export TWINE_USERNAME=aws
-            python -m twine upload --verbose wheels/*.whl
+            ls dist
             python -m twine upload --verbose dist/*.gz
