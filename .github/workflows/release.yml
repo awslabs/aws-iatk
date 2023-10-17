@@ -107,12 +107,10 @@ jobs:
         name: Get Zion Version Develop
         run: echo "VERSION_DEVELOP=$(awk '/_version =/ {print $3}' python-client/src/zion/version.py)" >> "$GITHUB_ENV"
 
-      # - name: checkout source branch
-      #   uses: actions/checkout@v4
-      #   with:
-      #     ref: main
-      - name: checkout main branch
+      - name: checkout source branch
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - id: version-source
         name: Get Zion Version Main
@@ -139,8 +137,7 @@ jobs:
     env:
       AWS_REGION: "us-east-1"
       ACCOUNT_ID: ${{ secrets.ZION_GH_RELEASE_ACCOUNT_ID }}
-      # CODEARTIFACT_REPO: "zion-release"
-      CODEARTIFACT_REPO: "zion-wheels-jysheng"
+      CODEARTIFACT_REPO: "zion-release"
     steps:
       - uses: actions/checkout@v4
 
@@ -179,8 +176,8 @@ jobs:
       - name: Upload to CodeArtifact
         run: 
             |      
-            export TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain aws --domain-owner 461630630816 --repository $CODEARTIFACT_REPO --region $AWS_REGION --format pypi --query repositoryEndpoint --output text`
-            export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner 461630630816 --region $AWS_REGION --query authorizationToken --output text`
+            export TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain aws --domain-owner $ACCOUNT_ID --repository $CODEARTIFACT_REPO --region $AWS_REGION --format pypi --query repositoryEndpoint --output text`
+            export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner $ACCOUNT_ID --region $AWS_REGION --query authorizationToken --output text`
             export TWINE_USERNAME=aws
             python -m twine upload --verbose wheels/*.whl
             python -m twine upload --verbose python-client/dist/*.tar.gz
