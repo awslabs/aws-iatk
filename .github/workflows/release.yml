@@ -26,12 +26,7 @@ jobs:
       - name: copy go source codebase
         working-directory: ./python-client
         run: make copy-service-source-for-sdist
-      - name: create sdist for zion
-        working-directory: ./python-client
-        run: |
-            pip install build
-            make build-client
-            ls -a
+        
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel
 
@@ -188,4 +183,4 @@ jobs:
             export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner 461630630816 --region $AWS_REGION --query authorizationToken --output text`
             export TWINE_USERNAME=aws
             python -m twine upload --verbose wheels/*.whl
-            python -m twine upload --verbose dist/*.tar.gz     
+            python -m twine upload --verbose dist/*  
