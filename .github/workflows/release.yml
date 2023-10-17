@@ -155,7 +155,6 @@ jobs:
         run: |
             pip install build
             make build-client
-            ls
 
       # - name: Make Wheels Directory
       #   run: mkdir wheels
@@ -183,6 +182,4 @@ jobs:
             export TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain aws --domain-owner 461630630816 --repository $CODEARTIFACT_REPO --region $AWS_REGION --format pypi --query repositoryEndpoint --output text`
             export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner 461630630816 --region $AWS_REGION --query authorizationToken --output text`
             export TWINE_USERNAME=aws
-            ls
-            ls dist
-            python -m twine upload --verbose dist/*.gz
+            python -m twine upload --verbose python-client/dist/*.tar.gz
