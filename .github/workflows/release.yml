@@ -183,4 +183,4 @@ jobs:
             export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner 461630630816 --region $AWS_REGION --query authorizationToken --output text`
             export TWINE_USERNAME=aws
             python -m twine upload --verbose wheels/*.whl
-            python -m twine upload --verbose --skip-existing dist/*  
+            python -m twine upload --verbose dist/*.gz
