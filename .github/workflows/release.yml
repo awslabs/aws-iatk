@@ -26,7 +26,12 @@ jobs:
       - name: copy go source codebase
         working-directory: ./python-client
         run: make copy-service-source-for-sdist
-
+      - name: create sdist for zion
+        working-directory: ./python-client
+        run: |
+            pip install build
+            make build-client
+            ls -a
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel
 
