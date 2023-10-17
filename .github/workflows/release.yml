@@ -89,7 +89,7 @@ jobs:
 
       - name: list directory
         working-directory: ./python-client
-        run: ls -a
+        run: cd wheels && ls -a
 
       - uses: actions/upload-artifact@v3
         with:
