@@ -127,12 +127,9 @@ class TestZion_retry_fetch_until(TestCase):
             condition=num_is_10,
             timeout_seconds=10)
         with pytest.raises(zion.ZionException) as e:
-            start = time.time()
             self.zion.retry_get_trace_tree_until(params=params)
-            end = time.time()
-            self.assertNotEqual(self.counter, 10)
-            self.assertGreater(end - start, 10)
-            self.assertEqual(e, "Method not found")
+        self.assertNotEqual(self.counter, 10)
+        self.assertIn("error while getting trace_id from", str(e.value))
 
     def test_condition_not_function_error(self):
         params = RetryGetTraceTreeUntilParams(
@@ -142,5 +139,18 @@ class TestZion_retry_fetch_until(TestCase):
         with pytest.raises(TypeError) as e:
             self.zion.retry_get_trace_tree_until(params=params)
             self.assertNotEqual(self.counter, 10)
-            self.assertEqual(e, "condition is not a callable function")
+        self.assertEqual(str(e.value), "condition is not a callable function")
+
+    def test_retry_trace_not_found(self):
+        def num_is_5(trace):
+            return random.randrange(0,5) == 5
+        params = RetryGetTraceTreeUntilParams(
+            tracing_header="Root=1-652850da-255d5ae071f55e4aef339837;Sampled=1",
+            condition=num_is_5,
+            timeout_seconds=10)
+        start = time.time()
+        response = self.zion.retry_get_trace_tree_until(params=params)
+        end = time.time()
+        self.assertGreaterEqual(end - start, 10)
+        self.assertFalse(response)
     
