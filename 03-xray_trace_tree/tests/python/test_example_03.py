@@ -25,26 +25,29 @@ class Example03(TestCase):
     # patch sfn client to ensure trace is sampled
     sfn_client: boto3.client = z.patch_aws_client(boto3.client("stepfunctions"))
 
-    def test_get_trace_tree(self):
+    def setUp(self):
+        self.tracing_header = None
+
         response = self.sfn_client.start_execution(
             stateMachineArn=self.statemachine_arn,
             input=json.dumps({"waitMilliseconds": 1000}),
         )
         execution_arn = response["executionArn"]
         status = "RUNNING"
-        tracing_header = None
         while status == "RUNNING":
             res = self.sfn_client.describe_execution(
                 executionArn=execution_arn,
             )
             status = res["status"]
-            if not tracing_header:
-                tracing_header = res["traceHeader"]
+            if not self.tracing_header:
+                self.tracing_header = res["traceHeader"]
 
-        time.sleep(10)
+        time.sleep(5)
+
+    def test_get_trace_tree(self):
         trace_tree = self.z.get_trace_tree(
             zion.GetTraceTreeParams(
-                tracing_header=tracing_header,
+                tracing_header=self.tracing_header,
             )
         ).trace_tree
 
@@ -59,23 +62,6 @@ class Example03(TestCase):
         )
         
     def test_retry_get_trace_tree_until(self):
-        response = self.sfn_client.start_execution(
-            stateMachineArn=self.statemachine_arn,
-            input=json.dumps({"waitMilliseconds": 1000}),
-        )
-        execution_arn = response["executionArn"]
-        status = "RUNNING"
-        tracing_header = None
-        while status == "RUNNING":
-            res = self.sfn_client.describe_execution(
-                executionArn=execution_arn,
-            )
-            status = res["status"]
-            if not tracing_header:
-                tracing_header = res["traceHeader"]
-
-        time.sleep(5)
-
         def condition(output: zion.GetTraceTreeOutput) -> bool:
             tree = output.trace_tree
             try:
@@ -94,7 +80,7 @@ class Example03(TestCase):
 
         self.assertTrue(self.z.retry_get_trace_tree_until(
             zion.RetryGetTraceTreeUntilParams(
-                tracing_header=tracing_header,
+                tracing_header=self.tracing_header,
                 condition=condition,
                 timeout_seconds=20,
             )
