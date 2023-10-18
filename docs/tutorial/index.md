@@ -13,48 +13,110 @@ For each example, we will execute the following steps:
 ## Requirements
 
 * [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html){target="_blank"} and [configured with your credentials](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started-set-up-credentials.html){target="_blank"}.
-* [AWS SAM CLI] 
 * [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html){target="_blank"} installed.
 * [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) installed.
 
 ## Getting started
 
-To run the examples in Python (3.8+):
+Clone the examples:
 
+```bash
+git clone --single-branch --branch examples git@github.com:awslabs/aws-zion-private.git
 ```
+
+To run the Python (3.8+) examples:
+
+```bash
 python -m venv. venv
 source .venv/bin/activate
+
+pip install -r requirements.txt
 ```
 
-## Terms
+## Retrieving information from a deployed stack
 
-These are some important terms we use in Testing SDK:
+This example shows how to use `get_stack_outputs` and `get_physical_id_from_stack` to retrieve information from a deployed stack. They are useful if you deploy your stack directly with a CloudFormation template.
 
-•	System Under Test - the system being tested for correct operations (including happy and error paths)
+We will use SAM CLI to deploy the SUT to CloudFormation. For Python, we will use `pytest` to run the [test code](./example01/test_example_01.py).
 
-•	Test Harness - Test Harness is a group of AWS resources Testing SDK creates for the purpose of facilitating testing around an integration. These resources are intended to exist only for the duration of the test run, and should be destroyed after the test run completes.
+=== "template.json"
+    ```json
+    {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "simple SQS template",
+        "Resources": {
+            "SQSQueue": {
+                "Type": "AWS::SQS::Queue"
+            }
+        },
+        "Outputs": {
+            "QueueURL": {
+                "Description": "URL of newly created SQS Queue",
+                "Value": {
+                    "Ref": "SQSQueue"
+                }
+            },
+            "QueueURLFromGetAtt": {
+                "Description": "Queue URL",
+                "Value": {
+                    "Fn::GetAtt": [
+                        "SQSQueue",
+                        "QueueUrl"
+                    ]
+                }
+            },
+            "QueueArn": {
+                "Description": "Queue ARN",
+                "Value": {
+                    "Fn::GetAtt": [
+                        "SQSQueue",
+                        "Arn"
+                    ]
+                }
+            }
+        }
+    }
 
-## Overview
+    ```
 
-Testing SDK is a library used in your test code. See examples below for snippets of using Testing SDK in your Python test code.
+=== "test_example_01.py"
+    ```python
+    import os
+    import zion
 
-For more detailed docs on the Python modules [see](../api/python)
+    def test_zion_utils():
+        stack_name = os.getenv("STACK_NAME", "example-01")
+        region = os.getenv("AWS_REGION", "us-east-1")
+        z = zion.Zion(region=region)
 
-## Gerenal Flow of Tests
-Here is a general flow to run a test written with Testing SDK:
+        outputs = z.get_stack_outputs(
+            zion.GetStackOutputsParams(
+                stack_name=stack_name,
+                output_names=["QueueURL"],
+            )
+        ).outputs
 
-1.	Deploy System Under Test with your choice of tool (e.g. SAM CLI, CDK, Terraform, etc)
+        physical_id = z.get_physical_id_from_stack(
+            zion.PhysicalIdFromStackParams(
+                stack_name=stack_name,
+                logical_resource_id="SQSQueue",
+            )
+        ).physical_id
 
-2.	Run the test
+        assert physical_id == outputs["QueueURL"]
+    ```
+The SUT consists of only one SQS Queue. After deploying the SUT, the Queue URL of the queue can be retrieved from both Physical ID and Outputs. In the test code, we use both `get_stack_outputs` and `get_physical_id_from_stack` to get the Queue URL, and then assert the values returned from both methods are equal.
 
-    a.	Test creates Test Harness resources
+To deploy the stack using AWS SAM CLI:
+```bash
+cd "01-cfn_utils"
 
-    b.	Test runs test cases
+sam deploy --stack-name example-01 --template ./template.json
+```
 
-    c.	Test tears down Test Harness resources
+To run the test code:
 
-3.	Tear down System Under Test
-
-Here is a recommended pattern assuming you use Python’s [`unittest.TestCase`](https://docs.python.org/3/library/unittest.html#unittest.TestCase):
-•	Create Test Harness resources in [`setUpClass`](https://docs.python.org/3/library/unittest.html#unittest.TestCase.setUpClass) method or in [`setUp`](https://docs.python.org/3/library/unittest.html#unittest.TestCase.setUp) method
-•	Tear down Test Harness resources in [`tearDownClass`](https://docs.python.org/3/library/unittest.html#unittest.TestCase.tearDownClass) method or in [`tearDown`](https://docs.python.org/3/library/unittest.html#unittest.TestCase.tearDown) method
+=== "Python"
+   ```bash
+   pytest test_example_01.py
+   ```
