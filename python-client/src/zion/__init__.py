@@ -11,6 +11,7 @@ from functools import wraps
 from typing import TYPE_CHECKING, Optional
 import time
 import math
+from typing import List, Callable
 
 from .get_physical_id_from_stack import (
     PhysicalIdFromStackOutput,
@@ -97,6 +98,9 @@ class ZionException(Exception):
 
         self.error_code = error_code
 
+class RetryableException(Exception):
+    def __init__(self, message) -> None:
+        super().__init__(message)
 
 @dataclass
 class Zion:
@@ -426,11 +430,12 @@ class Zion:
         )
         event = out.event
 
-        # TODO: apply context
+        if params.contexts is not None and type(params.contexts) == list:
+            event = self._apply_contexts(event, params.contexts)
 
         return GenerateMockEventOutput(event)
     
-    def retry_until(self, condition, timeout = 10):
+    def retry_until(self, condition, timeout = 10, retryable_exceptions = (RetryableException,)):
         """
         Decorator function to retry until condition or timeout is met
 
@@ -473,7 +478,10 @@ class Zion:
                 if timeout == 0:
                     elapsed = lambda _: -1
                 while elapsed(None) < timeout:
-                    output = func(*args, **kwargs)
+                    try:
+                        output = func(*args, **kwargs)
+                    except retryable_exceptions:
+                        continue
                     if condition(output):
                         return True
                     time.sleep(math.pow(2, attempt) * delay)
@@ -483,7 +491,20 @@ class Zion:
                 return False
             return _wrapper
         return retry_until_decorator
-    
+
+    def _apply_contexts(self, generated_event: dict, callable_contexts: List[Callable]) -> dict:
+        """
+        function for looping through provided functions, modifying the event as the client specifies
+        """
+        for func in callable_contexts:
+            generated_event = func(generated_event)
+            try:
+                json.dumps(generated_event)
+            except TypeError:
+                raise ZionException(f"context applier {func.__name__} returns a non-JSON-serializable result", 400)
+        if generated_event is None:
+            raise ZionException("event is empty, make sure function returns a valid event", 404)
+        return generated_event
         
     def patch_aws_client(self, client: "boto3.client", sampled = 1) -> "boto3.client":
         """
@@ -579,11 +600,18 @@ class Zion:
         """
         @self.retry_until(condition=params.condition, timeout=params.timeout_seconds)
         def fetch_trace_tree():
-            response = self._get_trace_tree(
-                params=GetTraceTreeParams(tracing_header=params.tracing_header),
-                caller="retry_get_trace_tree_until",
-            )
-            return response
+            try:
+                response = self._get_trace_tree(
+                    params=GetTraceTreeParams(tracing_header=params.tracing_header),
+                    caller="retry_get_trace_tree_until",
+                )
+                return response
+            except ZionException as e:
+                 if "trace not found" in str(e):
+                    pass
+                    raise RetryableException(e)
+                 else:
+                    raise ZionException(e, 500)
         try:
             response = fetch_trace_tree()
             return response

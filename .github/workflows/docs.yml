@@ -1,0 +1,29 @@
+name: Publish docs via GitHub Pages
+on:
+  release:
+    types: [published]
+  # Allow the workflow to be triggered also manually.
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Deploy docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout mainline
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Update api docs
+        run: |
+          python -m pip install pdoc
+          python -m pdoc --docformat numpy --output-dir ./docs/api/python/ ./python-client/src/zion.py
+
+      - name: Deploy docs
+        uses: mhausenblas/mkdocs-deploy-gh-pages@e55ecab6718b449a90ebd4313f1320f9327f1386
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

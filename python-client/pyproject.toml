@@ -4,16 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zion"
-version = "0.0.3"
+dynamic = ["version"]
 dependencies = []
 license = {text = "Apache-2.0"}
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Topic :: Software Development :: Testing",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python"
 ]
+
+[tool.setuptools.dynamic]
+version = {attr = "zion.version._version"}
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -12,7 +12,7 @@ import (
 // Function to load openapi schema and generate a mock event
 func GenerateOpenapiEvent(schema *Schema, skipOptional bool) ([]byte, error) {
 
-	if *schema.EventRef == "" {
+	if schema.EventRef == nil {
 		return nil, fmt.Errorf("no eventRef specified to generate a mock event")
 	}
 

@@ -24,7 +24,7 @@ Resources:
             "schemas": {
               "MyEvent": {
                 "type": "object",
-                "required": ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"],
+                "required": ["detail-type", "resources", "detail", "region"],
                 "x-amazon-events-detail-type": "MongoDB Trigger for my_store.reviews",
                 "x-amazon-events-source": "my.partner.event.source",
                 "properties": {
@@ -152,7 +152,7 @@ Resources:
               "type": "string"
             }
           },
-          "required": ["detail-type", "resources", "id", "source", "detail", "region"],
+          "required": ["detail-type", "resources", "detail", "region"],
           "type": "object",
           "x-amazon-events-detail-type": "Status Change",
           "x-amazon-events-source": "my.event.source"

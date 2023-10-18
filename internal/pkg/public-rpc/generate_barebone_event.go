@@ -20,9 +20,9 @@ import (
 type GenerateBareboneEventsParams struct {
 	RegistryName  string
 	SchemaName    string
-	SchemaVersion string
+	SchemaVersion *string
 
-	EventRef     string
+	EventRef     *string
 	SkipOptional bool
 
 	Profile string
@@ -47,8 +47,8 @@ func (p *GenerateBareboneEventsParams) RPCMethod(metadata *jsonrpc.Metadata) (*t
 		ctx,
 		aws.String(p.RegistryName),
 		aws.String(p.SchemaName),
-		aws.String(p.SchemaVersion),
-		aws.String(p.EventRef),
+		p.SchemaVersion,
+		p.EventRef,
 		client,
 	)
 
