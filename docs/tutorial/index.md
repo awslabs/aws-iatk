@@ -37,9 +37,9 @@ pip install -r requirements.txt
 
 This example shows how to use `get_stack_outputs` and `get_physical_id_from_stack` to retrieve information from a deployed stack. They are useful if you deploy your stack directly with a CloudFormation template.
 
-We will use SAM CLI to deploy the SUT to CloudFormation. For Python, we will use `pytest` to run the [test code](./example01/test_example_01.py).
+We will use SAM CLI to deploy the SUT to CloudFormation. For Python, we will use `pytest` to run the test code.
 
-=== "template.json"
+=== "01-cfn_utils/template.json"
     ```json
     {
         "AWSTemplateFormatVersion": "2010-09-09",
@@ -79,7 +79,7 @@ We will use SAM CLI to deploy the SUT to CloudFormation. For Python, we will use
 
     ```
 
-=== "test_example_01.py"
+=== "01-cfn_utils/test_example_01.py"
     ```python
     import os
     import zion
@@ -120,3 +120,16 @@ To run the test code:
    ```bash
    pytest test_example_01.py
    ```
+
+## Testing EventBridge Event Bus with "Listener"
+
+This example shows how to use a "Listener" to test a Rule on a given Event Bus. A "Listener" is a "Test Harness" that Zion helps you create for testing event delivery. 
+
+In this example, we use AWS CDK to define the SUT. The SUT consists of these resources:
+- an API Gateway Rest API (Entry Point)
+- a Lambda Function (Producer)
+- an Eventbridge Event Bus
+- an Eventbridge Rule
+- a Lambda Function (Consumer), as a target of the Rule
+
+=== "
