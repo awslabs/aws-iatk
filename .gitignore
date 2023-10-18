@@ -76,3 +76,5 @@ dmypy.json
 
 !**/cdk/lib/
 !**/cdk/bin/
+
+package-lock.json
