@@ -2,12 +2,15 @@ package xray
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"os"
 	"strconv"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewTree(t *testing.T) {
@@ -141,7 +144,7 @@ func TestNewTree(t *testing.T) {
 					)
 				return f
 			},
-			expectErr: errors.New("found a segment segment2-id with no parent"),
+			expectErr: errors.New("failed to build trace tree 1-64de5a99-5d09aa705e56bbd0152548cb with error: found a segment segment2-id with no parent"),
 		},
 	}
 
@@ -301,6 +304,35 @@ func TestCreateSubSegIdtoSegMap(t *testing.T) {
 				assert.Equal(t, aws.ToString(tt.segment.Id), aws.ToString(got[subSegmentId].Id))
 			}
 			assert.Equal(t, len(got), len(tt.want))
+		})
+	}
+}
+
+func TestBuildTreeFromTraceDoc(t *testing.T) {
+	cases := []struct {
+		name           string
+		expectNumPaths int
+	}{
+		{
+			name:           "./testdata/trace01.json",
+			expectNumPaths: 28,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			filebytes, err := os.ReadFile(tt.name)
+			require.NoError(t, err)
+			var trace Trace
+			err = json.Unmarshal(filebytes, &trace)
+			require.NoError(t, err)
+
+			traceMap := map[string]*Trace{
+				*trace.Id: &trace,
+			}
+			tree, err := buildTree(traceMap, &trace)
+			require.NoError(t, err)
+			assert.Len(t, tree.Paths, tt.expectNumPaths)
 		})
 	}
 }

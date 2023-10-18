@@ -10,7 +10,6 @@ import (
 )
 
 func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string) (*Tree, error) {
-
 	// Fetch input source trace.
 	traceMap, err := opts.getTraces(ctx, opts.xrayClient, []string{sourceTraceId})
 
@@ -24,25 +23,33 @@ func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string) (*Tree
 		return nil, fmt.Errorf("failed to fetch trace %s with error: trace not found", sourceTraceId)
 	}
 
-	// If the trace returns 0 segments, raise an error
 	if len(trace.Segments) == 0 {
 		return nil, fmt.Errorf("failed to fetch trace %s with error: no trace segments found", sourceTraceId)
 	}
 
+	tree, err := buildTree(traceMap, trace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build trace tree %s with error: %w", sourceTraceId, err)
+	}
+
+	return tree, nil
+}
+
+func buildTree(traceMap map[string]*Trace, sourceTrace *Trace) (*Tree, error) {
 	// Sort the segments by starttime before creating a tree
-	sort.Slice(trace.Segments,
+	sort.Slice(sourceTrace.Segments,
 		func(i, j int) bool {
-			return aws.ToFloat64(trace.Segments[i].StartTime) < aws.ToFloat64(trace.Segments[j].StartTime)
+			return aws.ToFloat64(sourceTrace.Segments[i].StartTime) < aws.ToFloat64(sourceTrace.Segments[j].StartTime)
 		})
 
 	// First segment is the root
-	treeRootSegment := trace.Segments[0]
+	treeRootSegment := sourceTrace.Segments[0]
 
 	// Recursively get a map of segment/subsegment ids to the corresponding Segment
-	mapSegSubsegsIdToSeg := CreateSegIdtoSegMap(trace.Segments)
+	mapSegSubsegsIdToSeg := CreateSegIdtoSegMap(sourceTrace.Segments)
 
 	// Insert original trace segments, skip the root segment
-	for _, segment := range trace.Segments[1:] {
+	for _, segment := range sourceTrace.Segments[1:] {
 		if segment.ParentId != nil {
 			// ParentId could be pointing to a segmentId or a subsegmentId
 			if parentSegment, ok := mapSegSubsegsIdToSeg[*segment.ParentId]; ok {
@@ -60,7 +67,7 @@ func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string) (*Tree
 	return &Tree{
 		Root:        treeRootSegment,
 		Paths:       leafPaths,
-		SourceTrace: trace,
+		SourceTrace: sourceTrace,
 	}, nil
 }
 
