@@ -42,9 +42,9 @@ class Example03(TestCase):
             if not self.tracing_header:
                 self.tracing_header = res["traceHeader"]
 
-        time.sleep(5)
 
     def test_get_trace_tree(self):
+        time.sleep(5)
         trace_tree = self.z.get_trace_tree(
             zion.GetTraceTreeParams(
                 tracing_header=self.tracing_header,
