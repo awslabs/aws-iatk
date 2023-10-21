@@ -13,7 +13,7 @@ from setuptools.command.sdist import sdist
 
 def build_and_install_zion(packages: List[str]) -> None:
     cmd = ['go', 'build', '-C', './src/zion_src', '-o', '../zion_service/', './cmd/zion']
-    if not os.getenv("GOARCH"):
+    if not os.getenv("GOARCH") or not os.path.isfile("./src/zion_service/zion"):
         out = call(cmd)
         if out != 0:
             raise CompileError("Failed to build Zion Service. Golang version >1.20 required and on PATH")
