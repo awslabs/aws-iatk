@@ -22,7 +22,6 @@ func GetAWSConfig(ctx context.Context, region string, profile string, metadata *
 		ctx,
 		config.WithSharedConfigProfile(profile),
 		config.WithRegion(region),
-		config.WithClientLogMode(aws.LogRetries|aws.LogRequest|aws.LogResponse|aws.LogRequest),
 		config.WithAPIOptions([]func(*smithymiddleware.Stack) error{
 			awsmiddleware.AddUserAgentKeyValue("aws-zion", uaVal),
 		}),

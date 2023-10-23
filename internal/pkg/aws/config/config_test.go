@@ -33,7 +33,9 @@ func TestConfigClientLogMode(t *testing.T) {
 		t.Fail()
 	}
 
-	assert.Equal(t, aws.LogRetries|aws.LogRequest|aws.LogResponse|aws.LogRequest, cfg.ClientLogMode)
+	// should not log anything from AWS SDK
+	var logMode aws.ClientLogMode
+	assert.Equal(t, logMode, cfg.ClientLogMode)
 }
 
 func TestConfigClientUserAgentIsAdded(t *testing.T) {
