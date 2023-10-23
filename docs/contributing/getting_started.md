@@ -1,6 +1,6 @@
 Great you want to contribute to Zion!
 
-Please see : conventions to learn about coding practices and style we expect and setup to learn about general setup fo the package.
+Please see [conventions](./conventions.md) to learn about coding practices and style we expect and setup to learn about general setup fo the package.
 
 ## Overview
 
