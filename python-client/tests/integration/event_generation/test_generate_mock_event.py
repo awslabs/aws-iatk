@@ -9,7 +9,7 @@ import logging
 from uuid import uuid4
 from unittest import TestCase
 from dataclasses import dataclass
-from zion import Zion, GenerateMockEventParams, context_generation, ZionException
+from zion import Zion, context_generation, ZionException
 import time
 import os
 import boto3
@@ -70,16 +70,15 @@ class TestZion_generate_mock_event(TestCase):
             LOG.debug(e)
         
     def test_json_schema_success_with_context(self):
-        params = GenerateMockEventParams(
+        required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
+        detail_attributes = ["actionOnFailure", "clusterId", "message", "name", "severity", "state", "stepId"]
+        output = self.zion.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaJSONSchemaName"],
             schema_version=self.schema_details["TestEBEventSchemaJSONSchemaVersion"],
             skip_optional=False,
             contexts=[context_generation.eventbridge_event_context]
-        )
-        required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
-        detail_attributes = ["actionOnFailure", "clusterId", "message", "name", "severity", "state", "stepId"]
-        output = self.zion.generate_mock_event(params=params).event
+        ).event
         for attribute in required_attributes:
             self.assertIn(attribute, output)
         self.assertIn("detail", output)
@@ -89,16 +88,15 @@ class TestZion_generate_mock_event(TestCase):
         self.assertEqual("us-east-1", output["region"])
 
     def test_json_schema_success_default(self):
-        params = GenerateMockEventParams(
+        required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
+        detail_attributes = ["actionOnFailure", "clusterId", "message", "name", "severity", "state", "stepId"]
+        output = self.zion.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaJSONSchemaName"],
             schema_version=self.schema_details["TestEBEventSchemaJSONSchemaVersion"],
             skip_optional=False,
             contexts=[]
-        )
-        required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
-        detail_attributes = ["actionOnFailure", "clusterId", "message", "name", "severity", "state", "stepId"]
-        output = self.zion.generate_mock_event(params=params).event
+        ).event
         for attribute in required_attributes:
             self.assertIn(attribute, output)
         self.assertIn("detail", output)
@@ -108,17 +106,16 @@ class TestZion_generate_mock_event(TestCase):
         self.assertEqual(output["region"], "")
         
     def test_json_schema_success_required(self):
-        params = GenerateMockEventParams(
+        required_attributes = ["detail-type", "detail", "region"]
+        not_required_attributes = ["source", "id", "version", "account", "time"]
+        detail_attributes = ["actionOnFailure", "clusterId", "message", "name", "severity", "state", "stepId"]
+        output = self.zion.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaJSONSchemaName"],
             schema_version=self.schema_details["TestEBEventSchemaJSONSchemaVersion"],
             skip_optional=True,
             contexts=[]
-        )
-        required_attributes = ["detail-type", "detail", "region"]
-        not_required_attributes = ["source", "id", "version", "account", "time"]
-        detail_attributes = ["actionOnFailure", "clusterId", "message", "name", "severity", "state", "stepId"]
-        output = self.zion.generate_mock_event(params=params).event
+        ).event
         for attribute in required_attributes:
             self.assertIn(attribute, output)
         for attribute in not_required_attributes:
@@ -134,16 +131,15 @@ class TestZion_generate_mock_event(TestCase):
             event["newKey"] = "test"
             event["region"] = "testRegion"
             return event
-        params = GenerateMockEventParams(
+        required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
+        detail_attributes = ["actionOnFailure", "clusterId", "message", "name", "severity", "state", "stepId"]
+        output = self.zion.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaJSONSchemaName"],
             schema_version=self.schema_details["TestEBEventSchemaJSONSchemaVersion"],
             skip_optional=False,
             contexts=[context_generation.eventbridge_event_context, override]
-        )
-        required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
-        detail_attributes = ["actionOnFailure", "clusterId", "message", "name", "severity", "state", "stepId"]
-        output = self.zion.generate_mock_event(params=params).event
+        ).event
         for attribute in required_attributes:
             self.assertIn(attribute, output)
         self.assertIn("detail", output)
@@ -154,17 +150,16 @@ class TestZion_generate_mock_event(TestCase):
         self.assertEqual(output["region"], "testRegion")
     
     def test_openapi_schema_success_with_context(self):
-        params = GenerateMockEventParams(
+        required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
+        detail_attributes = ["creator", "department", "ticketId"]
+        output = self.zion.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaOpenAPIName"],
             schema_version=self.schema_details["TestEBEventSchemaOpenAPIVersion"],
             skip_optional=False,
             contexts=[context_generation.eventbridge_event_context],
             event_ref="MyEvent"
-        )
-        required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
-        detail_attributes = ["creator", "department", "ticketId"]
-        output = self.zion.generate_mock_event(params=params).event
+        ).event
         for attribute in required_attributes:
             self.assertIn(attribute, output)
         self.assertIn("detail", output)
@@ -174,17 +169,16 @@ class TestZion_generate_mock_event(TestCase):
         self.assertEqual("ap-south-1", output["region"])
 
     def test_openapi_schema_success_default(self):
-        params = GenerateMockEventParams(
+        required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
+        detail_attributes = ["creator", "department", "ticketId"]
+        output = self.zion.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaOpenAPIName"],
             schema_version=self.schema_details["TestEBEventSchemaOpenAPIVersion"],
             skip_optional=False,
             contexts=[],
             event_ref="MyEvent"
-        )
-        required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
-        detail_attributes = ["creator", "department", "ticketId"]
-        output = self.zion.generate_mock_event(params=params).event
+        ).event
         for attribute in required_attributes:
             self.assertIn(attribute, output)
         self.assertIn("detail", output)
@@ -194,18 +188,17 @@ class TestZion_generate_mock_event(TestCase):
         self.assertEqual(output["region"], "ap-south-1")
         
     def test_openapi_schema_success_required(self):
-        params = GenerateMockEventParams(
+        required_attributes = ["detail-type", "detail", "region"]
+        not_required_attributes = ["source", "id", "version", "account", "time"]
+        detail_attributes = ["creator", "department", "ticketId"]
+        output = self.zion.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaOpenAPIName"],
             schema_version=self.schema_details["TestEBEventSchemaOpenAPIVersion"],
             skip_optional=True,
             contexts=[],
             event_ref="MyEvent"
-        )
-        required_attributes = ["detail-type", "detail", "region"]
-        not_required_attributes = ["source", "id", "version", "account", "time"]
-        detail_attributes = ["creator", "department", "ticketId"]
-        output = self.zion.generate_mock_event(params=params).event
+        ).event
         for attribute in required_attributes:
             self.assertIn(attribute, output)
         for attribute in not_required_attributes:
@@ -220,17 +213,16 @@ class TestZion_generate_mock_event(TestCase):
             event["newKey"] = "test"
             event["region"] = "testRegion"
             return event
-        params = GenerateMockEventParams(
+        required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
+        detail_attributes = ["creator", "department", "ticketId"]
+        output = self.zion.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaOpenAPIName"],
             schema_version=self.schema_details["TestEBEventSchemaOpenAPIVersion"],
             skip_optional=False,
             contexts=[context_generation.eventbridge_event_context, override],
             event_ref="MyEvent"
-        )
-        required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
-        detail_attributes = ["creator", "department", "ticketId"]
-        output = self.zion.generate_mock_event(params=params).event
+        ).event
         for attribute in required_attributes:
             self.assertIn(attribute, output)
         self.assertIn("detail", output)
@@ -241,14 +233,13 @@ class TestZion_generate_mock_event(TestCase):
         self.assertEqual(output["region"], "testRegion")
 
     def test_openapi_ref_failure(self):
-        params = GenerateMockEventParams(
-            registry_name=self.schema_details["TestSchemaRegistryName"],
-            schema_name=self.schema_details["TestEBEventSchemaOpenAPIName"],
-            schema_version=self.schema_details["TestEBEventSchemaOpenAPIVersion"],
-            skip_optional=False,
-            contexts=[],
-            event_ref=""
-        )
         with pytest.raises(ZionException) as e:
-            self.zion.generate_mock_event(params=params).event
+            self.zion.generate_mock_event(
+                registry_name=self.schema_details["TestSchemaRegistryName"],
+                schema_name=self.schema_details["TestEBEventSchemaOpenAPIName"],
+                schema_version=self.schema_details["TestEBEventSchemaOpenAPIVersion"],
+                skip_optional=False,
+                contexts=[],
+                event_ref=""
+            ).event
         self.assertEqual(str(e.value), "error generating mock event: error generating mock event: no eventRef specified to generate a mock event")

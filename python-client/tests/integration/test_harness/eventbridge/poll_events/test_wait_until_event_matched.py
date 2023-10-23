@@ -15,13 +15,7 @@ import boto3
 from botocore.exceptions import ClientError
 from parameterized import parameterized
 
-from zion import (
-    Zion,
-    AddEbListenerParams,
-    RemoveListenersParams,
-    PollEventsParams,
-    WaitUntilEventMatchedParams,
-)
+from zion import Zion
 from zion.poll_events import InvalidParamException
 
 
@@ -166,12 +160,11 @@ class TestZion_wait_until_event_matched(TestCase):
                 Targets=[target]
             )
             
-            listener_params = AddEbListenerParams(
+            cls.add_listener(
                 event_bus_name=cls.event_bus_name,
                 rule_name=params.rule_name,
                 target_id=params.target_id
             )
-            cls.add_listener(listener_params)
 
         LOG.debug("created listeners: %s", cls.listener_ids)
         LOG.debug("queue urls: %s", cls.queue_urls)
@@ -342,11 +335,9 @@ class TestZion_wait_until_event_matched(TestCase):
 
         LOG.debug("waiting for event")
         found = self.zion.wait_until_event_matched(
-            params=WaitUntilEventMatchedParams(
-                listener_id=self.listener_ids[listener_idx],
-                condition=condition_func,
-                timeout_seconds=timeout_seconds,
-            )
+            listener_id=self.listener_ids[listener_idx],
+            condition=condition_func,
+            timeout_seconds=timeout_seconds
         )
         self.assertTrue(found)
 
@@ -402,11 +393,9 @@ class TestZion_wait_until_event_matched(TestCase):
 
         LOG.debug("waiting for event")
         found = self.zion.wait_until_event_matched(
-            params=WaitUntilEventMatchedParams(
-                listener_id=self.listener_ids[listener_idx],
-                condition=condition_func,
-                timeout_seconds=timeout_seconds,
-            )
+            listener_id=self.listener_ids[listener_idx],
+            condition=condition_func,
+            timeout_seconds=timeout_seconds
         )
         self.assertFalse(found)
 
@@ -414,40 +403,36 @@ class TestZion_wait_until_event_matched(TestCase):
         listener_idx = 0
         with self.assertRaises(InvalidParamException):
             self.zion.wait_until_event_matched(
-                params=WaitUntilEventMatchedParams(
-                    listener_id=self.listener_ids[listener_idx],
-                    condition=condition_func_0,
-                    timeout_seconds=10000,
-                )
+                listener_id=self.listener_ids[listener_idx],
+                condition=condition_func_0,
+                timeout_seconds=10000
             )
 
     def purge_listener(self, listener_idx):
         # TODO (hawflau): revisit if this should be baked into Zion
         # A listener might have leftover events from previous test cases and might affect current test run
         consecutive_empty_count = 0
-        params = PollEventsParams(
-            listener_id=self.listener_ids[listener_idx],
-            wait_time_seconds=0,
-            max_number_of_messages=10,
-        )
         while consecutive_empty_count < 5:
-            output = self.zion.poll_events(params=params)
+            output = self.zion.poll_events(
+                listener_id=self.listener_ids[listener_idx],
+                wait_time_seconds=0,
+                max_number_of_messages=10,
+            )
             if not output.events:
                 consecutive_empty_count += 1
             else:
                 consecutive_empty_count = 0
 
     @classmethod
-    def add_listener(cls, params: AddEbListenerParams) -> str:
-        output = cls.zion.add_listener(params=params)
+    def add_listener(cls, event_bus_name, rule_name, target_id) -> str:
+        output = cls.zion.add_listener(event_bus_name, rule_name, target_id)
         cls.listener_ids.append(output.id)
         cls.queue_urls.append(output.components[0].physical_id)
         return output.id
 
     @classmethod
     def remove_listeners(cls, ids: List[str]):
-        params = RemoveListenersParams(ids=ids)
-        output = cls.zion.remove_listeners(params=params)
+        output = cls.zion.remove_listeners(ids=ids)
         LOG.debug(output)
 
     def send_events(self, events: List[EbEvent]):
