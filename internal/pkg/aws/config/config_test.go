@@ -5,6 +5,7 @@ package config
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"runtime"
 	"testing"
@@ -17,21 +18,44 @@ import (
 )
 
 func TestConfigRegion(t *testing.T) {
-	cfg, err := GetAWSConfig(context.TODO(), "us-west-2", "", nil)
-
-	if err != nil {
-		t.Fail()
+	cases := []struct {
+		name   string
+		region string
+		env    string
+	}{
+		{
+			name:   "Region provided",
+			region: "us-west-2",
+			env:    "us-east-1",
+		},
+		{
+			name:   "Region not provided",
+			region: "",
+			env:    "us-east-1",
+		},
 	}
 
-	assert.Equal(t, "us-west-2", cfg.Region)
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			os.Setenv("AWS_REGION", tt.env)
+			cfg, err := GetAWSConfig(context.TODO(), tt.region, "", nil)
+
+			assert.NoError(t, err)
+
+			if tt.region != "" {
+				assert.Equal(t, tt.region, cfg.Region)
+			} else {
+				assert.Equal(t, tt.env, cfg.Region)
+			}
+			os.Unsetenv("AWS_REGION")
+		})
+	}
 }
 
 func TestConfigClientLogMode(t *testing.T) {
 	cfg, err := GetAWSConfig(context.TODO(), "us-west-2", "", nil)
 
-	if err != nil {
-		t.Fail()
-	}
+	assert.NoError(t, err)
 
 	// should not log anything from AWS SDK
 	var logMode aws.ClientLogMode
