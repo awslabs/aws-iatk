@@ -26,29 +26,13 @@ class ClientMethod:
     def __init__(self, name: str):
         obj = getattr(zion.Zion, name)
         signature = inspect.signature(obj)
-        if len(signature.parameters) != 2 or "params" not in signature.parameters:
+        if name in ["patch_aws_client", "retry_until", "retry_get_trace_tree_until", "wait_until_event_matched"]:
             raise NotAClientMethodException(
                 f"{name} is not a client method of zion.Zion"
             )
-        self.param_cls = signature.parameters["params"].annotation
+        self.params = signature.parameters.keys() - ['self']
         self.returns_cls = signature.return_annotation
-
-    def is_rpc_method(self):
-        return hasattr(self.param_cls, "_rpc_method")
-
-    @property
-    def rpc_method(self):
-        if not self.is_rpc_method():
-            return None
-        return getattr(self.param_cls, "_rpc_method")
-
-    @property
-    def param_annotations(self):
-        return [
-            n
-            for n in inspect.get_annotations(self.param_cls).keys()
-            if not (n.startswith("_") or n == "jsonrpc_dumps")
-        ]
+        self.rpc_method = name
 
     @property
     def returns_annotations(self):
@@ -78,31 +62,54 @@ class ClientContractTest(TestCase):
                     continue
 
     def test_all_rpc_methods_defined(self):
-        rpc_methods = [m for m in self.client_methods.values() if m.is_rpc_method()]
-        self.assertEqual(len(self.specs["methods"]), len(rpc_methods))
+        rpc_methods = [m for m in self.client_methods.values()]
+        method_map = {
+            "add_listener": "test_harness.eventbridge.add_listener",
+            "generate_mock_event": "mock.generate_barebone_event",
+            "get_physical_id_from_stack": "get_physical_id",
+            "poll_events": "test_harness.eventbridge.poll_events",
+            "remove_listeners": "test_harness.eventbridge.remove_listeners"
+        }
         for m in rpc_methods:
-            self.assertIn(m.rpc_method, self.specs["methods"])
+            self.assertIn(method_map.get(m.rpc_method, m.rpc_method), self.specs["methods"])
+        self.assertEqual(len(self.specs["methods"]), len(rpc_methods))
 
     def test_param_properties(self):
+        method_map = {
+            "add_listener": "test_harness.eventbridge.add_listener",
+            "generate_mock_event": "mock.generate_barebone_event",
+            "get_physical_id_from_stack": "get_physical_id",
+            "poll_events": "test_harness.eventbridge.poll_events",
+            "remove_listeners": "test_harness.eventbridge.remove_listeners"
+        }
         for name, method in self.client_methods.items():
-            if not method.is_rpc_method():
-                continue
+            resolved_method = method_map.get(method.rpc_method, method.rpc_method)
             params_spec = (
-                self.specs["methods"].get(method.rpc_method, {}).get("parameters")
+                self.specs["methods"].get(resolved_method, {}).get("parameters")
             )
             spec_params = set(
                 [to_snake_case(k) for k in params_spec["properties"].keys()]
             )
+            
+            # is this a client side only not in the rpc method sig
+            if name == "generate_mock_event":
+                spec_params.add("contexts") 
+            
             self.assertEqual(
                 spec_params - set(["region", "profile"]),
-                set(method.param_annotations),
+                set(method.params),
                 f"method: {name}",
             )
 
     def test_returns_properties(self):
+        method_map = {
+            "add_listener": "test_harness.eventbridge.add_listener",
+            "generate_mock_event": "mock.generate_barebone_event",
+            "get_physical_id_from_stack": "get_physical_id",
+            "poll_events": "test_harness.eventbridge.poll_events",
+            "remove_listeners": "test_harness.eventbridge.remove_listeners"
+        }
         for name, method in self.client_methods.items():
-            if not method.is_rpc_method():
-                continue
             if name in [
                 "get_physical_id_from_stack",
                 "get_stack_outputs",
@@ -112,8 +119,10 @@ class ClientContractTest(TestCase):
             ]:
                 # NOTE: skipping for these methods since the Output cls does some form of transform
                 continue
+            
+            resolved_method = method_map.get(method.rpc_method, method.rpc_method)
             returns_spec = (
-                self.specs["methods"].get(method.rpc_method, {}).get("returns")
+                self.specs["methods"].get(resolved_method, {}).get("returns")
             )
             if "properties" not in returns_spec:
                 continue
