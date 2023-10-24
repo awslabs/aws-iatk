@@ -23,12 +23,11 @@ def test_generate_barebone_event():
     schema_name = stack_outputs["SchemaName"]
     z = zion.Zion()
     barebone_event = z.generate_mock_event(
-        zion.GenerateMockEventParams(
-            registry_name=registry_name,
-            schema_name=schema_name,
-            event_ref="MyEvent",
-        )
+        registry_name=registry_name,
+        schema_name=schema_name,
+        event_ref="MyEvent",
     ).event
+    LOG.debug(json.dumps(barebone_event, indent=2))
     for key in ["address", "customerId", "datetime", "membershipType", "orderItems"]:
         assert key in barebone_event
     assert barebone_event["address"] == ""
@@ -55,13 +54,12 @@ def test_generate_contextful_event():
         return event
         
     mock_event = z.generate_mock_event(
-        zion.GenerateMockEventParams(
-            registry_name=registry_name,
-            schema_name=schema_name,
-            event_ref="MyEvent",
-            contexts=[apply_context],
-        )
+        registry_name=registry_name,
+        schema_name=schema_name,
+        event_ref="MyEvent",
+        contexts=[apply_context],
     ).event
+    LOG.debug(json.dumps(mock_event, indent=2))
     for key in ["address", "customerId", "datetime", "membershipType", "orderItems"]:
         assert key in mock_event
     assert mock_event["customerId"] != ""
@@ -79,15 +77,13 @@ def test_generate_eventbridge_event():
     z = zion.Zion()
 
     mock_eb_event = z.generate_mock_event(
-        zion.GenerateMockEventParams(
-            registry_name="aws.events",
-            schema_name="aws.autoscaling@EC2InstanceLaunchSuccessful",
-            schema_version="2",
-            event_ref="AWSEvent",
-            contexts=[eventbridge_event_context],
-        )
+        registry_name="aws.events",
+        schema_name="aws.autoscaling@EC2InstanceLaunchSuccessful",
+        schema_version="2",
+        event_ref="AWSEvent",
+        contexts=[eventbridge_event_context],
     ).event
-    LOG.debug(mock_eb_event)
+    LOG.debug(json.dumps(mock_eb_event, indent=2))
     for key in ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]:
         assert key in mock_eb_event
     assert mock_eb_event["id"] != ""

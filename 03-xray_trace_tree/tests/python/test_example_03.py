@@ -46,9 +46,7 @@ class Example03(TestCase):
     def test_get_trace_tree(self):
         time.sleep(5)
         trace_tree = self.z.get_trace_tree(
-            zion.GetTraceTreeParams(
-                tracing_header=self.tracing_header,
-            )
+            tracing_header=self.tracing_header,
         ).trace_tree
 
         self.assertEqual(len(trace_tree.paths), 3)
@@ -79,9 +77,7 @@ class Example03(TestCase):
                 return False
 
         self.assertTrue(self.z.retry_get_trace_tree_until(
-            zion.RetryGetTraceTreeUntilParams(
-                tracing_header=self.tracing_header,
-                condition=condition,
-                timeout_seconds=20,
-            )
+            tracing_header=self.tracing_header,
+            condition=condition,
+            timeout_seconds=20,
         ))
