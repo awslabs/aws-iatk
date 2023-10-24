@@ -15,7 +15,7 @@ In this example, we use AWS CDK to define the SUT. The SUT consists of these res
 * an Eventbridge Rule
 * a Lambda Function (Consumer), as a target of the Rule
 
-When the Rest API receives a request, it invokes the Producer. The Producer then sends an event to the Event Bus, which then delivers the event to Consumer acoording to the Rule.
+When the Rest API receives a request, it invokes the Producer. The Producer then sends an event to the Event Bus, which then delivers the event to Consumer according to the Rule.
 
 We added some `CfnOutput` constructs to expose certain attributes from the SUT. These include:
 
