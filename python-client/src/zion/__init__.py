@@ -451,7 +451,7 @@ class Zion:
             When failed to fetch a trace tree
         """
         params = GenerateMockEventParams(registry_name, schema_name, schema_version, event_ref, skip_optional, contexts)
-        out = self.generate_barebone_event(
+        out = self._generate_barebone_event(
             GenerateBareboneEventParams(
                 registry_name=params.registry_name,
                 schema_name=params.schema_name,
