@@ -202,24 +202,20 @@ class Example02(TestCase):
 
         # remote orphaned listeners from previous test runs (if any)
         cls.z.remove_listeners(
-            zion.RemoveListenersParams(
-                tag_filters=[
-                    zion.RemoveListeners_TagFilter(
-                        key="stage",
-                        values=["example02"],
-                    )
-                ]
-            )
+            tag_filters=[
+                zion.RemoveListeners_TagFilter(
+                    key="stage",
+                    values=["example02"],
+                )
+            ]
         )
 
         # create listener
         listener_id = cls.z.add_listener(
-            zion.AddEbListenerParams(
-                event_bus_name=cls.event_bus_name,
-                rule_name=cls.rule_name,
-                target_id=cls.target_id,
-                tags={"stage": "example02"},
-            )
+            event_bus_name=cls.event_bus_name,
+            rule_name=cls.rule_name,
+            target_id=cls.target_id,
+            tags={"stage": "example02"},
         ).id
         cls.listeners = [listener_id]
         LOG.debug("created listeners: %s", cls.listeners)
@@ -228,9 +224,7 @@ class Example02(TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         cls.z.remove_listeners(
-            zion.RemoveListenersParams(
-                ids=cls.listeners,
-            )
+            ids=cls.listeners,
         )
         LOG.debug("destroyed listeners: %s", cls.listeners)
         super().tearDownClass()
@@ -246,10 +240,8 @@ class Example02(TestCase):
 
         self.assertTrue(
             self.z.wait_until_event_matched(
-                zion.WaitUntilEventMatchedParams(
-                    listener_id=self.listeners[0],
-                    condition=match_fn,
-                )
+                listener_id=self.listeners[0],
+                condition=match_fn,
             )
         )
 
@@ -258,11 +250,9 @@ class Example02(TestCase):
         requests.post(self.api_endpoint, params={"customerId": customer_id})
 
         received = self.z.poll_events(
-            zion.PollEventsParams(
-                listener_id=self.listeners[0],
-                wait_time_seconds=5,
-                max_number_of_messages=10,
-            )
+            listener_id=self.listeners[0],
+            wait_time_seconds=5,
+            max_number_of_messages=10,
         ).events
         LOG.debug("received: %s", received)
         self.assertGreaterEqual(len(received), 1)
