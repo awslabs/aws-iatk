@@ -13,7 +13,6 @@ import zion
 import os
 import pytest
 import json
-from zion import RetryGetTraceTreeUntilParams
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -74,12 +73,12 @@ class TestZion_retry_fetch_until(TestCase):
         def trace_header_is_root(tree):
             xray_trace_id = self.xray_trace_header.split(";")[0].split("=")[1]
             return tree.trace_tree.root.name == self.lambda_function_name and tree.trace_tree.root.trace_id == xray_trace_id
-        params = RetryGetTraceTreeUntilParams(
+        start = time.time()
+        response = self.zion.retry_get_trace_tree_until(
             tracing_header=self.xray_trace_header,
             condition=trace_header_is_root,
-            timeout_seconds=10)
-        start = time.time()
-        response = self.zion.retry_get_trace_tree_until(params=params)
+            timeout_seconds=10
+        )
         end = time.time()
         self.assertTrue(response)
         self.assertLess(end - start, 10)
@@ -89,12 +88,12 @@ class TestZion_retry_fetch_until(TestCase):
         def num_is_10(trace):
             self.counter = random.randrange(0,10)
             return self.counter == 10
-        params = RetryGetTraceTreeUntilParams(
+        start = time.time()
+        response = self.zion.retry_get_trace_tree_until(
             tracing_header=self.xray_trace_header,
             condition=num_is_10,
-            timeout_seconds=10)
-        start = time.time()
-        response = self.zion.retry_get_trace_tree_until(params=params)
+            timeout_seconds=10
+        )
         end = time.time()
         self.assertFalse(response)
         self.assertNotEqual(self.counter, 10)
@@ -107,12 +106,12 @@ class TestZion_retry_fetch_until(TestCase):
             time.sleep(1.5)
             self.counter += 1
             return self.counter == 10
-        params = RetryGetTraceTreeUntilParams(
+        start = time.time()
+        response = self.zion.retry_get_trace_tree_until(
             tracing_header=self.xray_trace_header,
             condition=num_is_10,
-            timeout_seconds=0)
-        start = time.time()
-        response = self.zion.retry_get_trace_tree_until(params=params)
+            timeout_seconds=0
+        )
         end = time.time()
         self.assertTrue(response)
         self.assertEqual(self.counter, 10)
@@ -122,34 +121,34 @@ class TestZion_retry_fetch_until(TestCase):
         def num_is_10(trace):
             self.counter = random.randrange(0,10)
             return self.counter == 10
-        params = RetryGetTraceTreeUntilParams(
-            tracing_header="test",
-            condition=num_is_10,
-            timeout_seconds=10)
         with pytest.raises(zion.ZionException) as e:
-            self.zion.retry_get_trace_tree_until(params=params)
+            self.zion.retry_get_trace_tree_until(
+                tracing_header="test",
+                condition=num_is_10,
+                timeout_seconds=10
+            )
         self.assertNotEqual(self.counter, 10)
         self.assertIn("error while getting trace_id from", str(e.value))
 
     def test_condition_not_function_error(self):
-        params = RetryGetTraceTreeUntilParams(
-            tracing_header=self.xray_trace_header,
-            condition=0,
-            timeout_seconds=10)
         with pytest.raises(TypeError) as e:
-            self.zion.retry_get_trace_tree_until(params=params)
+            self.zion.retry_get_trace_tree_until(
+                tracing_header=self.xray_trace_header,
+                condition=0,
+                timeout_seconds=10
+            )
             self.assertNotEqual(self.counter, 10)
         self.assertEqual(str(e.value), "condition is not a callable function")
 
     def test_retry_trace_not_found(self):
         def num_is_5(trace):
             return random.randrange(0,5) == 5
-        params = RetryGetTraceTreeUntilParams(
+        start = time.time()
+        response = self.zion.retry_get_trace_tree_until(
             tracing_header="Root=1-652850da-255d5ae071f55e4aef339837;Sampled=1",
             condition=num_is_5,
-            timeout_seconds=10)
-        start = time.time()
-        response = self.zion.retry_get_trace_tree_until(params=params)
+            timeout_seconds=10
+        )
         end = time.time()
         self.assertGreaterEqual(end - start, 10)
         self.assertFalse(response)

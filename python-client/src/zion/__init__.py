@@ -8,10 +8,9 @@ import json
 import logging
 from dataclasses import dataclass
 from functools import wraps
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Dict, List, Callable
 import time
 import math
-from typing import List, Callable
 
 from .get_physical_id_from_stack import (
     PhysicalIdFromStackOutput,
@@ -57,24 +56,14 @@ __all__ = [
     "Zion", 
     "ZionException", 
     "PhysicalIdFromStackOutput", 
-    "PhysicalIdFromStackParams", 
     "GetStackOutputsOutput", 
-    "GetStackOutputsParams", 
     "AddEbListenerOutput", 
-    "AddEbListenerParams",
     "RemoveListenersOutput",
-    "RemoveListenersParams",
     "RemoveListeners_TagFilter",
     "PollEventsOutput",
-    "PollEventsParams",
-    "WaitUntilEventMatchedParams",
-    "GetTraceTreeParams",
     "GetTraceTreeOutput",
-    "RetryGetTraceTreeUntilParams",
     "GenerateBareboneEventOutput",
-    "GenerateBareboneEventParams",
     "GenerateMockEventOutput",
-    "GenerateMockEventParams",
 ]
 
 LOG = logging.getLogger(__name__)
@@ -122,7 +111,7 @@ class Zion:
     )
 
     def get_physical_id_from_stack(
-        self, params: PhysicalIdFromStackParams
+        self, logical_resource_id: str, stack_name: str
     ) -> PhysicalIdFromStackOutput:
         """
         Fetch a Phsyical Id from a Logical Id within an AWS CloudFormation stack
@@ -133,8 +122,10 @@ class Zion:
 
         Parameters
         ----------
-        params : PhysicalIdFromStackParams
-            Data Class that holds required parameters
+        logical_resource_id : str
+            Name of the Logical Id within the Stack to fetch
+        stack_name : str
+            Name of the CloudFormation Stack
         
         Returns
         -------
@@ -146,13 +137,14 @@ class Zion:
         ZionException
             When failed to fetch Phsyical Id
         """
+        params = PhysicalIdFromStackParams(logical_resource_id, stack_name)
         payload = params.to_payload(self.region, self.profile)
         response = self._invoke_zion(payload)
         output = PhysicalIdFromStackOutput(response)
         LOG.debug(f"Physical id: {output.physical_id}, Logical id: {params.logical_resource_id}")
         return output
 
-    def get_stack_outputs(self, params: GetStackOutputsParams) -> GetStackOutputsOutput:
+    def get_stack_outputs(self, stack_name: str, output_names: List[str]) -> GetStackOutputsOutput:
         """
         Fetch Stack Outputs from an AWS CloudFormation stack
 
@@ -162,8 +154,10 @@ class Zion:
 
         Parameters
         ----------
-        params : GetStackOutputsParams
-            Data Class that holds required parameters
+        stack_name : str
+            Name of the Stack
+        output_names : List[str] 
+            List of strings that represent the StackOutput Keys   
         
         Returns
         -------
@@ -175,13 +169,14 @@ class Zion:
         ZionException
             When failed to fetch Stack Outputs
         """
+        params = GetStackOutputsParams(stack_name, output_names)
         payload = params.to_payload(self.region, self.profile)
         response = self._invoke_zion(payload)
         output = GetStackOutputsOutput(response)
         LOG.debug(f"Output: {output}")
         return output
 
-    def add_listener(self, params: AddEbListenerParams) -> AddEbListenerOutput:
+    def add_listener(self, event_bus_name: str, rule_name: str, target_id: Optional[str] = None, tags: Optional[Dict[str, str]] = None) -> AddEbListenerOutput:
         """
         Add Listener Resource to an AWS Event Bridge Bus to enable testing
 
@@ -203,8 +198,14 @@ class Zion:
 
         Parameters
         ----------
-        params : AddEbListenerParams
-            Data Class that holds required parameters
+        event_bus_name : str
+            Name of the AWS Event Bus
+        rule_name : str
+            Name of a Rule on the EventBus to replicate
+        target_id : str, optional
+            Target Id on the given rule to replicate
+        tags : Dict[str, str], optional
+            A key-value pair associated EventBridge rule.
         
         Returns
         -------
@@ -216,13 +217,14 @@ class Zion:
         ZionException
             When failed to add listener
         """
+        params = AddEbListenerParams(event_bus_name, rule_name, target_id, tags)
         payload = params.to_payload(self.region, self.profile)
         response = self._invoke_zion(payload)
         output = AddEbListenerOutput(response)
         LOG.debug(f"Output: {output}")
         return output
 
-    def remove_listeners(self, params: RemoveListenersParams) -> RemoveListenersOutput:
+    def remove_listeners(self, ids: Optional[List[str]] = None, tag_filters: Optional[List[RemoveListeners_TagFilter]] = None) -> RemoveListenersOutput:
         """
         Remove Listener Resource(s) from an AWS Event Bridge Bus
 
@@ -241,8 +243,10 @@ class Zion:
         
         Parameters
         ----------
-        params : RemoveListenersParams
-            Data Class that holds required parameters
+        ids : List[str], optional
+            List of Listener Ids to remove, one of ids and tag_filters must be supplied
+        tag_filters : List[RemoveListeners_TagFilter], optional
+            List of RemoveListeners_TagFilter, one of ids and tag_filters must be supplied
         
         Returns
         -------
@@ -254,6 +258,7 @@ class Zion:
         ZionException
             When failed to remove listener(s)
         """
+        params = RemoveListenersParams(ids, tag_filters)
         payload = params.to_payload(self.region, self.profile)
         response = self._invoke_zion(payload)
         output = RemoveListenersOutput(response)
@@ -269,7 +274,7 @@ class Zion:
         output = PollEventsOutput(response)
         return output
 
-    def poll_events(self, params: PollEventsParams) -> PollEventsOutput:
+    def poll_events(self, listener_id: str, wait_time_seconds: int, max_number_of_messages: int) -> PollEventsOutput:
         """
         Poll Events from a specific Listener
 
@@ -285,8 +290,12 @@ class Zion:
 
         Parameters
         ----------
-        params : PollEventsParams
-            Data Class that holds required parameters
+        listener_id : str
+            Id of the Listener that was created
+        wait_time_seconds : int
+            Time in seconds to wait for polling
+        max_number_of_messages : int
+            Max number of messages to poll
         
         Returns
         -------
@@ -298,11 +307,12 @@ class Zion:
         ZionException
             When failed to Poll Events
         """
+        params = PollEventsParams(listener_id, wait_time_seconds, max_number_of_messages)
         output = self._poll_events(params)
         LOG.debug(f"Output: {output}")
         return output
 
-    def wait_until_event_matched(self, params: WaitUntilEventMatchedParams) -> bool:
+    def wait_until_event_matched(self, listener_id: str, condition: Callable[[str], bool], timeout_seconds: int = 30) -> bool:
         """
         Poll Events on a given Listener until a match is found or timeout met.
 
@@ -318,8 +328,12 @@ class Zion:
         
         Parameters
         ----------
-        params : WaitUntilEventMatchedParams
-            Data Class that holds required parameters
+        listener_id : str
+            Id of the Listener that was created
+        condition : Callable[[str], bool]
+            Callable fuction that takes a str and returns a bool
+        timeout_seconds : int
+            Timeout (in seconds) to stop the polling
         
         Returns
         -------
@@ -331,6 +345,7 @@ class Zion:
         ZionException
             When failed to Poll Events
         """
+        params = WaitUntilEventMatchedParams(listener_id, condition, timeout_seconds)
         start = datetime.now()
         elapsed = lambda _: (datetime.now() - start).total_seconds()
         while elapsed(None) < params.timeout_seconds:
@@ -356,7 +371,7 @@ class Zion:
         return output
 
     def get_trace_tree(
-        self, params: GetTraceTreeParams
+        self, tracing_header: str
     ) -> GetTraceTreeOutput:
         """
         Fetch the trace tree structure using the provided tracing_header
@@ -367,8 +382,8 @@ class Zion:
         
         Parameters
         ----------
-        params : GetTraceTreeParams
-            Data Class that holds required parameters
+        tracing_header : str
+            Trace header to get the trace tree
         
         Returns
         -------
@@ -380,22 +395,26 @@ class Zion:
         ZionException
             When failed to fetch a trace tree
         """
+        params = GetTraceTreeParams(tracing_header)
         output = self._get_trace_tree(params)
-        LOG.debug(f"Output: {output}")
         return output
 
-    # TODO (lauwing): make it a "private" method since there's no strong use case for using it alone
-    def generate_barebone_event(
+    def _generate_barebone_event(
         self, params: GenerateBareboneEventParams,
     ) -> GenerateBareboneEventOutput:
         payload = params.to_payload(self.region, self.profile)
         response = self._invoke_zion(payload)
         output = GenerateBareboneEventOutput(response)
-        LOG.debug(f"Output: {output}")
         return output
 
     def generate_mock_event(
-        self, params: GenerateMockEventParams
+        self, 
+        registry_name: Optional[str] = None, 
+        schema_name: Optional[str] = None,
+        schema_version: Optional[str] = None,
+        event_ref: Optional[str] = None,
+        skip_optional: Optional[bool] = None,
+        contexts: Optional[List[Callable[[dict], dict]]] = None
     ) -> GenerateMockEventOutput:
         """
         Generate a mock event based on a schema from EventBridge Schema Registry
@@ -406,8 +425,18 @@ class Zion:
         
         Parameters
         ----------
-        params : GenerateMockEventParams
-            Data Class that holds required parameters
+        registry_name : str
+            name of the registry of the schema stored in EventBridge Schema Registry
+        schema_name : str
+            name of the schema stored in EventBridge Schema Registry
+        schema_version : str
+            version of the schema stored in EventBridge Schema Registry
+        event_ref : str
+            location to the event in the schema in json schema ref syntax, only applicable for openapi schema
+        skip_optional : bool
+            if set to true, do not generate optional fields
+        contexts : List[Callable[[dict], dict]]
+            a list of callables to apply context on the generated mock event
         
         Returns
         -------
@@ -419,7 +448,8 @@ class Zion:
         ZionException
             When failed to fetch a trace tree
         """
-        out = self.generate_barebone_event(
+        params = GenerateMockEventParams(registry_name, schema_name, schema_version, event_ref, skip_optional, contexts)
+        out = self._generate_barebone_event(
             GenerateBareboneEventParams(
                 registry_name=params.registry_name,
                 schema_name=params.schema_name,
@@ -445,10 +475,9 @@ class Zion:
         Parameters
         ----------
         condition: Callable[[any], bool]
-        Callable function that takes any type and returns a bool
-
+            Callable function that takes any type and returns a bool
         timeout: int or float
-        value that specifies how long the function will retry for until it times out
+            value that specifies how long the function will retry for until it times out
         
         Returns
         -------
@@ -512,7 +541,7 @@ class Zion:
 
         Parameters
         ----------
-        params : client
+        params : boto3.client
             boto3.client for specified aws service
         sampled : int
             value 0 to not sample the request or value 1 to sample the request
@@ -572,7 +601,7 @@ class Zion:
             raise ZionException(message=message, error_code=error_code)
 
         
-    def retry_get_trace_tree_until(self, params: RetryGetTraceTreeUntilParams):
+    def retry_get_trace_tree_until(self, tracing_header: str, condition: Callable[[GetTraceTreeOutput], bool], timeout_seconds: int = 30):
         """
         function to retry get_trace_tree condition or timeout is met
 
@@ -582,11 +611,12 @@ class Zion:
         
         Parameters
         ----------
-        condition: Callable[[GetTraceTreeOutput], bool]
-        Callable function that takes any type and returns a bool
-
-        timeout: int or float
-        value that specifies how long the function will retry for until it times out
+        trace_header:
+            x-ray trace header
+        condition : Callable[[GetTraceTreeOutput], bool]
+            Callable fuction that takes a str and returns a bool
+        timeout_seconds : int
+            Timeout (in seconds) to stop the fetching
         
         Returns
         -------
@@ -598,6 +628,7 @@ class Zion:
         Zionexception
             When an exception occurs during get_trace_tree
         """
+        params = RetryGetTraceTreeUntilParams(tracing_header, condition, timeout_seconds)
         @self.retry_until(condition=params.condition, timeout=params.timeout_seconds)
         def fetch_trace_tree():
             try:
