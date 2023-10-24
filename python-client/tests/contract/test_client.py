@@ -45,6 +45,13 @@ def to_snake_case(name):
 
 class ClientContractTest(TestCase):
     specs: dict
+    method_map: dict = {
+        "add_listener": "test_harness.eventbridge.add_listener",
+        "generate_mock_event": "mock.generate_barebone_event",
+        "get_physical_id_from_stack": "get_physical_id",
+        "poll_events": "test_harness.eventbridge.poll_events",
+        "remove_listeners": "test_harness.eventbridge.remove_listeners"
+    }
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -63,27 +70,13 @@ class ClientContractTest(TestCase):
 
     def test_all_rpc_methods_defined(self):
         rpc_methods = [m for m in self.client_methods.values()]
-        method_map = {
-            "add_listener": "test_harness.eventbridge.add_listener",
-            "generate_mock_event": "mock.generate_barebone_event",
-            "get_physical_id_from_stack": "get_physical_id",
-            "poll_events": "test_harness.eventbridge.poll_events",
-            "remove_listeners": "test_harness.eventbridge.remove_listeners"
-        }
         for m in rpc_methods:
-            self.assertIn(method_map.get(m.rpc_method, m.rpc_method), self.specs["methods"])
+            self.assertIn(self.method_map.get(m.rpc_method, m.rpc_method), self.specs["methods"])
         self.assertEqual(len(self.specs["methods"]), len(rpc_methods))
 
     def test_param_properties(self):
-        method_map = {
-            "add_listener": "test_harness.eventbridge.add_listener",
-            "generate_mock_event": "mock.generate_barebone_event",
-            "get_physical_id_from_stack": "get_physical_id",
-            "poll_events": "test_harness.eventbridge.poll_events",
-            "remove_listeners": "test_harness.eventbridge.remove_listeners"
-        }
         for name, method in self.client_methods.items():
-            resolved_method = method_map.get(method.rpc_method, method.rpc_method)
+            resolved_method = self.method_map.get(method.rpc_method, method.rpc_method)
             params_spec = (
                 self.specs["methods"].get(resolved_method, {}).get("parameters")
             )
@@ -102,13 +95,6 @@ class ClientContractTest(TestCase):
             )
 
     def test_returns_properties(self):
-        method_map = {
-            "add_listener": "test_harness.eventbridge.add_listener",
-            "generate_mock_event": "mock.generate_barebone_event",
-            "get_physical_id_from_stack": "get_physical_id",
-            "poll_events": "test_harness.eventbridge.poll_events",
-            "remove_listeners": "test_harness.eventbridge.remove_listeners"
-        }
         for name, method in self.client_methods.items():
             if name in [
                 "get_physical_id_from_stack",
@@ -120,7 +106,7 @@ class ClientContractTest(TestCase):
                 # NOTE: skipping for these methods since the Output cls does some form of transform
                 continue
             
-            resolved_method = method_map.get(method.rpc_method, method.rpc_method)
+            resolved_method = self.method_map.get(method.rpc_method, method.rpc_method)
             returns_spec = (
                 self.specs["methods"].get(resolved_method, {}).get("returns")
             )

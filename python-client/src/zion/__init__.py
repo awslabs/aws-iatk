@@ -244,9 +244,9 @@ class Zion:
         Parameters
         ----------
         ids : List[str], optional
-            List of Listener Ids to remove
+            List of Listener Ids to remove, one of ids and tag_filters must be supplied
         tag_filters : List[RemoveListeners_TagFilter], optional
-            List of RemoveListeners_TagFilter
+            List of RemoveListeners_TagFilter, one of ids and tag_filters must be supplied
         
         Returns
         -------
@@ -312,7 +312,7 @@ class Zion:
         LOG.debug(f"Output: {output}")
         return output
 
-    def wait_until_event_matched(self, listener_id: str, condition: Callable[[str], bool], timeout_seconds: int = 30,) -> bool:
+    def wait_until_event_matched(self, listener_id: str, condition: Callable[[str], bool], timeout_seconds: int = 30) -> bool:
         """
         Poll Events on a given Listener until a match is found or timeout met.
 
@@ -397,7 +397,6 @@ class Zion:
         """
         params = GetTraceTreeParams(tracing_header)
         output = self._get_trace_tree(params)
-        LOG.debug(f"Output: {output}")
         return output
 
     def _generate_barebone_event(
@@ -406,7 +405,6 @@ class Zion:
         payload = params.to_payload(self.region, self.profile)
         response = self._invoke_zion(payload)
         output = GenerateBareboneEventOutput(response)
-        LOG.debug(f"Output: {output}")
         return output
 
     def generate_mock_event(
