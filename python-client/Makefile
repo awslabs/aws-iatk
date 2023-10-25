@@ -22,8 +22,6 @@ build-client:
 	pip3 install -e .
 
 copy-service-source-for-sdist:
-	mkdir -p ./src/zion_src
-	mkdir -p ./src/zion_service
 	rm -rf ./src/zion_src
 	rm -rf ./src/zion_service
 	mkdir -p ./src/zion_src
