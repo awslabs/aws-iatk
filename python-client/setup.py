@@ -13,6 +13,7 @@ from setuptools.command.sdist import sdist
 
 def build_and_install_zion(packages: List[str]) -> None:
     cmd = ['go', 'build', '-C', './src/zion_src', '-o', '../zion_service/', './cmd/zion']
+    # TODO (hawflau): introduce env var to control whether to build or not
     if not os.getenv("GOARCH") or not os.path.isfile("./src/zion_service/zion"):
         out = call(cmd)
         if out != 0:
