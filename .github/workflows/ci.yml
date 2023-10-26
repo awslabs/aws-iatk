@@ -21,4 +21,3 @@ jobs:
     uses: ./.github/workflows/quality-check.yml
     with:
       ref: ${{ github.ref }}
-      concurrency_group: ${{ github.ref }}
