@@ -1,0 +1,52 @@
+name: Release Workflow
+
+# RELEASE PROCESS
+# 
+# NOTE: we assume the version in the source code is the release version
+
+env:
+  RELEASE_COMMIT: ${{ github.sha }}
+  VERSION_FILE: "python-client/src/zion/version.py"
+
+on:
+  push:
+    branches:
+      - "dev-release-pipeline"
+    paths:
+      - ${{ env.VERSION_FILE }}
+    
+permissions:
+  contents: read
+
+jobs:
+
+  # This job bumps the package version to the release version
+  # creates an integrity hash from the source code
+  # uploads the artifact with the integrity hash as the key name
+  # so subsequent jobs can restore from a trusted point in time to prevent tampering
+  seal:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      integrity_hash: ${{ steps.seal_source_code.outputs.integrity_hash }}
+      artifact_name: ${{ steps.seal_source_code.outputs.artifact_name }}
+      RELEASE_VERSION: ${{ steps.release_version.outputs.RELEASE_VERSION }}
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+        with:
+          ref: ${{ env.RELEASE_COMMIT }}
+
+      - name: Export release version
+        id: release_version
+        # transform tag format `v<version` to `<version>`
+        run: |
+          RELEASE_VERSION=$(awk -F '"' '/_version = /{print $2}' python-client/src/zion/version.py)
+          echo $RELEASE_VERSION
+          echo "RELEASE_VERSION=${RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
+      
+      - name: Seal and upload
+        id: seal_source_code
+        uses: ./.github/actions/seal
+        with:
+          artifact_name_prefix: "source"
