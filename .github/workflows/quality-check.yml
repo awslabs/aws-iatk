@@ -1,5 +1,4 @@
 name: "Quality Check"
-description: "Run tests against a given commit ref"
 
 on:
   workflow_call:
