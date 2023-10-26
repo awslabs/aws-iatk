@@ -50,3 +50,16 @@ jobs:
         uses: ./.github/actions/seal
         with:
           artifact_name_prefix: "source"
+
+  quality_check:
+    needs: seal
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Restore sealed source code
+        uses: ./.github/actions/seal-restore
+        with:
+          integrity_hash: ${{ needs.seal.outputs.integrity_hash }}
+          artifact_name: ${{ needs.seal.outputs.artifact_name }}
+      - run: ls -la
