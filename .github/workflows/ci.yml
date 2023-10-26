@@ -21,3 +21,5 @@ jobs:
     uses: ./.github/workflows/quality-check.yml
     with:
       ref: ${{ github.ref }}
+    secrets:
+      CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
