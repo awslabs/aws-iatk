@@ -128,7 +128,7 @@ jobs:
       - name: Build sdist
         working-directory: "python-client"
         run: |
-          pip install -upgrade build
+          pip install --upgrade build
           python -m build --sdist
 
       - uses: actions/upload-artifact@v3
