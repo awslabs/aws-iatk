@@ -57,6 +57,10 @@ jobs:
     permissions:
       contents: read
     steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+        with:
+          ref: ${{ env.RELEASE_COMMIT }}
+
       - name: Restore sealed source code
         uses: ./.github/actions/seal-restore
         with:
