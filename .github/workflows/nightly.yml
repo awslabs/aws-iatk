@@ -12,8 +12,8 @@ on:
   push:
     branches:
       - "dev-release-pipeline"
-    paths:
-      - ${{ env.VERSION_FILE }}
+    # paths:
+    #   - ${{ env.VERSION_FILE }}
     
 permissions:
   contents: read
