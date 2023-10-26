@@ -18,6 +18,7 @@ concurrency:
 
 jobs:
   quality-check:
+    if: github.repository_owner == 'awslabs'
     uses: ./.github/workflows/quality-check.yml
     with:
       ref: ${{ github.ref }}
