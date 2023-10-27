@@ -134,7 +134,7 @@ class AWSCtk:
 
         Raises
         ------
-        CTKException
+        CtkException
             When failed to fetch Phsyical Id
         """
         params = PhysicalIdFromStackParams(logical_resource_id, stack_name)
@@ -166,7 +166,7 @@ class AWSCtk:
 
         Raises
         ------
-        CTKException
+        CtkException
             When failed to fetch Stack Outputs
         """
         params = GetStackOutputsParams(stack_name, output_names)
@@ -214,7 +214,7 @@ class AWSCtk:
 
         Raises
         ------
-        CTKException
+        CtkException
             When failed to add listener
         """
         params = AddEbListenerParams(event_bus_name, rule_name, target_id, tags)
@@ -255,7 +255,7 @@ class AWSCtk:
 
         Raises
         ------
-        CTKException
+        CtkException
             When failed to remove listener(s)
         """
         params = RemoveListenersParams(ids, tag_filters)
@@ -304,7 +304,7 @@ class AWSCtk:
 
         Raises
         ------
-        CTKException
+        CtkException
             When failed to Poll Events
         """
         params = PollEventsParams(listener_id, wait_time_seconds, max_number_of_messages)
@@ -342,7 +342,7 @@ class AWSCtk:
 
         Raises
         ------
-        CTKException
+        CtkException
             When failed to Poll Events
         """
         params = WaitUntilEventMatchedParams(listener_id, condition, timeout_seconds)
@@ -392,7 +392,7 @@ class AWSCtk:
 
         Raises
         ------
-        CTKException
+        CtkException
             When failed to fetch a trace tree
         """
         params = GetTraceTreeParams(tracing_header)
@@ -445,7 +445,7 @@ class AWSCtk:
 
         Raises
         ------
-        CTKException
+        CtkException
             When failed to fetch a trace tree
         """
         params = GenerateMockEventParams(registry_name, schema_name, schema_version, event_ref, skip_optional, contexts)
@@ -625,7 +625,7 @@ class AWSCtk:
 
         Raises
         ------
-        CTKException
+        CtkException
             When an exception occurs during get_trace_tree
         """
         params = RetryGetTraceTreeUntilParams(tracing_header, condition, timeout_seconds)

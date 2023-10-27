@@ -9,7 +9,7 @@ from unittest import TestCase
 import time
 import boto3
 import random
-from aws_ctk import AWSCtk, CTKException
+from aws_ctk import AWSCtk, CtkException
 import os
 import pytest
 import json
@@ -121,7 +121,7 @@ class TestCTK_retry_fetch_until(TestCase):
         def num_is_10(trace):
             self.counter = random.randrange(0,10)
             return self.counter == 10
-        with pytest.raises(CTKException) as e:
+        with pytest.raises(CtkException) as e:
             self.ctk.retry_get_trace_tree_until(
                 tracing_header="test",
                 condition=num_is_10,

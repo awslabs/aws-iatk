@@ -9,7 +9,7 @@ import logging
 from uuid import uuid4
 from unittest import TestCase
 from dataclasses import dataclass
-from aws_ctk import AWSCtk, context_generation, CTKException
+from aws_ctk import AWSCtk, context_generation, CtkException
 import time
 import os
 import boto3
@@ -233,7 +233,7 @@ class TestCTK_generate_mock_event(TestCase):
         self.assertEqual(output["region"], "testRegion")
 
     def test_openapi_ref_failure(self):
-        with pytest.raises(CTKException) as e:
+        with pytest.raises(CtkException) as e:
             self.ctk.generate_mock_event(
                 registry_name=self.schema_details["TestSchemaRegistryName"],
                 schema_name=self.schema_details["TestEBEventSchemaOpenAPIName"],
