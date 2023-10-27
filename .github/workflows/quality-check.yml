@@ -129,9 +129,9 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          ZION_VERSION=$(python -c "import pkg_resources;print(pkg_resources.get_distribution('zion').version)")
-          [ -f ./python-client/dist/zion-${ZION_VERSION}.tar.gz ]
-          python -c "import zion; from zion import Zion; z = Zion()"
+          CTK_VERSION=$(python -c "import pkg_resources;print(pkg_resources.get_distribution('aws_ctk').version)")
+          [ -f ./python-client/dist/ctk-${CTK_VERSION}.tar.gz ]
+          python -c "import aws_ctk; from aws_ctk import AWSCtk; z = AWSCtk()"
           
   python-client-unit-test:
     runs-on: ubuntu-latest

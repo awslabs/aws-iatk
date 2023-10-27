@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+	"ctk/integration/ctk"
 	"errors"
 	"fmt"
 	"os"
@@ -12,7 +13,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-	"zion/integration/zion"
 
 	"github.com/stretchr/testify/suite"
 
@@ -50,7 +50,7 @@ func TestCliErrCases(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			var out strings.Builder
 			var sErr strings.Builder
-			zion.SInvoke(t, tt.input, &out, &sErr, nil, true)
+			ctk.SInvoke(t, tt.input, &out, &sErr, nil, true)
 
 			actual := strings.Trim(out.String(), "\n")
 			assert.Equal(t, tt.expect, actual, fmt.Sprintf("expected: %v, got: %v", tt.expect, actual))
@@ -81,7 +81,7 @@ func TestCliGetPhysicalIdErrCases(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			var out strings.Builder
 			var sErr strings.Builder
-			zion.Invoke(t, []byte(tt.input), &out, &sErr, &tt.env)
+			ctk.Invoke(t, []byte(tt.input), &out, &sErr, &tt.env)
 
 			re := regexp.MustCompile(tt.expect)
 			actual := strings.Trim(out.String(), "\n")
@@ -123,7 +123,7 @@ func (s *PhysicalIDWithCredsSuite) TestCliGetPhysicalIdCredCases() {
 			var sErr strings.Builder
 			tEnv := os.Environ()
 			tEnv = append(tEnv, fmt.Sprintf("AWS_REGION=%s", tt.region))
-			zion.Invoke(t, []byte(tt.input), &out, &sErr, &tEnv)
+			ctk.Invoke(t, []byte(tt.input), &out, &sErr, &tEnv)
 
 			re := regexp.MustCompile(tt.expect)
 			actual := strings.Trim(out.String(), "\n")

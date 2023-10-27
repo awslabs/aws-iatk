@@ -2,25 +2,25 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Integration tests for zion.retry_until
+Integration tests for aws_ctk.retry_until
 """
 import logging
 from unittest import TestCase
 import time
-import zion
+import aws_ctk
 import pytest
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
 
-class TestZion_retry_until_timeout(TestCase):
-    zion = zion.Zion()
+class TestCTK_retry_until_timeout(TestCase):
+    ctk = aws_ctk.AWSCtk()
     num = 0
 
 
     def test_retry_timeout_is_default_fail(self):
         def num_is_ten(val):
             return val == 10
-        @self.zion.retry_until(condition=num_is_ten)
+        @self.ctk.retry_until(condition=num_is_ten)
         def num_add_one_slow():
             self.num = self.num + 1
             return self.num
@@ -34,7 +34,7 @@ class TestZion_retry_until_timeout(TestCase):
     def test_retry_timeout_is_default_pass(self):
         def num_is_five(val):
             return val == 5
-        @self.zion.retry_until(condition=num_is_five)
+        @self.ctk.retry_until(condition=num_is_five)
         def num_add_one():
             self.num = self.num + 1
             return self.num
@@ -49,7 +49,7 @@ class TestZion_retry_until_timeout(TestCase):
     def test_retry_timeout_is_infinite(self):
         def num_is_ten(val):
             return val == 10
-        @self.zion.retry_until(condition=num_is_ten, timeout=0)
+        @self.ctk.retry_until(condition=num_is_ten, timeout=0)
         def num_add_one_slow():
             time.sleep(2)
             self.num = self.num + 1
@@ -63,7 +63,7 @@ class TestZion_retry_until_timeout(TestCase):
 
     def test_retry_condition_not_function_error(self):
         with pytest.raises(TypeError) as e:  
-            @self.zion.retry_until(condition=0, timeout=5)
+            @self.ctk.retry_until(condition=0, timeout=5)
             def num_add_one():
                 self.num = self.num + 1
                 return self.num 
@@ -74,7 +74,7 @@ class TestZion_retry_until_timeout(TestCase):
         def num_is_ten(val):
             return val == 10
         with pytest.raises(TypeError) as e:  
-            @self.zion.retry_until(condition=num_is_ten, timeout="test")
+            @self.ctk.retry_until(condition=num_is_ten, timeout="test")
             def num_add_one():
                 self.num = self.num + 1
                 return self.num 
@@ -85,7 +85,7 @@ class TestZion_retry_until_timeout(TestCase):
         def num_is_ten(val):
             return val == 10
         with pytest.raises(ValueError) as e:  
-            @self.zion.retry_until(condition=num_is_ten, timeout=-1)
+            @self.ctk.retry_until(condition=num_is_ten, timeout=-1)
             def num_add_one():
                 self.num = self.num + 1
                 return self.num 
@@ -95,7 +95,7 @@ class TestZion_retry_until_timeout(TestCase):
     def test_retry_should_pass(self):
         def num_is_five(val):
             return val == 5
-        @self.zion.retry_until(condition=num_is_five, timeout=5)
+        @self.ctk.retry_until(condition=num_is_five, timeout=5)
         def num_add_one():
             self.num = self.num + 1
             return self.num
@@ -107,7 +107,7 @@ class TestZion_retry_until_timeout(TestCase):
         start = time.time()
         def num_is_negative(val):
             return val < 0
-        @self.zion.retry_until(condition=num_is_negative, timeout=5)
+        @self.ctk.retry_until(condition=num_is_negative, timeout=5)
         def num_add_one():
             self.num = self.num + 1
             return self.num
@@ -120,7 +120,7 @@ class TestZion_retry_until_timeout(TestCase):
     def test_retry_should_pass_multiple_arguments(self):
         def num_is_five(val):
             return val == 5
-        @self.zion.retry_until(condition=num_is_five, timeout=5)
+        @self.ctk.retry_until(condition=num_is_five, timeout=5)
         def num_add_one(dummy, dummy1, dummy2="dummy2"):
             self.num = self.num + 1
             return self.num
@@ -132,7 +132,7 @@ class TestZion_retry_until_timeout(TestCase):
         start = time.time()
         def num_is_negative(val):
             return val < 0
-        @self.zion.retry_until(condition=num_is_negative, timeout=5)
+        @self.ctk.retry_until(condition=num_is_negative, timeout=5)
         def num_add_one(dummy, dummy1, dummy2="dummy2"):
             self.num = self.num + 1
             return self.num

@@ -1,4 +1,4 @@
-module zion
+module ctk
 
 go 1.19
 

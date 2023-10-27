@@ -5,12 +5,12 @@ package addeblistener_test
 
 import (
 	"context"
+	"ctk/integration/ctk"
+	"ctk/internal/pkg/jsonrpc"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
-	"zion/integration/zion"
-	"zion/internal/pkg/jsonrpc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -360,7 +360,7 @@ func (s *AddEbListenerSuite) invoke(req []byte) jsonrpc.Response {
 	var out strings.Builder
 	var sErr strings.Builder
 	test := s.T()
-	zion.Invoke(test, req, &out, &sErr, nil)
+	ctk.Invoke(test, req, &out, &sErr, nil)
 
 	test.Logf("response: %v", out.String())
 	test.Logf("err: %v", sErr.String())

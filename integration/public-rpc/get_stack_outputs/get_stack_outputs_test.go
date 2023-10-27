@@ -5,14 +5,14 @@ package getstackoutputs_test
 
 import (
 	"context"
+	cfn "ctk/integration/cloudformation"
+	"ctk/integration/ctk"
+	"ctk/internal/pkg/aws/config"
+	"ctk/internal/pkg/jsonrpc"
 	"encoding/json"
 	"log"
 	"strings"
 	"testing"
-	cfn "zion/integration/cloudformation"
-	"zion/integration/zion"
-	"zion/internal/pkg/aws/config"
-	"zion/internal/pkg/jsonrpc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
@@ -138,7 +138,7 @@ func (s *GetStackOutputsSuite) TestGetStackOutputs() {
 			log.Printf("request: %v", string(input))
 			var out strings.Builder
 			var sErr strings.Builder
-			zion.Invoke(t, input, &out, &sErr, nil)
+			ctk.Invoke(t, input, &out, &sErr, nil)
 			log.Printf("response: %v", out.String())
 			var actual jsonrpc.Response
 			json.Unmarshal([]byte(out.String()), &actual)
@@ -187,7 +187,7 @@ func (s *GetStackOutputsSuite) TestErrGetStackOutputs() {
 			log.Printf("request: %v", string(input))
 			var out strings.Builder
 			var sErr strings.Builder
-			zion.Invoke(t, input, &out, &sErr, nil)
+			ctk.Invoke(t, input, &out, &sErr, nil)
 			log.Printf("response: %v", out.String())
 			var actual jsonrpc.Response
 			json.Unmarshal([]byte(out.String()), &actual)

@@ -5,7 +5,7 @@ package config
 
 import (
 	"context"
-	"zion/internal/pkg/jsonrpc"
+	"ctk/internal/pkg/jsonrpc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
@@ -23,7 +23,7 @@ func GetAWSConfig(ctx context.Context, region string, profile string, metadata *
 		config.WithSharedConfigProfile(profile),
 		config.WithRegion(region),
 		config.WithAPIOptions([]func(*smithymiddleware.Stack) error{
-			awsmiddleware.AddUserAgentKeyValue("aws-zion", uaVal),
+			awsmiddleware.AddUserAgentKeyValue("aws-ctk", uaVal),
 		}),
 	)
 

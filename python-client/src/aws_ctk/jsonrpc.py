@@ -5,10 +5,10 @@ import logging
 from uuid import uuid4
 from typing import Optional
 
-from zion.version import _version
+from aws_ctk.version import _version
 
 LOG = logging.getLogger(__name__)
-MODULE_NAME = "zion"
+MODULE_NAME = "aws-ctk"
 
 
 class Payload:

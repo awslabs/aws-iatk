@@ -1,14 +1,14 @@
-Great you want to contribute to Zion!
+Great you want to contribute to AWS Cloud Test Kit!
 
 Please see [conventions](./conventions.md) to learn about coding practices and style we expect and setup to learn about general setup fo the package.
 
 ## Overview
 
-Zion is built as a mono repo, in which we have both a RPC binary (the Golang code) and the "language client" (currently Python). 
+AWS Cloud Test Kit (CTK) is built as a mono repo, in which we have both a RPC binary (the Golang code) and the "language client" (currently Python). 
 
 Everything under `python-client` is the Python related code. We embed the Go binary into this at release but locally you can build the binary and install the Python Client as needed.
 
-Typically, changes will be focused within the Go code. This holds what powers Zion and is done to easy language expansion.
+Typically, changes will be focused within the Go code. This holds what powers AWS CTK and is done to easy language expansion.
 
 ## How to contribute
 

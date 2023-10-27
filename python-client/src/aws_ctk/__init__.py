@@ -81,7 +81,7 @@ def _log_duration(func):
     return wrapper
 
 
-class ZionException(Exception):
+class CTKException(Exception):
     def __init__(self, message, error_code) -> None:
         super().__init__(message)
 
@@ -92,9 +92,9 @@ class RetryableException(Exception):
         super().__init__(message)
 
 @dataclass
-class Zion:
+class AWSCtk:
     """
-    Creates and setups Zion
+    Creates and setups AWS Cloud Testing Kit
 
     Parameters
     ----------
@@ -106,8 +106,8 @@ class Zion:
     region: Optional[str] = None
     profile: Optional[str] = None
 
-    _zion_binary_path = (
-        pathlib.Path(__file__).parent.parent.joinpath("zion_service", "zion").absolute()
+    _ctk_binary_path = (
+        pathlib.Path(__file__).parent.parent.joinpath("ctk_service", "ctk").absolute()
     )
 
     def get_physical_id_from_stack(
@@ -134,7 +134,7 @@ class Zion:
 
         Raises
         ------
-        ZionException
+        CTKException
             When failed to fetch Phsyical Id
         """
         params = PhysicalIdFromStackParams(logical_resource_id, stack_name)
@@ -166,7 +166,7 @@ class Zion:
 
         Raises
         ------
-        ZionException
+        CTKException
             When failed to fetch Stack Outputs
         """
         params = GetStackOutputsParams(stack_name, output_names)
@@ -214,7 +214,7 @@ class Zion:
 
         Raises
         ------
-        ZionException
+        CTKException
             When failed to add listener
         """
         params = AddEbListenerParams(event_bus_name, rule_name, target_id, tags)
@@ -255,7 +255,7 @@ class Zion:
 
         Raises
         ------
-        ZionException
+        CTKException
             When failed to remove listener(s)
         """
         params = RemoveListenersParams(ids, tag_filters)
@@ -304,7 +304,7 @@ class Zion:
 
         Raises
         ------
-        ZionException
+        CTKException
             When failed to Poll Events
         """
         params = PollEventsParams(listener_id, wait_time_seconds, max_number_of_messages)
@@ -342,7 +342,7 @@ class Zion:
 
         Raises
         ------
-        ZionException
+        CTKException
             When failed to Poll Events
         """
         params = WaitUntilEventMatchedParams(listener_id, condition, timeout_seconds)
@@ -392,7 +392,7 @@ class Zion:
 
         Raises
         ------
-        ZionException
+        CTKException
             When failed to fetch a trace tree
         """
         params = GetTraceTreeParams(tracing_header)
@@ -445,7 +445,7 @@ class Zion:
 
         Raises
         ------
-        ZionException
+        CTKException
             When failed to fetch a trace tree
         """
         params = GenerateMockEventParams(registry_name, schema_name, schema_version, event_ref, skip_optional, contexts)
@@ -530,9 +530,9 @@ class Zion:
             try:
                 json.dumps(generated_event)
             except TypeError:
-                raise ZionException(f"context applier {func.__name__} returns a non-JSON-serializable result", 400)
+                raise CTKException(f"context applier {func.__name__} returns a non-JSON-serializable result", 400)
         if generated_event is None:
-            raise ZionException("event is empty, make sure function returns a valid event", 404)
+            raise CTKException("event is empty, make sure function returns a valid event", 404)
         return generated_event
         
     def patch_aws_client(self, client: "boto3.client", sampled = 1) -> "boto3.client":
@@ -566,10 +566,10 @@ class Zion:
         return client
 
     @_log_duration
-    def _invoke_zion(self, payload: Payload, caller: str=None) -> dict:
+    def _invoke_ctk(self, payload: Payload, caller: str=None) -> dict:
         input_data = payload.dump_bytes(caller)
         LOG.debug("payload: %s", input_data)
-        stdout_data = self._popen_zion(input_data)
+        stdout_data = self._popen_ctk(input_data)
         jsonrpc_data = stdout_data.decode("utf-8")
         data_dict = json.loads(jsonrpc_data.strip())
 
@@ -577,17 +577,17 @@ class Zion:
         if data_dict.get("error", None):
             message = data_dict.get("error", {}).get("message", "")
             error_code = data_dict.get("error", {}).get("Code", 0)
-            raise ZionException(message=message, error_code=error_code)
+            raise CTKException(message=message, error_code=error_code)
         
         return data_dict
 
-    def _popen_zion(self, input: bytes, env_vars: Optional[dict]=None) -> bytes:
-        LOG.debug("calling zion rpc with input %s", input)
-        p = Popen([self._zion_binary_path], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+    def _popen_ctk(self, input: bytes, env_vars: Optional[dict]=None) -> bytes:
+        LOG.debug("calling ctk rpc with input %s", input)
+        p = Popen([self._ctk_binary_path], stdout=PIPE, stdin=PIPE, stderr=PIPE)
 
         out, err = p.communicate(input=input)
         for line in err.splitlines():
-            zion_service_logger.debug(line.decode())
+            ctk_service_logger.debug(line.decode())
         return out
 
     def _raise_error_if_returned(self, output):
@@ -598,7 +598,7 @@ class Zion:
         if data_dict.get("error", None):
             message = data_dict.get("error", {}).get("message", "")
             error_code = data_dict.get("error", {}).get("Code", 0)
-            raise ZionException(message=message, error_code=error_code)
+            raise CTKException(message=message, error_code=error_code)
 
         
     def retry_get_trace_tree_until(self, tracing_header: str, condition: Callable[[GetTraceTreeOutput], bool], timeout_seconds: int = 30):
@@ -625,7 +625,7 @@ class Zion:
 
         Raises
         ------
-        Zionexception
+        CTKException
             When an exception occurs during get_trace_tree
         """
         params = RetryGetTraceTreeUntilParams(tracing_header, condition, timeout_seconds)
@@ -637,17 +637,17 @@ class Zion:
                     caller="retry_get_trace_tree_until",
                 )
                 return response
-            except ZionException as e:
+            except CTKException as e:
                  if "trace not found" in str(e):
                     pass
                     raise RetryableException(e)
                  else:
-                    raise ZionException(e, 500)
+                    raise CTKException(e, 500)
         try:
             response = fetch_trace_tree()
             return response
-        except ZionException as e:
-            raise ZionException(e, 500)
+        except CTKException as e:
+            raise CTKException(e, 500)
 
 
 # Set up logging to ``/dev/null`` like a library is supposed to.
@@ -657,4 +657,4 @@ class NullHandler(logging.Handler):
         pass
 
 
-logging.getLogger("zion").addHandler(NullHandler())
+logging.getLogger("aws_ctk").addHandler(NullHandler())

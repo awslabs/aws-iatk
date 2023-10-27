@@ -2,14 +2,14 @@ package generatebareboneevent_test
 
 import (
 	"context"
+	cfn "ctk/integration/cloudformation"
+	"ctk/integration/ctk"
+	ctkcfn "ctk/internal/pkg/cloudformation"
+	"ctk/internal/pkg/jsonrpc"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
-	cfn "zion/integration/cloudformation"
-	"zion/integration/zion"
-	zioncfn "zion/internal/pkg/cloudformation"
-	"zion/internal/pkg/jsonrpc"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
@@ -61,7 +61,7 @@ func (s *GenerateBareboneEventSuite) SetupSuite() {
 		"./test_stack.yaml",
 		[]types.Capability{})
 	s.Require().NoError(err, "failed to create stack")
-	output, err := zioncfn.GetStackOuput(
+	output, err := ctkcfn.GetStackOuput(
 		s.stackName,
 		[]string{
 			"TestSchemaRegistryName",
@@ -356,7 +356,7 @@ func (s *GenerateBareboneEventSuite) invoke(t *testing.T, req []byte) jsonrpc.Re
 	var stdout strings.Builder
 	var stderr strings.Builder
 	t.Logf("request: %v", string(req))
-	zion.Invoke(t, req, &stdout, &stderr, nil)
+	ctk.Invoke(t, req, &stdout, &stderr, nil)
 
 	t.Logf("response: %v", stdout.String())
 	var res jsonrpc.Response

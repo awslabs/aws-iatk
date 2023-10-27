@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class GetTraceTreeOutput:
     """
-    zion.get_trace_tree output
+    AWSCtk.get_trace_tree output
 
     Parameters
     ----------
@@ -31,7 +31,7 @@ class GetTraceTreeOutput:
 @dataclass
 class GetTraceTreeParams:
     """
-    zion.get_trace_tree parameters
+    AWSCtk.get_trace_tree parameters
 
     Parameters
     ----------
