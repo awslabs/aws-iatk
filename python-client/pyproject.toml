@@ -3,7 +3,7 @@ requires = ["setuptools", "build"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "zion"
+name = "aws-ctk"
 dynamic = ["version"]
 dependencies = []
 license = {text = "Apache-2.0"}
@@ -16,14 +16,14 @@ classifiers = [
 ]
 
 [tool.setuptools.dynamic]
-version = {attr = "zion.version._version"}
+version = {attr = "aws_ctk.version._version"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-zion_service = ["*"]
-zion_src = ["**", "go.mod", "go.sum"]
+ctk_service = ["*"]
+ctk_src = ["**", "go.mod", "go.sum"]
 
 [project.optional-dependencies]
 test = [

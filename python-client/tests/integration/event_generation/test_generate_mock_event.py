@@ -2,14 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Integration tests for zion.generate_mock_event
+Integration tests for aws_ctk.generate_mock_event
 """
 import json
 import logging
 from uuid import uuid4
 from unittest import TestCase
 from dataclasses import dataclass
-from zion import Zion, context_generation, ZionException
+from aws_ctk import AWSCtk, context_generation, CtkException
 import time
 import os
 import boto3
@@ -19,10 +19,10 @@ import uuid
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
-boto3.set_stream_logger(name="zion", level=logging.DEBUG)
+boto3.set_stream_logger(name="aws_ctk", level=logging.DEBUG)
 
-class TestZion_generate_mock_event(TestCase):
-    zion = Zion(region="us-east-1")
+class TestCTK_generate_mock_event(TestCase):
+    ctk = AWSCtk(region="us-east-1")
     cfn_client = boto3.client("cloudformation", region_name="us-east-1")
     test_stack_name = "testMockEventStack" + str(uuid4())
     schema_details = {}
@@ -72,7 +72,7 @@ class TestZion_generate_mock_event(TestCase):
     def test_json_schema_success_with_context(self):
         required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
         detail_attributes = ["actionOnFailure", "clusterId", "message", "name", "severity", "state", "stepId"]
-        output = self.zion.generate_mock_event(
+        output = self.ctk.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaJSONSchemaName"],
             schema_version=self.schema_details["TestEBEventSchemaJSONSchemaVersion"],
@@ -90,7 +90,7 @@ class TestZion_generate_mock_event(TestCase):
     def test_json_schema_success_default(self):
         required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
         detail_attributes = ["actionOnFailure", "clusterId", "message", "name", "severity", "state", "stepId"]
-        output = self.zion.generate_mock_event(
+        output = self.ctk.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaJSONSchemaName"],
             schema_version=self.schema_details["TestEBEventSchemaJSONSchemaVersion"],
@@ -109,7 +109,7 @@ class TestZion_generate_mock_event(TestCase):
         required_attributes = ["detail-type", "detail", "region"]
         not_required_attributes = ["source", "id", "version", "account", "time"]
         detail_attributes = ["actionOnFailure", "clusterId", "message", "name", "severity", "state", "stepId"]
-        output = self.zion.generate_mock_event(
+        output = self.ctk.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaJSONSchemaName"],
             schema_version=self.schema_details["TestEBEventSchemaJSONSchemaVersion"],
@@ -133,7 +133,7 @@ class TestZion_generate_mock_event(TestCase):
             return event
         required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
         detail_attributes = ["actionOnFailure", "clusterId", "message", "name", "severity", "state", "stepId"]
-        output = self.zion.generate_mock_event(
+        output = self.ctk.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaJSONSchemaName"],
             schema_version=self.schema_details["TestEBEventSchemaJSONSchemaVersion"],
@@ -152,7 +152,7 @@ class TestZion_generate_mock_event(TestCase):
     def test_openapi_schema_success_with_context(self):
         required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
         detail_attributes = ["creator", "department", "ticketId"]
-        output = self.zion.generate_mock_event(
+        output = self.ctk.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaOpenAPIName"],
             schema_version=self.schema_details["TestEBEventSchemaOpenAPIVersion"],
@@ -171,7 +171,7 @@ class TestZion_generate_mock_event(TestCase):
     def test_openapi_schema_success_default(self):
         required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
         detail_attributes = ["creator", "department", "ticketId"]
-        output = self.zion.generate_mock_event(
+        output = self.ctk.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaOpenAPIName"],
             schema_version=self.schema_details["TestEBEventSchemaOpenAPIVersion"],
@@ -191,7 +191,7 @@ class TestZion_generate_mock_event(TestCase):
         required_attributes = ["detail-type", "detail", "region"]
         not_required_attributes = ["source", "id", "version", "account", "time"]
         detail_attributes = ["creator", "department", "ticketId"]
-        output = self.zion.generate_mock_event(
+        output = self.ctk.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaOpenAPIName"],
             schema_version=self.schema_details["TestEBEventSchemaOpenAPIVersion"],
@@ -215,7 +215,7 @@ class TestZion_generate_mock_event(TestCase):
             return event
         required_attributes = ["detail-type", "resources", "id", "source", "time", "detail", "region", "version", "account"]
         detail_attributes = ["creator", "department", "ticketId"]
-        output = self.zion.generate_mock_event(
+        output = self.ctk.generate_mock_event(
             registry_name=self.schema_details["TestSchemaRegistryName"],
             schema_name=self.schema_details["TestEBEventSchemaOpenAPIName"],
             schema_version=self.schema_details["TestEBEventSchemaOpenAPIVersion"],
@@ -233,8 +233,8 @@ class TestZion_generate_mock_event(TestCase):
         self.assertEqual(output["region"], "testRegion")
 
     def test_openapi_ref_failure(self):
-        with pytest.raises(ZionException) as e:
-            self.zion.generate_mock_event(
+        with pytest.raises(CtkException) as e:
+            self.ctk.generate_mock_event(
                 registry_name=self.schema_details["TestSchemaRegistryName"],
                 schema_name=self.schema_details["TestEBEventSchemaOpenAPIName"],
                 schema_version=self.schema_details["TestEBEventSchemaOpenAPIVersion"],

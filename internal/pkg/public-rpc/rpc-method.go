@@ -2,11 +2,11 @@ package publicrpc
 
 import (
 	"bytes"
+	"ctk/internal/pkg/jsonrpc"
+	"ctk/internal/pkg/public-rpc/types"
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"zion/internal/pkg/jsonrpc"
-	"zion/internal/pkg/public-rpc/types"
 )
 
 type Method interface {

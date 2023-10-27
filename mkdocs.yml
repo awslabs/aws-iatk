@@ -1,7 +1,7 @@
-site_name: AWS Zion
-site_description: AWS Zion
+site_name: AWS CTK
+site_description: AWS CTK
 site_author: Amazon Web Services
-repo_url: https://github.com/awslabs/aws-zion-private
+repo_url: https://github.com/awslabs/aws-ctk
 edit_uri: edit/develop/docs
 
 nav:

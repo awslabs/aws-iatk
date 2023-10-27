@@ -1,17 +1,17 @@
 ---
 title: Homepage
-description: Zion
+description: AWS Cloud Test Kit
 ---
 
-Zion is a framework that makes it easy for developers to write integration tests that run against their Event Driven Application in the cloud. Zion simplifies writing integration tests for serverless applications, providing utilities to generate test events to trigger an application, validate event flow and structure in EventBridge, and assert event flow against X-Ray traces. 
+AWS Cloud Test Kit (CTK) is a framework that makes it easy for developers to write integration tests that run against their Event Driven Application in the cloud. CTK simplifies writing integration tests for serverless applications, providing utilities to generate test events to trigger an application, validate event flow and structure in EventBridge, and assert event flow against X-Ray traces. 
 
 ## Install
 
-You can install Powertools for AWS Lambda (Python) using one of the following options:
+You can install AWS CTK for Python using one of the following options:
 
 Pip:
 ```bash
-pip install aws-zion
+pip install aws-ctk
 ```
 
 !!! question "Looking for Pip signed releases? [Learn more about verifying signed builds](./security.md#verifying-signed-builds)"
@@ -19,7 +19,7 @@ pip install aws-zion
 ## Quick getting started
 
 ```bash title="Hello world example using SAM CLI"
-sam init --app-template hello-world-zion --name sam-app --package-type Zip --runtime python3.11 --no-tracing
+sam init --app-template hello-world-ctk --name sam-app --package-type Zip --runtime python3.11 --no-tracing
 ```
 
 ## Environment variables

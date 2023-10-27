@@ -5,9 +5,9 @@ bin
 # mocks
 mock_*_test.go
 
-# Zion (Python Client)
-python-client/src/zion_service/
-python-client/src/zion_src/
+# CTK (Python Client)
+python-client/src/ctk_service/
+python-client/src/ctk_src/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

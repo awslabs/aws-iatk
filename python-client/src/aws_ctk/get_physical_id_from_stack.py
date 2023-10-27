@@ -13,7 +13,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class PhysicalIdFromStackOutput:
     """
-    zion.get_physical_id_from_stack output
+    AWSCtk.get_physical_id_from_stack output
 
     Parameters
     ----------
@@ -29,7 +29,7 @@ class PhysicalIdFromStackOutput:
 @dataclass
 class PhysicalIdFromStackParams:
     """
-    zion.get_physical_id_from_stack parameters
+    AWSCtk.get_physical_id_from_stack parameters
 
     Parameters
     ----------

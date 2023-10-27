@@ -24,21 +24,21 @@ func TestValidateTags(t *testing.T) {
 			input:     map[string]string{"foo": "bar", "hello": "world"},
 			expectErr: nil,
 		},
-		"should return error if zion:TestHarness:ID is one of the provided keys": {
-			input:     map[string]string{"zion:TestHarness:ID": "123"},
-			expectErr: errors.New(`reserved tag key "zion:TestHarness:ID" found in provided tags`),
+		"should return error if ctk:TestHarness:ID is one of the provided keys": {
+			input:     map[string]string{"ctk:TestHarness:ID": "123"},
+			expectErr: errors.New(`reserved tag key "ctk:TestHarness:ID" found in provided tags`),
 		},
-		"should return error if zion:TestHarness:Type is one of the provided keys": {
-			input:     map[string]string{"zion:TestHarness:Type": "123"},
-			expectErr: errors.New(`reserved tag key "zion:TestHarness:Type" found in provided tags`),
+		"should return error if ctk:TestHarness:Type is one of the provided keys": {
+			input:     map[string]string{"ctk:TestHarness:Type": "123"},
+			expectErr: errors.New(`reserved tag key "ctk:TestHarness:Type" found in provided tags`),
 		},
-		"should return error if zion:TestHarness:Target is one of the provided keys": {
-			input:     map[string]string{"zion:TestHarness:Target": "123"},
-			expectErr: errors.New(`reserved tag key "zion:TestHarness:Target" found in provided tags`),
+		"should return error if ctk:TestHarness:Target is one of the provided keys": {
+			input:     map[string]string{"ctk:TestHarness:Target": "123"},
+			expectErr: errors.New(`reserved tag key "ctk:TestHarness:Target" found in provided tags`),
 		},
-		"should return error if zion:TestHarness:Created is one of the provided keys": {
-			input:     map[string]string{"zion:TestHarness:Created": "123"},
-			expectErr: errors.New(`reserved tag key "zion:TestHarness:Created" found in provided tags`),
+		"should return error if ctk:TestHarness:Created is one of the provided keys": {
+			input:     map[string]string{"ctk:TestHarness:Created": "123"},
+			expectErr: errors.New(`reserved tag key "ctk:TestHarness:Created" found in provided tags`),
 		},
 	}
 
@@ -252,7 +252,7 @@ func TestGetTestHarnessIDsWithTagFilters(t *testing.T) {
 				return api
 			},
 		},
-		"already provided system key (zion:TestHarnessID) in tag filter; success": {
+		"already provided system key (ctk:TestHarnessID) in tag filter; success": {
 			expect: []string{
 				"test-harness-id-1",
 				"test-harness-id-2",
@@ -356,34 +356,34 @@ func Test_hasOneSystemTagKey(t *testing.T) {
 		},
 		{
 			input: []tagtypes.TagFilter{
-				{Key: aws.String("zion:TestHarness:ID"), Values: []string{"val1", "val2"}},
+				{Key: aws.String("ctk:TestHarness:ID"), Values: []string{"val1", "val2"}},
 			},
 			expect: true,
 		},
 		{
 			input: []tagtypes.TagFilter{
-				{Key: aws.String("zion:TestHarness:Target"), Values: []string{"val1", "val2"}},
+				{Key: aws.String("ctk:TestHarness:Target"), Values: []string{"val1", "val2"}},
 			},
 			expect: true,
 		},
 		{
 			input: []tagtypes.TagFilter{
-				{Key: aws.String("zion:TestHarness:Type"), Values: []string{"val1", "val2"}},
+				{Key: aws.String("ctk:TestHarness:Type"), Values: []string{"val1", "val2"}},
 			},
 			expect: true,
 		},
 		{
 			input: []tagtypes.TagFilter{
-				{Key: aws.String("zion:TestHarness:Created"), Values: []string{"val1", "val2"}},
+				{Key: aws.String("ctk:TestHarness:Created"), Values: []string{"val1", "val2"}},
 			},
 			expect: true,
 		},
 		{
 			input: []tagtypes.TagFilter{
-				{Key: aws.String("zion:TestHarness:ID"), Values: []string{"val1", "val2"}},
-				{Key: aws.String("zion:TestHarness:Target"), Values: []string{"val1", "val2"}},
-				{Key: aws.String("zion:TestHarness:Type"), Values: []string{"val1", "val2"}},
-				{Key: aws.String("zion:TestHarness:Created"), Values: []string{"val1", "val2"}},
+				{Key: aws.String("ctk:TestHarness:ID"), Values: []string{"val1", "val2"}},
+				{Key: aws.String("ctk:TestHarness:Target"), Values: []string{"val1", "val2"}},
+				{Key: aws.String("ctk:TestHarness:Type"), Values: []string{"val1", "val2"}},
+				{Key: aws.String("ctk:TestHarness:Created"), Values: []string{"val1", "val2"}},
 			},
 			expect: true,
 		},
@@ -406,7 +406,7 @@ func Test_extractTestHarnessIDFromTags(t *testing.T) {
 			input: []tagtypes.Tag{
 				{Key: aws.String("key1"), Value: aws.String("val1")},
 				{Key: aws.String("key2"), Value: aws.String("val2")},
-				{Key: aws.String("zion:TestHarness:ID"), Value: aws.String("test-harness-id-1")},
+				{Key: aws.String("ctk:TestHarness:ID"), Value: aws.String("test-harness-id-1")},
 			},
 			expect: []string{"test-harness-id-1"},
 		},

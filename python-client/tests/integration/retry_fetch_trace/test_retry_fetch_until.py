@@ -2,28 +2,28 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Integration tests for zion.retry_until
+Integration tests for aws_ctk.retry_until
 """
 import logging
 from unittest import TestCase
 import time
 import boto3
 import random
-import zion
+from aws_ctk import AWSCtk, CtkException
 import os
 import pytest
 import json
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
-boto3.set_stream_logger(name="zion", level=logging.DEBUG)
+boto3.set_stream_logger(name="aws_ctk", level=logging.DEBUG)
 
-class TestZion_retry_fetch_until(TestCase):
+class TestCTK_retry_fetch_until(TestCase):
     counter = 0
     xray_trace_header = ""
     dummy_trace_header = "Root=test,Sampled=1"
     region = "us-east-1"
-    zion = zion.Zion(region=region)
+    ctk = AWSCtk(region=region)
     lambda_client = boto3.client("lambda", region_name=region)
     iam_client = boto3.client("iam", region_name=region)
     lambda_function_name = "test_lambda" + str(random.randrange(0,100000))
@@ -32,7 +32,7 @@ class TestZion_retry_fetch_until(TestCase):
     def setUpClass(cls) -> None:
         LOG.debug("creating resources")
         try:
-            cls.lambda_client = cls.zion.patch_aws_client(cls.lambda_client, 1)
+            cls.lambda_client = cls.ctk.patch_aws_client(cls.lambda_client, 1)
             current_path = os.path.realpath(__file__)
             current_dir = os.path.dirname(current_path)
             test_lambda_path = os.path.join(current_dir, "testdata","helloworld.zip")
@@ -74,7 +74,7 @@ class TestZion_retry_fetch_until(TestCase):
             xray_trace_id = self.xray_trace_header.split(";")[0].split("=")[1]
             return tree.trace_tree.root.name == self.lambda_function_name and tree.trace_tree.root.trace_id == xray_trace_id
         start = time.time()
-        response = self.zion.retry_get_trace_tree_until(
+        response = self.ctk.retry_get_trace_tree_until(
             tracing_header=self.xray_trace_header,
             condition=trace_header_is_root,
             timeout_seconds=10
@@ -89,7 +89,7 @@ class TestZion_retry_fetch_until(TestCase):
             self.counter = random.randrange(0,10)
             return self.counter == 10
         start = time.time()
-        response = self.zion.retry_get_trace_tree_until(
+        response = self.ctk.retry_get_trace_tree_until(
             tracing_header=self.xray_trace_header,
             condition=num_is_10,
             timeout_seconds=10
@@ -107,7 +107,7 @@ class TestZion_retry_fetch_until(TestCase):
             self.counter += 1
             return self.counter == 10
         start = time.time()
-        response = self.zion.retry_get_trace_tree_until(
+        response = self.ctk.retry_get_trace_tree_until(
             tracing_header=self.xray_trace_header,
             condition=num_is_10,
             timeout_seconds=0
@@ -121,8 +121,8 @@ class TestZion_retry_fetch_until(TestCase):
         def num_is_10(trace):
             self.counter = random.randrange(0,10)
             return self.counter == 10
-        with pytest.raises(zion.ZionException) as e:
-            self.zion.retry_get_trace_tree_until(
+        with pytest.raises(CtkException) as e:
+            self.ctk.retry_get_trace_tree_until(
                 tracing_header="test",
                 condition=num_is_10,
                 timeout_seconds=10
@@ -132,7 +132,7 @@ class TestZion_retry_fetch_until(TestCase):
 
     def test_condition_not_function_error(self):
         with pytest.raises(TypeError) as e:
-            self.zion.retry_get_trace_tree_until(
+            self.ctk.retry_get_trace_tree_until(
                 tracing_header=self.xray_trace_header,
                 condition=0,
                 timeout_seconds=10
@@ -144,7 +144,7 @@ class TestZion_retry_fetch_until(TestCase):
         def num_is_5(trace):
             return random.randrange(0,5) == 5
         start = time.time()
-        response = self.zion.retry_get_trace_tree_until(
+        response = self.ctk.retry_get_trace_tree_until(
             tracing_header="Root=1-652850da-255d5ae071f55e4aef339837;Sampled=1",
             condition=num_is_5,
             timeout_seconds=10

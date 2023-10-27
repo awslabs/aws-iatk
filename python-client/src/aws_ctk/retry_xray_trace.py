@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class RetryGetTraceTreeUntilParams:
     """
-    zion.wait_until_event_matched params
+    AWSCtk.wait_until_event_matched params
 
     Parameters
     ----------

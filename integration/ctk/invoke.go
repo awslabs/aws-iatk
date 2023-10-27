@@ -1,4 +1,4 @@
-package zion
+package ctk
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 )
 
 func Invoke(t *testing.T, in []byte, out *strings.Builder, sErr *strings.Builder, env *[]string) {
-	cmd := exec.Command("zion")
+	cmd := exec.Command("ctk")
 	if env != nil {
 		cmd.Env = *env
 	}
@@ -27,7 +27,7 @@ func Invoke(t *testing.T, in []byte, out *strings.Builder, sErr *strings.Builder
 }
 
 func SInvoke(t *testing.T, in string, out *strings.Builder, sErr *strings.Builder, env *[]string, ignoreErr bool) {
-	cmd := exec.Command("zion")
+	cmd := exec.Command("ctk")
 	if env != nil {
 		cmd.Env = *env
 	}

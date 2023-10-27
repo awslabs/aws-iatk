@@ -5,10 +5,10 @@ package config
 
 import (
 	"context"
+	"ctk/internal/pkg/jsonrpc"
 	"reflect"
 	"runtime"
 	"testing"
-	"zion/internal/pkg/jsonrpc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
@@ -48,7 +48,7 @@ func TestConfigClientUserAgentIsAdded(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, cfg.APIOptions, 1)
 	expectFunc := awsmiddleware.AddUserAgentKeyValue("does not matter", "does not matter")
-	expectFuncName := runtime.FuncForPC(reflect.ValueOf(expectFunc).Pointer()).Name()
-	actualFuncName := runtime.FuncForPC(reflect.ValueOf(cfg.APIOptions[0]).Pointer()).Name()
-	assert.Equal(t, actualFuncName, expectFuncName)
+	expectFuncName := runtime.FuncForPC(reflect.ValueOf(expectFunc).Pointer())
+	actualFuncName := runtime.FuncForPC(reflect.ValueOf(cfg.APIOptions[0]).Pointer())
+	assert.Equal(t, expectFuncName, actualFuncName)
 }

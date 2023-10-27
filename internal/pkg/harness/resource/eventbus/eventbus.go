@@ -5,8 +5,8 @@ package eventbus
 
 import (
 	"context"
+	"ctk/internal/pkg/harness"
 	"fmt"
-	"zion/internal/pkg/harness"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
