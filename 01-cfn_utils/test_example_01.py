@@ -1,10 +1,10 @@
 import os
-import zion
+import aws_ctk
 
-def test_zion_utils():
+def test_ctk_utils():
     stack_name = os.getenv("STACK_NAME", "example-01")
     region = os.getenv("AWS_REGION", "us-east-1")
-    z = zion.Zion(region=region)
+    z = aws_ctk.AWSCtk(region=region)
 
     outputs = z.get_stack_outputs(
         stack_name=stack_name,

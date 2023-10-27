@@ -4,7 +4,7 @@ import pathlib
 from unittest import TestCase
 
 import requests
-import zion
+import aws_ctk
 
 
 LOG = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ def read_cdk_outputs() -> dict:
 class Example02(TestCase):
     stack_name: str = "cdk-example-ebStack"
     stack_outputs: dict = read_cdk_outputs().get(stack_name, {}) 
-    z: zion.Zion = zion.Zion()
+    z: aws_ctk.AWSCtk = aws_ctk.AWSCtk()
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -31,7 +31,7 @@ class Example02(TestCase):
         # remote orphaned listeners from previous test runs (if any)
         cls.z.remove_listeners(
             tag_filters=[
-                zion.RemoveListeners_TagFilter(
+                aws_ctk.RemoveListeners_TagFilter(
                     key="stage",
                     values=["example02"],
                 )
