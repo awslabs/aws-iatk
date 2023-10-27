@@ -8,7 +8,7 @@ from typing import Optional
 from aws_ctk.version import _version
 
 LOG = logging.getLogger(__name__)
-MODULE_NAME = "aws-ctk"
+MODULE_NAME = "aws_ctk"
 
 
 class Payload:

@@ -53,8 +53,8 @@ if TYPE_CHECKING:
     import boto3
 
 __all__ = [
-    "Zion", 
-    "ZionException", 
+    "AWSCtk", 
+    "CtkException", 
     "PhysicalIdFromStackOutput", 
     "GetStackOutputsOutput", 
     "AddEbListenerOutput", 
@@ -67,7 +67,7 @@ __all__ = [
 ]
 
 LOG = logging.getLogger(__name__)
-zion_service_logger = logging.getLogger("zion.service")
+ctk_service_logger = logging.getLogger("ctk.service")
 
 
 def _log_duration(func):
@@ -81,7 +81,7 @@ def _log_duration(func):
     return wrapper
 
 
-class CTKException(Exception):
+class CtkException(Exception):
     def __init__(self, message, error_code) -> None:
         super().__init__(message)
 
@@ -139,7 +139,7 @@ class AWSCtk:
         """
         params = PhysicalIdFromStackParams(logical_resource_id, stack_name)
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_zion(payload)
+        response = self._invoke_ctk(payload)
         output = PhysicalIdFromStackOutput(response)
         LOG.debug(f"Physical id: {output.physical_id}, Logical id: {params.logical_resource_id}")
         return output
@@ -171,7 +171,7 @@ class AWSCtk:
         """
         params = GetStackOutputsParams(stack_name, output_names)
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_zion(payload)
+        response = self._invoke_ctk(payload)
         output = GetStackOutputsOutput(response)
         LOG.debug(f"Output: {output}")
         return output
@@ -219,7 +219,7 @@ class AWSCtk:
         """
         params = AddEbListenerParams(event_bus_name, rule_name, target_id, tags)
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_zion(payload)
+        response = self._invoke_ctk(payload)
         output = AddEbListenerOutput(response)
         LOG.debug(f"Output: {output}")
         return output
@@ -260,7 +260,7 @@ class AWSCtk:
         """
         params = RemoveListenersParams(ids, tag_filters)
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_zion(payload)
+        response = self._invoke_ctk(payload)
         output = RemoveListenersOutput(response)
         LOG.debug(f"Output: {output}")
         return output
@@ -270,7 +270,7 @@ class AWSCtk:
         underlying implementation for poll_events and wait_until_event_matched
         """
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_zion(payload, caller)
+        response = self._invoke_ctk(payload, caller)
         output = PollEventsOutput(response)
         return output
 
@@ -366,7 +366,7 @@ class AWSCtk:
         underlying implementation for get_trace_tree and retry_get_trace_tree_until
         """
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_zion(payload, caller)
+        response = self._invoke_ctk(payload, caller)
         output = GetTraceTreeOutput(response)
         return output
 
@@ -403,7 +403,7 @@ class AWSCtk:
         self, params: GenerateBareboneEventParams,
     ) -> GenerateBareboneEventOutput:
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_zion(payload)
+        response = self._invoke_ctk(payload)
         output = GenerateBareboneEventOutput(response)
         return output
 
@@ -530,9 +530,9 @@ class AWSCtk:
             try:
                 json.dumps(generated_event)
             except TypeError:
-                raise CTKException(f"context applier {func.__name__} returns a non-JSON-serializable result", 400)
+                raise CtkException(f"context applier {func.__name__} returns a non-JSON-serializable result", 400)
         if generated_event is None:
-            raise CTKException("event is empty, make sure function returns a valid event", 404)
+            raise CtkException("event is empty, make sure function returns a valid event", 404)
         return generated_event
         
     def patch_aws_client(self, client: "boto3.client", sampled = 1) -> "boto3.client":
@@ -577,7 +577,7 @@ class AWSCtk:
         if data_dict.get("error", None):
             message = data_dict.get("error", {}).get("message", "")
             error_code = data_dict.get("error", {}).get("Code", 0)
-            raise CTKException(message=message, error_code=error_code)
+            raise CtkException(message=message, error_code=error_code)
         
         return data_dict
 
@@ -598,7 +598,7 @@ class AWSCtk:
         if data_dict.get("error", None):
             message = data_dict.get("error", {}).get("message", "")
             error_code = data_dict.get("error", {}).get("Code", 0)
-            raise CTKException(message=message, error_code=error_code)
+            raise CtkException(message=message, error_code=error_code)
 
         
     def retry_get_trace_tree_until(self, tracing_header: str, condition: Callable[[GetTraceTreeOutput], bool], timeout_seconds: int = 30):
@@ -637,17 +637,17 @@ class AWSCtk:
                     caller="retry_get_trace_tree_until",
                 )
                 return response
-            except CTKException as e:
+            except CtkException as e:
                  if "trace not found" in str(e):
                     pass
                     raise RetryableException(e)
                  else:
-                    raise CTKException(e, 500)
+                    raise CtkException(e, 500)
         try:
             response = fetch_trace_tree()
             return response
-        except CTKException as e:
-            raise CTKException(e, 500)
+        except CtkException as e:
+            raise CtkException(e, 500)
 
 
 # Set up logging to ``/dev/null`` like a library is supposed to.
