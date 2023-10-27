@@ -19,7 +19,7 @@ def build_and_install_ctk(packages: List[str]) -> None:
         if out != 0:
             raise CompileError("Failed to build CTK Service. Golang version >1.20 required and on PATH")
 
-    # Add zion_service package to the packages list. This ensures it is included in the python whl/sdist
+    # Add ctk_service package to the packages list. This ensures it is included in the python whl/sdist
     packages.extend(["ctk_service"])
     list_to_remove = []
     for package in packages:

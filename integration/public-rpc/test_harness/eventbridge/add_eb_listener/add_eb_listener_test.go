@@ -293,7 +293,7 @@ func (s *AddEbListenerSuite) TestErrors() {
 						"RuleName":     s.eventBusRule,
 						"Region":       s.region,
 						"Tags": map[string]string{
-							"zion:TestHarness:Created": "12345",
+							"ctk:TestHarness:Created": "12345",
 						},
 					},
 				}
@@ -301,7 +301,7 @@ func (s *AddEbListenerSuite) TestErrors() {
 				return out
 			},
 			expectErrCode: 10,
-			expectErrMsg:  `invalid tags: reserved tag key "zion:TestHarness:Created" found in provided tags`,
+			expectErrMsg:  `invalid tags: reserved tag key "ctk:TestHarness:Created" found in provided tags`,
 		},
 		{
 			testname: "provides invalid targetid",
@@ -386,10 +386,10 @@ func (s *AddEbListenerSuite) assertOutput(response jsonrpc.Response, customTags 
 	id := output["Id"].(string)
 	ebARN := output["TargetUnderTest"].(map[string]any)["ARN"].(string)
 	expectTags := map[string]string{
-		"zion:TestHarness:ID":      id,
-		"zion:TestHarness:Target":  ebARN,
-		"zion:TestHarness:Type":    "EventBridge.Listener",
-		"zion:TestHarness:Created": "",
+		"ctk:TestHarness:ID":      id,
+		"ctk:TestHarness:Target":  ebARN,
+		"ctk:TestHarness:Type":    "EventBridge.Listener",
+		"ctk:TestHarness:Created": "",
 	}
 	for key, val := range customTags {
 		if _, ok := expectTags[key]; !ok {
@@ -457,7 +457,7 @@ func (s *AddEbListenerSuite) assertRuleTarget(ruleName, eventBusName string, has
 func (s *AddEbListenerSuite) assertTags(expectTags, actualTags map[string]string) {
 	for key, val := range expectTags {
 		s.Contains(actualTags, key)
-		if key != "zion:TestHarness:Created" {
+		if key != "ctk:TestHarness:Created" {
 			s.Equal(val, actualTags[key])
 		}
 	}

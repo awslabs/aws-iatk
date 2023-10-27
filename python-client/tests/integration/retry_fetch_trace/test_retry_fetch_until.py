@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Integration tests for zion.retry_until
+Integration tests for aws_ctk.retry_until
 """
 import logging
 from unittest import TestCase
