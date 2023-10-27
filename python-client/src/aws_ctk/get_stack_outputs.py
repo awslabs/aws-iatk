@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class GetStackOutputsOutput:
     """
-    zion.get_stack_outputs output
+    AWSCtk.get_stack_outputs output
 
     Parameters
     ----------
@@ -31,7 +31,7 @@ class GetStackOutputsOutput:
 @dataclass
 class GetStackOutputsParams:
     """
-    zion.get_stack_outputs parameters
+    AWSCtk.get_stack_outputs parameters
 
     Parameters
     ----------

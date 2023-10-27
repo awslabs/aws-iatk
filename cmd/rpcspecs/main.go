@@ -6,6 +6,7 @@
 package main
 
 import (
+	publicrpc "ctk/internal/pkg/public-rpc"
 	"encoding/json"
 	"flag"
 	"log"
@@ -13,7 +14,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
-	publicrpc "zion/internal/pkg/public-rpc"
 )
 
 var (
@@ -31,7 +31,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	log.Print("generating Zion RPC specs")
+	log.Print("generating CTK RPC specs")
 	methodMap := publicrpc.MethodMap
 	out := Output{Methods: map[string]Method{}}
 

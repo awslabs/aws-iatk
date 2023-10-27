@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class PollEventsOutput:
     """
-    zion.poll_events Output
+    AWSCtk.poll_events Output
 
     Parameters
     ----------
@@ -31,7 +31,7 @@ class PollEventsOutput:
 @dataclass
 class PollEventsParams:
     """
-    zion.poll_events params
+    AWSCtk.poll_events params
 
     Parameters
     ----------
@@ -64,7 +64,7 @@ class PollEventsParams:
 @dataclass
 class WaitUntilEventMatchedParams:
     """
-    zion.wait_until_event_matched params
+    AWSCtk.wait_until_event_matched params
 
     Parameters
     ----------

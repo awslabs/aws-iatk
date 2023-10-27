@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class RemoveListenersOutput:
     """
-    zion.remove_listeners Output
+    AWSCtk.remove_listeners Output
 
     Parameters
     ----------
@@ -54,7 +54,7 @@ class RemoveListeners_TagFilter:
 @dataclass
 class RemoveListenersParams:
     """
-    zion.remove_listeners parameters
+    AWSCtk.remove_listeners parameters
 
     Parameters
     ----------

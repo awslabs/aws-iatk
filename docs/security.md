@@ -1,6 +1,6 @@
 ---
 title: Security
-description: Security practices and processes for AWS Zion
+description: Security practices and processes for AWS CTK
 ---
 
 <!-- markdownlint-disable MD041 MD043 -->

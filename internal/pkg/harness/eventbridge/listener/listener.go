@@ -5,12 +5,12 @@ package listener
 
 import (
 	"context"
+	"ctk/internal/pkg/harness"
+	"ctk/internal/pkg/harness/resource/eventrule"
+	"ctk/internal/pkg/slice"
 	"errors"
 	"fmt"
 	"log"
-	"zion/internal/pkg/harness"
-	"zion/internal/pkg/harness/resource/eventrule"
-	"zion/internal/pkg/slice"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/rs/xid"
@@ -18,7 +18,7 @@ import (
 
 const (
 	TestHarnessType = "EventBridge.Listener"
-	IDPrefix        = "zion_eb_"
+	IDPrefix        = "ctk_eb_"
 )
 
 // Creates a Listener for an event bus resource

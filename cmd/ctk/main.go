@@ -4,13 +4,13 @@
 package main
 
 import (
+	"ctk/internal/pkg/jsonrpc"
+	publicrpc "ctk/internal/pkg/public-rpc"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"os"
-	"zion/internal/pkg/jsonrpc"
-	publicrpc "zion/internal/pkg/public-rpc"
 
 	"github.com/aws/smithy-go"
 )
@@ -60,7 +60,7 @@ func main() {
 			resp = jsonrpc.Response{
 				JSONRPC: "2.0",
 				ID:      jsonrpcData.ID,
-				Error: &jsonrpc.ErrZion{
+				Error: &jsonrpc.ErrCtk{
 					Code:    10,
 					Message: fmt.Sprintf("failed to call service: %s, operation: %s, error: %v", oe.Service(), oe.Operation(), oe.Unwrap()),
 				},
@@ -73,7 +73,7 @@ func main() {
 			resp = jsonrpc.Response{
 				JSONRPC: "2.0",
 				ID:      jsonrpcData.ID,
-				Error: &jsonrpc.ErrZion{
+				Error: &jsonrpc.ErrCtk{
 					Code:    10,
 					Message: apiErr.ErrorMessage(),
 				},
@@ -85,7 +85,7 @@ func main() {
 		resp = jsonrpc.Response{
 			JSONRPC: "2.0",
 			ID:      jsonrpcData.ID,
-			Error: &jsonrpc.ErrZion{
+			Error: &jsonrpc.ErrCtk{
 				Code:    10,
 				Message: errRPC.Error(),
 			},

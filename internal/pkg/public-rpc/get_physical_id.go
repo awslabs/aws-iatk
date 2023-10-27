@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"reflect"
 
-	"zion/internal/pkg/aws/config"
-	zioncfn "zion/internal/pkg/cloudformation"
-	"zion/internal/pkg/jsonrpc"
-	"zion/internal/pkg/public-rpc/types"
+	"ctk/internal/pkg/aws/config"
+	ctkcfn "ctk/internal/pkg/cloudformation"
+	"ctk/internal/pkg/jsonrpc"
+	"ctk/internal/pkg/public-rpc/types"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 )
@@ -31,7 +31,7 @@ func (p *GetPhysicalIdParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Resu
 	}
 
 	cfnClient := cloudformation.NewFromConfig(cfg)
-	id, err := zioncfn.GetPhysicalId(p.StackName, p.LogicalResourceId, cfnClient)
+	id, err := ctkcfn.GetPhysicalId(p.StackName, p.LogicalResourceId, cfnClient)
 
 	// Fowards id and err to caller for handling
 	return &types.Result{
@@ -40,7 +40,7 @@ func (p *GetPhysicalIdParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Resu
 }
 
 func (p *GetPhysicalIdParams) ReflectOutput() reflect.Value {
-	ft := reflect.TypeOf(zioncfn.GetPhysicalId)
+	ft := reflect.TypeOf(ctkcfn.GetPhysicalId)
 	out0 := ft.Out(0)
 	return reflect.New(out0).Elem()
 }

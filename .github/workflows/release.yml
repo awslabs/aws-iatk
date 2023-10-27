@@ -191,7 +191,7 @@ jobs:
   #       working-directory: ./python-client
   #       run: make copy-service-source-for-sdist
 
-  #     - name: create sdist for zion
+  #     - name: create sdist for ctk
   #       working-directory: ./python-client
   #       run: |
   #           pip install build

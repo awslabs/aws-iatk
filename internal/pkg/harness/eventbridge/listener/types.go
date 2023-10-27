@@ -5,16 +5,16 @@ package listener
 
 import (
 	"context"
+	"ctk/internal/pkg/harness"
+	"ctk/internal/pkg/harness/resource/eventbus"
+	"ctk/internal/pkg/harness/resource/eventrule"
+	"ctk/internal/pkg/harness/resource/queue"
+	"ctk/internal/pkg/harness/tags"
 	"errors"
 	"fmt"
 	"log"
 	"strconv"
 	"time"
-	"zion/internal/pkg/harness"
-	"zion/internal/pkg/harness/resource/eventbus"
-	"zion/internal/pkg/harness/resource/eventrule"
-	"zion/internal/pkg/harness/resource/queue"
-	"zion/internal/pkg/harness/tags"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
@@ -126,7 +126,7 @@ func (lr *Listener) Deploy(ctx context.Context) error {
 	accountID := lr.eventBus.ARN.AccountID
 
 	rn := ruleName(lr.ID())
-	description := fmt.Sprintf("rule for Listener %q; created by zion", lr.ID())
+	description := fmt.Sprintf("rule for Listener %q; created by ctk", lr.ID())
 	r, err := lr.opts.createRule(ctx, lr.opts.ebClient, rn, lr.eventBus.Name, lr.eventPattern, description, tags)
 	if err != nil {
 		return fmt.Errorf("failed to deploy eb listener %v: %w", lr.ID(), err)

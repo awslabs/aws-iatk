@@ -15,7 +15,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class GenerateBareboneEventOutput:
     """
-    zion.generate_barebone_event output
+    AWSCtk.generate_barebone_event output
     
     Parameters
     ----------
@@ -32,7 +32,7 @@ class GenerateBareboneEventOutput:
 @dataclass
 class GenerateBareboneEventParams:
     """
-    zion.generate_barebone_event parameters
+    AWSCtk.generate_barebone_event parameters
     
     Parameters
     ----------
@@ -77,7 +77,7 @@ class GenerateBareboneEventParams:
 @dataclass
 class GenerateMockEventOutput:
     """
-    zion.generate_mock_event output
+    AWSCtk.generate_mock_event output
     
     Parameters
     ----------
@@ -91,7 +91,7 @@ class GenerateMockEventOutput:
 @dataclass
 class GenerateMockEventParams:
     """
-    zion.generate_mock_event parameters
+    AWSCtk.generate_mock_event parameters
 
     Parameters
     ----------
