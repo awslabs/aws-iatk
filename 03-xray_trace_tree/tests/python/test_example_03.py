@@ -5,7 +5,7 @@ import time
 from unittest import TestCase
 
 import boto3
-import zion
+import aws_ctk
 
 
 LOG = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class Example03(TestCase):
     stack_name: str = "cdk-example-sfnStack"
     stack_outputs: dict = read_cdk_outputs().get(stack_name, {}) 
     statemachine_arn: str = stack_outputs["StateMachineArn"]
-    z: zion.Zion = zion.Zion()
+    z: aws_ctk.AWSCtk = aws_ctk.AWSCtk()
     # patch sfn client to ensure trace is sampled
     sfn_client: boto3.client = z.patch_aws_client(boto3.client("stepfunctions"))
 
@@ -60,7 +60,7 @@ class Example03(TestCase):
         )
         
     def test_retry_get_trace_tree_until(self):
-        def condition(output: zion.GetTraceTreeOutput) -> bool:
+        def condition(output: aws_ctk.GetTraceTreeOutput) -> bool:
             tree = output.trace_tree
             try:
                 self.assertEqual(len(tree.paths), 3)

@@ -4,8 +4,8 @@ import pathlib
 import uuid
 
 import boto3
-import zion
-from zion.context_generation import eventbridge_event_context
+import aws_ctk
+from aws_ctk.context_generation import eventbridge_event_context
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -21,7 +21,7 @@ def test_generate_barebone_event():
     stack_outputs = read_cdk_outputs().get(stack_name, {})
     registry_name = stack_outputs["RegistryName"]
     schema_name = stack_outputs["SchemaName"]
-    z = zion.Zion()
+    z = aws_ctk.AWSCtk()
     barebone_event = z.generate_mock_event(
         registry_name=registry_name,
         schema_name=schema_name,
@@ -40,7 +40,7 @@ def test_generate_contextful_event():
     registry_name = stack_outputs["RegistryName"]
     schema_name = stack_outputs["SchemaName"]
     function_name = stack_outputs["CalculatorFunction"]
-    z = zion.Zion()
+    z = aws_ctk.AWSCtk()
     
     def apply_context(event: dict) -> dict:
         event["customerId"] = str(uuid.uuid4())
@@ -74,7 +74,7 @@ def test_generate_contextful_event():
     assert result == 110
 
 def test_generate_eventbridge_event():
-    z = zion.Zion()
+    z = aws_ctk.AWSCtk()
 
     mock_eb_event = z.generate_mock_event(
         registry_name="aws.events",
