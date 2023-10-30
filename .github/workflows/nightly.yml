@@ -15,6 +15,10 @@ on:
       - "dev-release-pipeline"
     # paths:
     #   - ${{ env.VERSION_FILE }}
+
+# concurrency:
+  # group: ${{ github.ref }}
+  # cancel-in-progress: true
     
 jobs:
   # This job bumps the package version to the release version
@@ -56,7 +60,47 @@ jobs:
     secrets:
       CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
 
+  build-binary:
+    name: "Build CTK Binary ${{ matrix.os }} / ${{ matrix.GOARCH }}"
+    # needs: [quality-check]
+    permissions:
+      contents: read
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        GOARCH: [amd64, arm64]
+        include:
+          - os: macos-latest
+            GOOS: darwin
+          - os: windows-latest
+            GOOS: windows
+          - os: ubuntu-latest
+            GOOS: linux
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: build binary
+        run: make build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          if-no-files-found: error
+          name: ./bin/ctk_${{ matrix.os }}_${{ matrix.GOARCH }}
+          path: ./bin/ctk
+          retention-days: 1
+
   build-python-client:
+    name: "Build Python Client (${{ matrix.os }} / ${{ }})"
     needs: [quality-check]
     permissions:
       contents: read
