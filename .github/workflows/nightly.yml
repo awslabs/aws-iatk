@@ -100,7 +100,7 @@ jobs:
           retention-days: 1
 
   build-python-client:
-    name: "Build Python Client (${{ matrix.os }} / ${{ }})"
+    name: "Build Python Client (${{ matrix.os }} / ${{ matrix.GOARCH }})"
     needs: [quality-check]
     permissions:
       contents: read
