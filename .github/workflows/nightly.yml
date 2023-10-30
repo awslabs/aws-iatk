@@ -6,7 +6,7 @@ name: (dev) Release Workflow
 
 env:
   RELEASE_COMMIT: ${{ github.sha }}
-  VERSION_FILE: "python-client/src/zion/version.py"
+  VERSION_FILE: "python-client/src/aws_ctk/version.py"
   GO_VERSION: "1.20"
 
 on:
@@ -38,7 +38,7 @@ jobs:
         id: release_version
         # transform tag format `v<version` to `<version>`
         run: |
-          RELEASE_VERSION=$(awk -F '"' '/_version = /{print $2}' python-client/src/zion/version.py)
+          RELEASE_VERSION=$(awk -F '"' '/_version = /{print $2}' ${{ VERSION_FILE }})
           echo $RELEASE_VERSION
           echo "RELEASE_VERSION=${RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
       
