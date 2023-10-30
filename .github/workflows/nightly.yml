@@ -16,9 +16,6 @@ on:
     # paths:
     #   - ${{ env.VERSION_FILE }}
     
-permissions:
-  contents: read
-
 jobs:
   # This job bumps the package version to the release version
   # creates an integrity hash from the source code
