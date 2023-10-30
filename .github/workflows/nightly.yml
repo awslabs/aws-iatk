@@ -49,6 +49,7 @@ jobs:
           artifact_name_prefix: "source"
 
   quality-check:
+    needs: [seal]
     uses: ./.github/workflows/quality-check.yml
     with:
       ref: ${{ github.sha }}
@@ -56,6 +57,7 @@ jobs:
       CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
 
   build-python-client:
+    needs: [quality-check]
     permissions:
       contents: read
     runs-on: ${{ matrix.os }}
