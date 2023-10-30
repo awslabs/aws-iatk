@@ -54,7 +54,7 @@ jobs:
   quality-check:
     uses: ./.github/workflows/quality-check.yml
     with:
-      ref: ${{ env.RELEASE_COMMIT }}
+      ref: ${{ github.sha }}
     secrets:
       CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
 
@@ -77,5 +77,5 @@ jobs:
             CIBW_ARCHS_LINUX: aarch64
     steps:
       - run: |
-          echo "${{ matrix.os }} / ${{ maxtrix.GOOS }} / ${{ matrix.GOARCH }} / ${{ matrix.CIBW_ARCHS_LINUX }}"
+          echo "${{ matrix.os }} / ${{ matrix.GOOS }} / ${{ matrix.GOARCH }} / ${{ matrix.CIBW_ARCHS_LINUX }}"
       
