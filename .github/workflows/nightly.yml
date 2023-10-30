@@ -7,6 +7,7 @@ name: (dev) Release Workflow
 env:
   RELEASE_COMMIT: ${{ github.sha }}
   VERSION_FILE: "python-client/src/zion/version.py"
+  GO_VERSION: "1.20"
 
 on:
   push:
@@ -19,7 +20,6 @@ permissions:
   contents: read
 
 jobs:
-
   # This job bumps the package version to the release version
   # creates an integrity hash from the source code
   # uploads the artifact with the integrity hash as the key name
@@ -51,19 +51,32 @@ jobs:
         with:
           artifact_name_prefix: "source"
 
-  quality_check:
-    needs: seal
-    runs-on: ubuntu-latest
+  quality-check:
+    uses: ./.github/workflows/quality-check.yml
+    with:
+      ref: ${{ env.RELEASE_COMMIT }}
+    secrets:
+      CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
+
+  build-python-client:
     permissions:
       contents: read
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
-        with:
-          ref: ${{ env.RELEASE_COMMIT }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        include:
+          - os: ubuntu-latest
+            GOOS: linux
+            GOARCH: amd64
+            CIBW_ARCHS_LINUX: x86_64
+          - os: ubuntu-latest
+            GOOS: linux
+            GOARCH: arm64
+            CIBW_ARCHS_LINUX: aarch64
 
-      - name: Restore sealed source code
-        uses: ./.github/actions/seal-restore
-        with:
-          integrity_hash: ${{ needs.seal.outputs.integrity_hash }}
-          artifact_name: ${{ needs.seal.outputs.artifact_name }}
-      - run: ls -la
+      steps:
+        - run: |
+            echo "${{ matrix.os }} / ${{ maxtrix.GOOS }} / ${{ matrix.GOARCH }} / ${{ matrix.CIBW_ARCHS_LINUX }}"
+      
