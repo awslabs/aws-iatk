@@ -75,8 +75,7 @@ jobs:
             GOOS: linux
             GOARCH: arm64
             CIBW_ARCHS_LINUX: aarch64
-
-      steps:
-        - run: |
-            echo "${{ matrix.os }} / ${{ maxtrix.GOOS }} / ${{ matrix.GOARCH }} / ${{ matrix.CIBW_ARCHS_LINUX }}"
+    steps:
+      - run: |
+          echo "${{ matrix.os }} / ${{ maxtrix.GOOS }} / ${{ matrix.GOARCH }} / ${{ matrix.CIBW_ARCHS_LINUX }}"
       
