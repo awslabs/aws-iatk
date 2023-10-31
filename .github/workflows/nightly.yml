@@ -166,7 +166,7 @@ jobs:
             curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && 
             tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && 
             export PATH=$PATH:/usr/local/go/bin && 
-            env GOOS=linux GOARCH=${{ matrix.arch }} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion
+            env GOOS=linux GOARCH=${{ matrix.arch }} go build -C ./src/ctk_src -o ../ctk_service/ ./cmd/ctk
         run: python -m cibuildwheel --output-dir dist
 
       - uses: actions/upload-artifact@v3
