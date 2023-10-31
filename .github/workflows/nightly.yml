@@ -108,7 +108,7 @@ jobs:
     env:
       CIBW_SKIP: "*-musllinux*"
       CTK_SKIP_BUILD_BINARY: "1"
-      CIBW_ENVIRONMENT: CTK_SKIP_BUILD_BINARY="1"
+      CIBW_ENVIRONMENT_PASS_LINUX: CTK_SKIP_BUILD_BINARY
     strategy:
       fail-fast: true
       matrix:
