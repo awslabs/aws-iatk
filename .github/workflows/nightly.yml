@@ -161,7 +161,7 @@ jobs:
           # CIBW_ENVIRONMENT_PASS_LINUX: CTK_SKIP_BUILD_BINARY
           CIBW_SKIP: "*-musllinux*"
           CIBW_ARCHS: ${{ matrix.CIBW_ARCHS }}
-          CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.arch }}"
+          CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.arch }}" CTK_SKIP_BUILD_BINARY="1"
           CIBW_BEFORE_ALL_LINUX: |
             curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && 
             tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && 
