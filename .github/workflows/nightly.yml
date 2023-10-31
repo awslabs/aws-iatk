@@ -116,22 +116,22 @@ jobs:
         include:
           - os: macos-latest
             arch: amd64 
-            CIBW_ARCHS_MACOS: x86_64
+            CIBW_ARCHS: x86_64
           - os: macos-latest
             arch: arm64 
-            CIBW_ARCHS_MACOS: arm64
+            CIBW_ARCHS: arm64
           - os: windows-latest
             arch: amd64 
-            CIBW_ARCHS_WINDOWS: AMD64
+            CIBW_ARCHS: AMD64
           - os: windows-latest
             arch: arm64 
-            CIBW_ARCHS_WINDOWS: ARM64
+            CIBW_ARCHS: ARM64
           - os: ubuntu-latest
             arch: amd64 
-            CIBW_ARCHS_LINUX: x86_64
+            CIBW_ARCHS: x86_64
           - os: ubuntu-latest
             arch: arm64 
-            CIBW_ARCHS_LINUX: aarch64
+            CIBW_ARCHS: aarch64
     steps:
       # checkout
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
@@ -162,6 +162,8 @@ jobs:
 
       - name: Build wheels
         working-directory: "python-client"
+        env:
+          CIBW_ARCHS: ${{ matrix.CIBW_ARCHS }}
         run: python -m cibuildwheel --output-dir dist
 
       - uses: actions/upload-artifact@v3
