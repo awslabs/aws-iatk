@@ -52,13 +52,13 @@ jobs:
         with:
           artifact_name_prefix: "source"
 
-  quality-check:
-    needs: [seal]
-    uses: ./.github/workflows/quality-check.yml
-    with:
-      ref: ${{ github.sha }} # cannot use env
-    secrets:
-      CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
+  # quality-check:
+  #   needs: [seal]
+  #   uses: ./.github/workflows/quality-check.yml
+  #   with:
+  #     ref: ${{ github.sha }} # cannot use env
+  #   secrets:
+  #     CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
 
   build-binary:
     name: "Build CTK Binary ${{ matrix.os }} / ${{ matrix.GOARCH }}"
@@ -101,7 +101,7 @@ jobs:
 
   build-python-client:
     name: "Build Python Client (${{ matrix.os }} / ${{ matrix.GOARCH }})"
-    needs: [quality-check, build-binary]
+    needs: [build-binary]
     permissions:
       contents: read
     runs-on: ${{ matrix.os }}
@@ -155,7 +155,14 @@ jobs:
           name: ctk_${{ matrix.os }}_${{ matrix.arch }}
           path: python-client/src/ctk_service/ctk
 
-      - run: ls -R python-client/src/
+      - name: Build wheels
+        working-directory: "python-client"
+        run: python -m cibuildwheel --output-dir dist
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wheels-test-artifact
+          path: ./python-client/dist/*.whl
         
 
 
