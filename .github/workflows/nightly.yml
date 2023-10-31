@@ -83,11 +83,6 @@ jobs:
         with:
           ref: ${{ env.RELEASE_COMMIT }}
 
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
       - name: build binary
         run: make build
 
@@ -105,11 +100,6 @@ jobs:
     permissions:
       contents: read
     runs-on: ${{ matrix.os }}
-    env:
-      CIBW_SKIP: "*-musllinux*"
-      CIBW_BUILD_FRONTEND: build
-      CTK_SKIP_BUILD_BINARY: "1"
-      CIBW_ENVIRONMENT_PASS_LINUX: CTK_SKIP_BUILD_BINARY
     strategy:
       fail-fast: false
       matrix:
@@ -138,6 +128,12 @@ jobs:
         with:
           ref: ${{ env.RELEASE_COMMIT }}
 
+      # for building binary
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
       # Used to host cibuildwheel
       - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
         with:
@@ -158,21 +154,19 @@ jobs:
         working-directory: ./python-client
         run: make copy-service-source-for-sdist
 
-      - name: Download binary
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
-        with:
-          name: ctk_${{ matrix.os }}_${{ matrix.arch }}
-          path: python-client/src/ctk_service
-
-      - name: Copy attribution doc
-        run: |
-          cp THIRD_PARTY_LICENSES python-client/src/ctk_service/
-          ls -R python-client/src
-
       - name: Build wheels
         working-directory: "python-client"
         env:
+          CIBW_BUILD_FRONTEND: build
+          # CIBW_ENVIRONMENT_PASS_LINUX: CTK_SKIP_BUILD_BINARY
+          CIBW_SKIP: "*-musllinux*"
           CIBW_ARCHS: ${{ matrix.CIBW_ARCHS }}
+          CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.arch }}"
+          CIBW_BEFORE_ALL_LINUX: |
+            curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && 
+            tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && 
+            export PATH=$PATH:/usr/local/go/bin && 
+            env GOOS=linux GOARCH=${{ matrix.arch }} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion
         run: python -m cibuildwheel --output-dir dist
 
       - uses: actions/upload-artifact@v3
