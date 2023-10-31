@@ -107,6 +107,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       CIBW_SKIP: "*-musllinux*"
+      CTK_SKIP_BUILD_BINARY: "1"
     strategy:
       fail-fast: true
       matrix:
