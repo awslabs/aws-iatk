@@ -56,7 +56,7 @@ jobs:
     needs: [seal]
     uses: ./.github/workflows/quality-check.yml
     with:
-      ref: ${{ github.sha }}
+      ref: ${{ github.sha }} # cannot use env
     secrets:
       CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
 
@@ -81,7 +81,7 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
-          ref: ${{ inputs.ref }}
+          ref: ${{ env.RELEASE_COMMIT }}
 
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -101,24 +101,67 @@ jobs:
 
   build-python-client:
     name: "Build Python Client (${{ matrix.os }} / ${{ matrix.GOARCH }})"
-    needs: [quality-check]
+    needs: [quality-check, build-binary]
     permissions:
       contents: read
     runs-on: ${{ matrix.os }}
+    env:
+      CIBW_SKIP: "*-musllinux*"
     strategy:
       fail-fast: true
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
         include:
+          - os: macos-latest
+            arch: amd64 
+            CIBW_ARCHS: x86_64
+          - os: macos-latest
+            arch: arm64 
+            CIBW_ARCHS: arm64
+          - os: windows-latest
+            arch: amd64 
+            CIBW_ARCHS: AMD64
+          - os: windows-latest
+            arch: arm64 
+            CIBW_ARCHS: ARM64
           - os: ubuntu-latest
-            GOOS: linux
-            GOARCH: amd64
-            CIBW_ARCHS_LINUX: x86_64
+            arch: amd64 
+            CIBW_ARCHS: x86_64
           - os: ubuntu-latest
-            GOOS: linux
-            GOARCH: arm64
-            CIBW_ARCHS_LINUX: aarch64
+            arch: arm64 
+            CIBW_ARCHS: aarch64
     steps:
-      - run: |
-          echo "${{ matrix.os }} / ${{ matrix.GOOS }} / ${{ matrix.GOARCH }} / ${{ matrix.CIBW_ARCHS_LINUX }}"
+      # checkout
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+        with:
+          ref: ${{ env.RELEASE_COMMIT }}
+
+      # Used to host cibuildwheel
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
+        with:
+          python-version: "3.8"
+
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel
+
+      - name: Set up QEMU
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        uses: docker/setup-qemu-action@326560df218a7ea9cf6ab49bbc88b8b306bb437e
+        with:
+          platforms: all
+
+      - name: Download binary
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: ctk_${{ matrix.os }}_${{ matrix.arch }}
+          path: python-client/src/ctk_service/ctk
+
+      - run: ls -R python-client/src/
+        
+
+
+      # download binary
+
+      # copy binary to python
+
+      # cibuildwheel
       
