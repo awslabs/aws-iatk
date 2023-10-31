@@ -100,17 +100,18 @@ jobs:
           retention-days: 1
 
   build-python-client:
-    name: "Build Python Client (${{ matrix.os }} / ${{ matrix.GOARCH }})"
+    name: "Build Python Client (${{ matrix.os }} / ${{ matrix.arch }})"
     needs: [build-binary]
     permissions:
       contents: read
     runs-on: ${{ matrix.os }}
     env:
       CIBW_SKIP: "*-musllinux*"
+      CIBW_BUILD_FRONTEND: build
       CTK_SKIP_BUILD_BINARY: "1"
       CIBW_ENVIRONMENT_PASS_LINUX: CTK_SKIP_BUILD_BINARY
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
