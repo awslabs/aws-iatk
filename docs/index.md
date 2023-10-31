@@ -1,9 +1,9 @@
 ---
-title: Homepage
+title: AWS Cloud Test Kit Overview
 description: AWS Cloud Test Kit
 ---
 
-!!! AWS Cloud Test Kit is in Public Preview
+!!! alert "AWS Cloud Test Kit is in Public Preview"
 
 AWS Cloud Test Kit (CTK) is a framework that makes it easy for developers to write integration tests that run against their Event Driven Application in the cloud. CTK simplifies writing integration tests for serverless applications, providing utilities to generate test events to trigger an application, validate event flow and structure in EventBridge, and assert event flow against X-Ray traces. 
 
@@ -20,9 +20,7 @@ pip install aws-ctk
 
 ## Quick getting started
 
-```bash title="Hello world example using SAM CLI"
-sam init --app-template hello-world-ctk --name sam-app --package-type Zip --runtime python3.11 --no-tracing
-```
+See [Tutorial's](./tutorial/index.md) page for more information.
 
 ## Environment variables
 
