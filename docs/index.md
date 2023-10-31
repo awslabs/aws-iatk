@@ -22,6 +22,19 @@ pip install aws-ctk
 
 See [Tutorial's](./tutorial/index.md) page for more information.
 
+## Credentials Configurations
+
+AWS CTK requires AWS Credentials in order to interact with AWS Resources in your account. You can specify this in `AWSCtk` directly, as shown below. You can also set [Environment Variables](#environment-variables) instead.
+
+```
+from aws_ctk import AWSCtk
+
+ctk = AWSCtk(
+	profile=PROFILE,
+	region=REGION
+)
+```
+
 ## Environment variables
 
 ???+ info
@@ -33,6 +46,8 @@ See [Tutorial's](./tutorial/index.md) page for more information.
 | AWS_ACCESS_KEY_ID     | AWS Access Key to use |
 | AWS_SECRET_ACCESS_KEY | AWS Secret Access Key to use |
 | AWS_SESSION_TOKEN     | AWS Session Token to use (optional) |
+
+
 
 ## Concepts
 
