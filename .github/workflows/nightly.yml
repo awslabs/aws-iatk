@@ -160,6 +160,11 @@ jobs:
           name: ctk_${{ matrix.os }}_${{ matrix.arch }}
           path: python-client/src/ctk_service/ctk
 
+      - name: Copy attribution doc
+        run: |
+          cp THIRD_PARTY_LICENSES python-client/src/ctk_service/
+          ls -R python-client/src
+
       - name: Build wheels
         working-directory: "python-client"
         env:
