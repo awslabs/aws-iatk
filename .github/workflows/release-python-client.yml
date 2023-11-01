@@ -179,8 +179,11 @@ jobs:
       contents: write # nested job explicitly require despite upload assets being set to false
       actions: read # To read the workflow path.
       id-token: write # To sign the provenance.
+    # TODO: remove
+    runs-on: ubuntu-latest
     steps:
       - run: ls -la
+    #####
   #   # NOTE: provenance fails if we use action pinning... it's a Github limitation
   #   # because SLSA needs to trace & attest it came from a given branch; pinning doesn't expose that information
   #   # https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md#referencing-the-slsa-generator
