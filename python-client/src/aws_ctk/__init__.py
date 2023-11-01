@@ -312,7 +312,7 @@ class AWSCtk:
         LOG.debug(f"Output: {output}")
         return output
 
-    def wait_until_event_matched(self, listener_id: str, condition: Callable[[str], bool], timeout_seconds: int = 30) -> bool:
+    def wait_until_event_matched(self, listener_id: str, assertion_fn: Callable[[str], None], timeout_seconds: int = 30) -> bool:
         """
         Poll Events on a given Listener until a match is found or timeout met.
 
@@ -330,8 +330,8 @@ class AWSCtk:
         ----------
         listener_id : str
             Id of the Listener that was created
-        condition : Callable[[str], bool]
-            Callable fuction that takes a str and returns a bool
+        assertion_fn : Callable[[str], bool]
+            Callable function that has an assertion and raises an AssertionError if it fails
         timeout_seconds : int
             Timeout (in seconds) to stop the polling
         
@@ -345,7 +345,7 @@ class AWSCtk:
         CtkException
             When failed to Poll Events
         """
-        params = WaitUntilEventMatchedParams(listener_id, condition, timeout_seconds)
+        params = WaitUntilEventMatchedParams(listener_id, assertion_fn, timeout_seconds)
         start = datetime.now()
         elapsed = lambda _: (datetime.now() - start).total_seconds()
         while elapsed(None) < params.timeout_seconds:
@@ -353,9 +353,12 @@ class AWSCtk:
             events = out.events
             if events:
                 for event in events:
-                    if params.condition(event):
+                    try: 
+                        params.assertion_fn(event)
                         LOG.debug("event matched")
                         return True
+                    except AssertionError:
+                        pass
 
         LOG.debug(f"timeout after {params.timeout_seconds} seconds")
         LOG.debug("no matching event found")
@@ -465,7 +468,7 @@ class AWSCtk:
 
         return GenerateMockEventOutput(event)
     
-    def retry_until(self, condition, timeout = 10, retryable_exceptions = (RetryableException,)):
+    def retry_until(self, assertion_fn, timeout = 10, retryable_exceptions = (RetryableException,)):
         """
         Decorator function to retry until condition or timeout is met
 
@@ -474,8 +477,8 @@ class AWSCtk:
         
         Parameters
         ----------
-        condition: Callable[[any], bool]
-            Callable function that takes any type and returns a bool
+        assertion_fn: Callable[[any], None]
+            Callable function that has an assertion and raises an AssertionError if it fails
         timeout: int or float
             value that specifies how long the function will retry for until it times out
         
@@ -495,7 +498,7 @@ class AWSCtk:
             raise TypeError("timeout must be an int or float")
         elif(timeout < 0):
             raise ValueError("timeout must not be a negative value")
-        if(not callable(condition)):
+        if(not callable(assertion_fn)):
             raise TypeError("condition is not a callable function")
         def retry_until_decorator(func):
             @wraps(func)
@@ -511,8 +514,11 @@ class AWSCtk:
                         output = func(*args, **kwargs)
                     except retryable_exceptions:
                         continue
-                    if condition(output):
+                    try:
+                        assertion_fn(output)
                         return True
+                    except AssertionError:
+                        pass
                     time.sleep(math.pow(2, attempt) * delay)
                     attempt += 1
                 LOG.debug(f"timeout after {timeout} seconds")
@@ -601,7 +607,7 @@ class AWSCtk:
             raise CtkException(message=message, error_code=error_code)
 
         
-    def retry_get_trace_tree_until(self, tracing_header: str, condition: Callable[[GetTraceTreeOutput], bool], timeout_seconds: int = 30):
+    def retry_get_trace_tree_until(self, tracing_header: str, assertion_fn: Callable[[GetTraceTreeOutput], None], timeout_seconds: int = 30):
         """
         function to retry get_trace_tree condition or timeout is met
 
@@ -613,8 +619,8 @@ class AWSCtk:
         ----------
         trace_header:
             x-ray trace header
-        condition : Callable[[GetTraceTreeOutput], bool]
-            Callable fuction that takes a str and returns a bool
+        assertion_fn : Callable[[GetTraceTreeOutput], bool]
+            Callable fuction that makes an assertion and raises an AssertionError if it fails
         timeout_seconds : int
             Timeout (in seconds) to stop the fetching
         
@@ -628,8 +634,8 @@ class AWSCtk:
         CtkException
             When an exception occurs during get_trace_tree
         """
-        params = RetryGetTraceTreeUntilParams(tracing_header, condition, timeout_seconds)
-        @self.retry_until(condition=params.condition, timeout=params.timeout_seconds)
+        params = RetryGetTraceTreeUntilParams(tracing_header, assertion_fn, timeout_seconds)
+        @self.retry_until(assertion_fn=params.assertion_fn, timeout=params.timeout_seconds)
         def fetch_trace_tree():
             try:
                 response = self._get_trace_tree(

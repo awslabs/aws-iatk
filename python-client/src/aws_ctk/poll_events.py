@@ -70,12 +70,12 @@ class WaitUntilEventMatchedParams:
     ----------
     listener_id : str
         Id of the Listener that was created
-    condition : Callable[[str], bool]
-        Callable fuction that takes a str and returns a bool
+    assertion_fn : Callable[[str], None]
+        Callable fuction that makes an assertion and raises an AssertionError if it fails
     timeout_seconds : int
         Timeout (in seconds) to stop the polling
     """
-    condition: Callable[[str], bool]    
+    assertion_fn: Callable[[str], None]    
     timeout_seconds: int
 
     _poll_event_params: PollEventsParams
@@ -83,13 +83,13 @@ class WaitUntilEventMatchedParams:
     def __init__(
         self,
         listener_id: str,
-        condition: Callable[[str], bool],
+        assertion_fn: Callable[[str], None],
         timeout_seconds: int = 30,
     ):
         if timeout_seconds <= 0 or timeout_seconds > 999:
             raise InvalidParamException("timeout_seconds must be between 1 and 999")
 
-        self.condition = condition
+        self.assertion_fn = assertion_fn
         self.timeout_seconds = timeout_seconds
 
         self._poll_event_params = PollEventsParams(

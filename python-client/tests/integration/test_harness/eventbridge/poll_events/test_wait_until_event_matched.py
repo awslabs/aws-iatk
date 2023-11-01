@@ -39,39 +39,36 @@ class EbEvent:
         }
 
 
-def condition_func_0(received: str) -> bool:
+def assertion_func_0(received: str) -> None:
     LOG.debug("received: %s", received)
     payload = json.loads(received)
     try:
         detail = payload["detail"]
         detail_type = payload["detail-type"]
         source = payload["source"]
-        matched = (
-            detail["abc"] == "def"
-            and detail["id"] == "2"
-            and source == "com.test.0"
-            and detail_type == "foo"
-        )
-        LOG.debug("matched: %s", matched)
-        return matched
-    except Exception as e:
+        assert detail["abc"] == "def"
+        assert detail["id"] == "2"
+        assert source == "com.test.0"
+        assert detail_type == "foo"
+        LOG.debug("matched: %s", True)
+    except AssertionError as e:
         LOG.debug("error: %s", e)
-        return False
+        raise
 
 
-def condition_func_1(received: str) -> bool:
+def assertion_func_1(received: str) -> bool:
     LOG.debug("received: %s", received)
-    return received == '"hello, world!"'
+    assert received == '"hello, world!"'
 
 
-def condition_func_2(received: str) -> bool:
+def assertion_func_2(received: str) -> bool:
     LOG.debug("received: %s", received)
-    return received == '"xyz"'
+    assert received == '"xyz"'
 
 
-def condition_func_3(received: str) -> bool:
+def assertion_func_3(received: str) -> bool:
     LOG.debug("received: %s", received)
-    return received == '{"source": "com.test.3", "foo": "bar"}'
+    assert received == '{"source": "com.test.3", "foo": "bar"}'
 
 @dataclass
 class EbConfiguration:
@@ -219,7 +216,7 @@ class TestCTK_wait_until_event_matched(TestCase):
                         detail={"id": "0", "abc": "def"},
                     ),
                 ],
-                condition_func_0,
+                assertion_func_0,
                 10,
             ),
             (
@@ -251,7 +248,7 @@ class TestCTK_wait_until_event_matched(TestCase):
                         detail={"id": "0", "abc": "def"},
                     ),
                 ],
-                condition_func_1,
+                assertion_func_1,
                 5,
             ),
             (
@@ -283,7 +280,7 @@ class TestCTK_wait_until_event_matched(TestCase):
                         detail={"id": "2", "abc": "def"},
                     ),
                 ],
-                condition_func_2,
+                assertion_func_2,
                 5,
             ),
             (
@@ -315,7 +312,7 @@ class TestCTK_wait_until_event_matched(TestCase):
                         detail={"id": "0", "abc": "def", "foo": "bar"},
                     ),
                 ],
-                condition_func_3,
+                assertion_func_3,
                 5,
             ),
         ]
@@ -324,7 +321,7 @@ class TestCTK_wait_until_event_matched(TestCase):
         self,
         listener_idx: int,
         events: List[EbEvent],
-        condition_func: Callable[[str], bool],
+        assertion_func: Callable[[str], bool],
         timeout_seconds: int,
     ):
         LOG.debug("purging listener to delete events from previous tests")
@@ -336,7 +333,7 @@ class TestCTK_wait_until_event_matched(TestCase):
         LOG.debug("waiting for event")
         found = self.ctk.wait_until_event_matched(
             listener_id=self.listener_ids[listener_idx],
-            condition=condition_func,
+            assertion_fn=assertion_func,
             timeout_seconds=timeout_seconds
         )
         self.assertTrue(found)
@@ -346,7 +343,7 @@ class TestCTK_wait_until_event_matched(TestCase):
             (  # no event is sent
                 0,
                 [],
-                condition_func_0,
+                assertion_func_0,
                 10,
             ),
             (  # all events don't match
@@ -373,7 +370,7 @@ class TestCTK_wait_until_event_matched(TestCase):
                         detail={"id": "0", "abc": "def"},
                     ),
                 ],
-                condition_func_2,
+                assertion_func_2,
                 5,
             ),
         ]
@@ -382,7 +379,7 @@ class TestCTK_wait_until_event_matched(TestCase):
         self,
         listener_idx: int,
         events: List[EbEvent],
-        condition_func: Callable[[str], bool],
+        assertion_func: Callable[[str], bool],
         timeout_seconds: int,
     ):
         LOG.debug("purging listener to delete events from previous tests")
@@ -394,7 +391,7 @@ class TestCTK_wait_until_event_matched(TestCase):
         LOG.debug("waiting for event")
         found = self.ctk.wait_until_event_matched(
             listener_id=self.listener_ids[listener_idx],
-            condition=condition_func,
+            assertion_fn=assertion_func,
             timeout_seconds=timeout_seconds
         )
         self.assertFalse(found)
@@ -404,7 +401,7 @@ class TestCTK_wait_until_event_matched(TestCase):
         with self.assertRaises(InvalidParamException):
             self.ctk.wait_until_event_matched(
                 listener_id=self.listener_ids[listener_idx],
-                condition=condition_func_0,
+                assertion_fn=assertion_func_0,
                 timeout_seconds=10000
             )
 

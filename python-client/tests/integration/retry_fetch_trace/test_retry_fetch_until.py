@@ -72,11 +72,11 @@ class TestCTK_retry_fetch_until(TestCase):
         time.sleep(5)
         def trace_header_is_root(tree):
             xray_trace_id = self.xray_trace_header.split(";")[0].split("=")[1]
-            return tree.trace_tree.root.name == self.lambda_function_name and tree.trace_tree.root.trace_id == xray_trace_id
+            assert tree.trace_tree.root.name == self.lambda_function_name and tree.trace_tree.root.trace_id == xray_trace_id
         start = time.time()
         response = self.ctk.retry_get_trace_tree_until(
             tracing_header=self.xray_trace_header,
-            condition=trace_header_is_root,
+            assertion_fn=trace_header_is_root,
             timeout_seconds=10
         )
         end = time.time()
@@ -87,11 +87,11 @@ class TestCTK_retry_fetch_until(TestCase):
         time.sleep(5)
         def num_is_10(trace):
             self.counter = random.randrange(0,10)
-            return self.counter == 10
+            assert self.counter == 10
         start = time.time()
         response = self.ctk.retry_get_trace_tree_until(
             tracing_header=self.xray_trace_header,
-            condition=num_is_10,
+            assertion_fn=num_is_10,
             timeout_seconds=10
         )
         end = time.time()
@@ -105,11 +105,11 @@ class TestCTK_retry_fetch_until(TestCase):
         def num_is_10(trace):
             time.sleep(1.5)
             self.counter += 1
-            return self.counter == 10
+            assert self.counter == 10
         start = time.time()
         response = self.ctk.retry_get_trace_tree_until(
             tracing_header=self.xray_trace_header,
-            condition=num_is_10,
+            assertion_fn=num_is_10,
             timeout_seconds=0
         )
         end = time.time()
@@ -120,11 +120,11 @@ class TestCTK_retry_fetch_until(TestCase):
     def test_invalid_traceid_fail(self):
         def num_is_10(trace):
             self.counter = random.randrange(0,10)
-            return self.counter == 10
+            assert self.counter == 10
         with pytest.raises(CtkException) as e:
             self.ctk.retry_get_trace_tree_until(
                 tracing_header="test",
-                condition=num_is_10,
+                assertion_fn=num_is_10,
                 timeout_seconds=10
             )
         self.assertNotEqual(self.counter, 10)
@@ -134,7 +134,7 @@ class TestCTK_retry_fetch_until(TestCase):
         with pytest.raises(TypeError) as e:
             self.ctk.retry_get_trace_tree_until(
                 tracing_header=self.xray_trace_header,
-                condition=0,
+                assertion_fn=0,
                 timeout_seconds=10
             )
             self.assertNotEqual(self.counter, 10)
@@ -142,11 +142,11 @@ class TestCTK_retry_fetch_until(TestCase):
 
     def test_retry_trace_not_found(self):
         def num_is_5(trace):
-            return random.randrange(0,5) == 5
+            assert random.randrange(0,5) == 5
         start = time.time()
         response = self.ctk.retry_get_trace_tree_until(
             tracing_header="Root=1-652850da-255d5ae071f55e4aef339837;Sampled=1",
-            condition=num_is_5,
+            assertion_fn=num_is_5,
             timeout_seconds=10
         )
         end = time.time()
