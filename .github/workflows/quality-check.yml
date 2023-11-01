@@ -189,3 +189,15 @@ jobs:
         working-directory: "python-client"
         run: |
           make contract-test
+
+  test-passing-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          touch TEST.txt
+          echo "hello, world" >> TEST.txt
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: test-passing-workflow
+          path: ./TEST.txt

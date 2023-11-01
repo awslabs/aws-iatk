@@ -52,17 +52,17 @@ jobs:
         with:
           artifact_name_prefix: "source"
 
-  # quality-check:
-  #   needs: [seal]
-  #   uses: ./.github/workflows/quality-check.yml
-  #   with:
-  #     ref: ${{ github.sha }} # cannot use env
-  #   secrets:
-  #     CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
+  quality-check:
+    needs: [seal]
+    uses: ./.github/workflows/quality-check.yml
+    with:
+      ref: ${{ github.sha }} # cannot use env
+    secrets:
+      CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
 
   build-python-client-wheels:
     name: "Build Python Client (${{ matrix.os }} / ${{ matrix.arch }})"
-    # needs: [build-binary]
+    needs: [quality-check]
     permissions:
       contents: read
     runs-on: ${{ matrix.os }}
@@ -167,7 +167,6 @@ jobs:
           name: python-client-artifacts
           path: ./python-client/dist/*.tar.gz
       
-
   # collect artifacts and Create attestation encoded hash for provenance
   collect:
     runs-on: ubuntu-latest
@@ -180,9 +179,6 @@ jobs:
         with:
           name: python-client-artifacts
           path: ./python-client/dist/
-
-      - run: ls -ls ./python-client/dist
-
       # NOTE: SLSA retraces our build to its artifact to ensure it wasn't tampered
       # coupled with GitHub OIDC, SLSA can then confidently sign it came from this release pipeline+commit+branch+org+repo+actor+integrity hash
       - name: Create attestation encoded hash for provenance
@@ -190,31 +186,41 @@ jobs:
         working-directory: python-client/dist
         run: echo "attestation_hashes=$(sha256sum ./* | base64 -w0)" >> "$GITHUB_OUTPUT"
 
-
-  # create preovenance file
+  # TODO: uncomment provenance job once repo is public
+  # create provenance file
   # This job creates a provenance file that describes how our release was built (all steps)
   # after it verifies our build is reproducible within the same pipeline
   # it confirms that its own software and the CI build haven't been tampered with (Trust but verify)
   # lastly, it creates and sign an attestation (multiple.intoto.jsonl) that confirms
   # this build artifact came from this GitHub org, branch, actor, commit ID, inputs that triggered this pipeline, and matches its integrity hash
   # NOTE: supply chain threats review (we protect against all of them now): https://slsa.dev/spec/v1.0/threats-overview
-  provenance:
-    needs: [collect]
-    permissions:
-      contents: write # nested job explicitly require despite upload assets being set to false
-      actions: read # To read the workflow path.
-      id-token: write # To sign the provenance.
-    # NOTE: provenance fails if we use action pinning... it's a Github limitation
-    # because SLSA needs to trace & attest it came from a given branch; pinning doesn't expose that information
-    # https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md#referencing-the-slsa-generator
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.9.0
-    with:
-      base64-subjects: ${{ needs.collect.outputs.attestation_hashes }}
-      upload-assets: false  # we upload its attestation in create_tag job, otherwise it creates a new release
+  # provenance:
+  #   needs: [collect]
+  #   permissions:
+  #     contents: write # nested job explicitly require despite upload assets being set to false
+  #     actions: read # To read the workflow path.
+  #     id-token: write # To sign the provenance.
+  #   # NOTE: provenance fails if we use action pinning... it's a Github limitation
+  #   # because SLSA needs to trace & attest it came from a given branch; pinning doesn't expose that information
+  #   # https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md#referencing-the-slsa-generator
+  #   uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.9.0
+  #   with:
+  #     base64-subjects: ${{ needs.collect.outputs.attestation_hashes }}
+  #     upload-assets: false  # we upload its attestation in create_tag job, otherwise it creates a new release
 
   # publish to pypi
-  # release:
-  #   needs: [provenance]
+  release:
+    needs: [collect] # TODO: change to [provenance] once repo is public
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: test-passing-workflow
+          path: ./
+
+      - run: ls -la ./
+
 
 
   # create tag
