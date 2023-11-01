@@ -201,5 +201,5 @@ jobs:
           path: ./dist/
 
       - name: Upload to PyPi prod
-        if: ${{ !input.skip_pypi }}
+        if: ${{ !inputs.skip_pypi }}
         uses: pypa/gh-action-pypi-publish@b7f401de30cb6434a1e19f805ff006643653240e # v1.8.10
