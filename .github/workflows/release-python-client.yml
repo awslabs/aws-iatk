@@ -22,6 +22,14 @@ on:
         type: string
         default: "python-client-artifacts"
         description: "name for the built artifacts"
+      provenance_name:
+        required: false
+        type: string
+        default: "python-client.multiple.intoto.jsonl"
+      skip_pypi:
+        required: false
+        type: boolean
+        default: false
     outputs:
       attestation_hashes:
         description: "Attestation encoded hash for provenance"
@@ -32,7 +40,7 @@ on:
     
 jobs:
   build-wheels:
-    name: "Build Wheels (${{ matrix.os }} / ${{ matrix.arch }})"
+    name: "build-wheels-${{ matrix.os }}-${{ matrix.arch }}"
     permissions:
       contents: read
     runs-on: ${{ matrix.os }}
@@ -73,7 +81,7 @@ jobs:
       # Used to host cibuildwheel
       - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
         with:
-          python-version: ${{ inputs.PYTHON_VERSION }}
+          python-version: ${{ inputs.CIBW_PYTHON_VERSION }}
 
       - name: Install cibuildwheel
         run: |
@@ -148,11 +156,50 @@ jobs:
         uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: ${{ inputs.artifact_name }}
-          path: ./python-client/dist/
+          path: ./dist/
 
       # NOTE: SLSA retraces our build to its artifact to ensure it wasn't tampered
       # coupled with GitHub OIDC, SLSA can then confidently sign it came from this release pipeline+commit+branch+org+repo+actor+integrity hash
       - name: Create attestation encoded hash for provenance
         id: encoded_hash
-        working-directory: python-client/dist
+        working-directory: dist
         run: echo "attestation_hashes=$(sha256sum ./* | base64 -w0)" >> "$GITHUB_OUTPUT"
+
+  # TODO: uncomment provenance job once repo is public
+  # create provenance file
+  # This job creates a provenance file that describes how our release was built (all steps)
+  # after it verifies our build is reproducible within the same pipeline
+  # it confirms that its own software and the CI build haven't been tampered with (Trust but verify)
+  # lastly, it creates and sign an attestation (multiple.intoto.jsonl) that confirms
+  # this build artifact came from this GitHub org, branch, actor, commit ID, inputs that triggered this pipeline, and matches its integrity hash
+  # NOTE: supply chain threats review (we protect against all of them now): https://slsa.dev/spec/v1.0/threats-overview
+  # provenance:
+  #   needs: [collate]
+  #   permissions:
+  #     contents: write # nested job explicitly require despite upload assets being set to false
+  #     actions: read # To read the workflow path.
+  #     id-token: write # To sign the provenance.
+  #   # NOTE: provenance fails if we use action pinning... it's a Github limitation
+  #   # because SLSA needs to trace & attest it came from a given branch; pinning doesn't expose that information
+  #   # https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md#referencing-the-slsa-generator
+  #   uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.9.0
+  #   with:
+  #     base64-subjects: ${{ needs.collect.outputs.attestation_hashes }}
+  #     upload-assets: false  # we upload its attestation in create_tag job, otherwise it creates a new release
+  #     provenance-name: ${{ inputs.provenance_name }}
+
+  publish:
+    needs: [build-wheels, build-sdist, collate, provenance]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDC for PyPi Trusted Publisher feature
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ./dist/
+
+      - name: Upload to PyPi prod
+        if: ${{ !input.skip_pypi }}
+        uses: pypa/gh-action-pypi-publish@b7f401de30cb6434a1e19f805ff006643653240e # v1.8.10
