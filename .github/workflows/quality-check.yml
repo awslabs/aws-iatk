@@ -9,6 +9,7 @@ on:
         description: "the ref (branch, commit sha, or tag) to run tests against"
       GO_VERSION:
         required: false
+        type: string
         default: "1.20"
         description: "Go version for building CTK binary"
     secrets:
