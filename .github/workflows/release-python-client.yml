@@ -1,10 +1,5 @@
 name: Release Python Client
 
-env:
-  VERSION_FILE: "python-client/src/zion/version.py"
-  GO_VERSION: "1.20" # for building CTK binary
-  PYTHON_VERSION: "3.8" # for running cibuildwheel
-
 on:
   workflow_call:
     inputs:
@@ -120,7 +115,7 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
-          ref: ${{ env.RELEASE_COMMIT }}
+          ref: ${{ inputs.ref }}
 
       - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
         with:
