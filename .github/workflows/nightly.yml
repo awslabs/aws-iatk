@@ -97,7 +97,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
-          name: python-client-artifacts
+          name: ${{ needs.build-python-client.outputs.artifact_name }}
           path: ./
 
       - run: ls -la ./
