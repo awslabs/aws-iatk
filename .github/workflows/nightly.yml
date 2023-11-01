@@ -91,7 +91,7 @@ jobs:
 
   # publish to pypi
   release-python-client:
-    needs: [collect-python-client] # TODO: change to [provenance] once repo is public
+    needs: [build-python-client] # TODO: change to [provenance] once repo is public
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
