@@ -84,7 +84,7 @@ This example shows how to use a "Listener" to test a Rule on a given Event Bus. 
 
 - `add_listener` - create a listener on the provided event bus by replicating a provided rule and target transformation
 - `remove_listener` - destroy listener(s)
-- `wait_until_event_matched` -  wait until a received event matches the provided `condition` function
+- `wait_until_event_matched` -  wait until a received event passes the assertion in the provided `assertion_fn` function
 - `poll_events` - poll events from the listener and return the received events
 
 To run the example:
@@ -139,7 +139,7 @@ Here are the example test code:
 
 This example shows how to test end-to-end with X-Ray Traces. The stack under test is called "cdk-example-sfnStack". Two methods are used in this example:
 
-- `retry_get_trace_tree_until` - retry getting trace tree of given trace ID until it matches the provided `condition`
+- `retry_get_trace_tree_until` - retry getting trace tree of given trace ID until the assertion succeeds in the provided `assertion_fn`
 - `get_trace_tree` - get trace tree of given trace ID. This performs the action once only
 
 To run the example:

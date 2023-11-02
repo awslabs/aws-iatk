@@ -61,15 +61,15 @@ class Example02(TestCase):
         customer_id = "abc123"
         requests.post(self.api_endpoint, params={"customerId": customer_id})
 
-        def match_fn(received: str) -> bool:
+        def assertion_fn(received: str) -> None:
             received = json.loads(received)
             LOG.debug("received: %s", received)
-            return received == customer_id
+            assert received == customer_id
 
         self.assertTrue(
             self.z.wait_until_event_matched(
                 listener_id=self.listeners[0],
-                condition=match_fn,
+                assertion_fn=assertion_fn,
             )
         )
 
