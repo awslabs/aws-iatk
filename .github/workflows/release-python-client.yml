@@ -187,7 +187,7 @@ jobs:
     # TODO: remove
     runs-on: ubuntu-latest
     steps:
-      - run: touch ${{ inputs.provenance_name }}
+      - run: touch ${{ inputs.provenance_name }} && echo "hello, world!" >> ${{ inputs.provenance_name }}
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.provenance_name }}
