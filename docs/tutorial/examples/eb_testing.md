@@ -164,7 +164,7 @@ In the test code, we follow the "Arrage, Act, Assert" pattern. In Python, we do 
 
 We have two tests `test_event_lands_at_eb` and `test_poll_events`, which showcase the `wait_until_event_matched` method and the `poll_events` method respectively:
 
-* In `test_event_lands_at_eb`, we define a function `match_fn` to determine if a received event is matching expectation. We supply `match_fn` to the `wait_until_event_matched` method as an argument. The method will keep polling events from the listener until the given `match_fn` returns true or until timeout.
+* In `test_event_lands_at_eb`, we define a function `assert_fn` to determine if a received event is matching expectation. We supply `assert_fn` to the `wait_until_event_matched` method as an argument. The method will keep polling events from the listener until the given `assert_fn` succeeds or until timeout.
 * In `test_poll_events`, we call the `poll_events` method. This method is a primitive method of `wait_until_event_matched`, i.e. it polls from the listener just once.
 
 === "02-eb_listener/tests/python/test_example_02.py"
@@ -233,15 +233,15 @@ class Example02(TestCase):
         customer_id = "abc123"
         requests.post(self.api_endpoint, params={"customerId": customer_id})
 
-        def match_fn(received: str) -> bool:
+        def assert_fn(received: str) -> None:
             received = json.loads(received)
             LOG.debug("received: %s", received)
-            return received == customer_id
+            assert received == customer_id
 
         self.assertTrue(
             self.z.wait_until_event_matched(
                 listener_id=self.listeners[0],
-                condition=match_fn,
+                assertion_fn=assert_fn,
             )
         )
 

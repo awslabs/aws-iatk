@@ -107,7 +107,7 @@ In the test code, we first implement the `setUp` method to start a State Machine
 We have two tests `test_get_trace_tree` and `test_retry_get_trace_tree_until`, which showcase the `get_trace_tree` method and the `retry_get_trace_tree_until` method:
 
 * In `test_get_trace_tree`, we added a sleep of 5 seconds to wait for the trace to be fetchable. The `get_trace_tree` uses the fetched Trace to build and return a Trace Tree. Nodes of the tree are segments or subsegments of the trace. The root is the starting point of the trace. The method returns the root segment and also all the paths in the tree. Each path is a sequence of nodes from root to leaf. In the test, we extract the `origin` attribute of each node of each path to assert if the expected sequence of AWS resources were invoked. 
-* In `test_retry_get_trace_tree_until`, no sleep is needed as the `retry_get_trace_tree_until` method handles the latency issue by retrying fetching the trace with exponential backoff. In this test, we also define function called `condition` to do assertion on the returned Trace Tree. We supply `condition` to the `retry_get_trace_tree_until` as a stopping condition.
+* In `test_retry_get_trace_tree_until`, no sleep is needed as the `retry_get_trace_tree_until` method handles the latency issue by retrying fetching the trace with exponential backoff. In this test, we also define function called `assertion` to do assertion on the returned Trace Tree. We supply `assertion` to the `retry_get_trace_tree_until` as a stopping condition.
 
 === "03-xray_trace_tree/tests/python/test_example_03.py"
 ```python
@@ -173,25 +173,22 @@ class Example03(TestCase):
         )
         
     def test_retry_get_trace_tree_until(self):
-        def condition(output: zion.GetTraceTreeOutput) -> bool:
+        def assertion(output: zion.GetTraceTreeOutput) -> None:
             tree = output.trace_tree
             try:
-                self.assertEqual(len(tree.paths), 3)
-                self.assertEqual(
-                    [[seg.origin for seg in path] for path in tree.paths],
-                    [
-                        ["AWS::StepFunctions::StateMachine", "AWS::Lambda"],
-                        ["AWS::StepFunctions::StateMachine", "AWS::Lambda"],
-                        ["AWS::StepFunctions::StateMachine", "AWS::SNS"],
-                    ]
-                )
-                return True
-            except AssertionError:
-                return False
+            self.assertEqual(len(tree.paths), 3)
+            self.assertEqual(
+                [[seg.origin for seg in path] for path in tree.paths],
+                [
+                    ["AWS::StepFunctions::StateMachine", "AWS::Lambda"],
+                    ["AWS::StepFunctions::StateMachine", "AWS::Lambda"],
+                    ["AWS::StepFunctions::StateMachine", "AWS::SNS"],
+                ]
+            )
 
         self.assertTrue(self.z.retry_get_trace_tree_until(
             tracing_header=self.tracing_header,
-            condition=condition,
+            assertion_fn=assertion,
             timeout_seconds=20,
         ))
 
