@@ -69,3 +69,35 @@ jobs:
       skip_pypi: true
 
   # create tag
+  create-tag:
+    needs: [seal, release-python-client]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+        with:
+          ref: ${{ env.RELEASE_COMMIT }}
+
+      - name: Git client setup and refresh tip
+        id: setup-git
+        run: |
+          git config user.name "AWS CTK bot"
+          git config user.email "aws-ctk-feedback@amazon.com"
+          git config remote.origin.url >&-
+
+      - name: Create Git Tag
+        env:
+          RELEASE_VERSION: ${{ needs.seal.outputs.RELEASE_VERSION }}
+        run: |
+          git tag -a v"${RELEASE_VERSION}" -m "release_version: v${RELEASE_VERSION}"
+          git push origin v"${RELEASE_VERSION}"
+
+      - name: Upload provenance
+        id: upload-provenance
+        uses: ./github/actions/upload-release-provenance
+        with:
+          release_version: ${{ needs.seal.outputs.RELEASE_VERSION }}
+          provenance_name: ${{ needs.release-python-client.outputs.}}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+

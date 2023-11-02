@@ -26,10 +26,12 @@ on:
         required: false
         type: string
         default: "python-client.multiple.intoto.jsonl"
+        description: "name of provenance file"
       skip_pypi:
         required: false
         type: boolean
         default: false
+        description: "boolean to skip publishing to PyPi"
     outputs:
       attestation_hashes:
         description: "Attestation encoded hash for provenance"
@@ -37,6 +39,9 @@ on:
       artifact_name:
         description: "name for the built artifacts"
         value: ${{ inputs.artifact_name }}
+      provenance_name:
+        description: "name of provenance file"
+        value: ${{ inputs.provenance_name }}
     
 jobs:
   build-wheels:
@@ -182,7 +187,11 @@ jobs:
     # TODO: remove
     runs-on: ubuntu-latest
     steps:
-      - run: ls -la
+      - run: touch ${{ inputs.provenance_name }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.provenance_name }}
+          path: ${{ inputs.provenance_name }}
     #####
   #   # NOTE: provenance fails if we use action pinning... it's a Github limitation
   #   # because SLSA needs to trace & attest it came from a given branch; pinning doesn't expose that information
