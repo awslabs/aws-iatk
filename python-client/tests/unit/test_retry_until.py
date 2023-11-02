@@ -19,8 +19,8 @@ class TestCTK_retry_until_timeout(TestCase):
 
     def test_retry_timeout_is_default_fail(self):
         def num_is_ten(val):
-            return val == 10
-        @self.ctk.retry_until(condition=num_is_ten)
+            assert val == 10
+        @self.ctk.retry_until(assertion_fn=num_is_ten)
         def num_add_one_slow():
             self.num = self.num + 1
             return self.num
@@ -33,8 +33,8 @@ class TestCTK_retry_until_timeout(TestCase):
 
     def test_retry_timeout_is_default_pass(self):
         def num_is_five(val):
-            return val == 5
-        @self.ctk.retry_until(condition=num_is_five)
+            assert val == 5
+        @self.ctk.retry_until(assertion_fn=num_is_five)
         def num_add_one():
             self.num = self.num + 1
             return self.num
@@ -48,8 +48,8 @@ class TestCTK_retry_until_timeout(TestCase):
     @pytest.mark.timeout(timeout=2500, method="thread")
     def test_retry_timeout_is_infinite(self):
         def num_is_ten(val):
-            return val == 10
-        @self.ctk.retry_until(condition=num_is_ten, timeout=0)
+            assert val == 10
+        @self.ctk.retry_until(assertion_fn=num_is_ten, timeout=0)
         def num_add_one_slow():
             time.sleep(2)
             self.num = self.num + 1
@@ -63,7 +63,7 @@ class TestCTK_retry_until_timeout(TestCase):
 
     def test_retry_condition_not_function_error(self):
         with pytest.raises(TypeError) as e:  
-            @self.ctk.retry_until(condition=0, timeout=5)
+            @self.ctk.retry_until(assertion_fn=0, timeout=5)
             def num_add_one():
                 self.num = self.num + 1
                 return self.num 
@@ -72,9 +72,9 @@ class TestCTK_retry_until_timeout(TestCase):
     
     def test_retry_timeout_wrong_type_error(self):
         def num_is_ten(val):
-            return val == 10
+            assert val == 10
         with pytest.raises(TypeError) as e:  
-            @self.ctk.retry_until(condition=num_is_ten, timeout="test")
+            @self.ctk.retry_until(assertion_fn=num_is_ten, timeout="test")
             def num_add_one():
                 self.num = self.num + 1
                 return self.num 
@@ -83,9 +83,9 @@ class TestCTK_retry_until_timeout(TestCase):
 
     def test_retry_timeout_less_than_zero_error(self):
         def num_is_ten(val):
-            return val == 10
+            assert val == 10
         with pytest.raises(ValueError) as e:  
-            @self.ctk.retry_until(condition=num_is_ten, timeout=-1)
+            @self.ctk.retry_until(assertion_fn=num_is_ten, timeout=-1)
             def num_add_one():
                 self.num = self.num + 1
                 return self.num 
@@ -94,8 +94,8 @@ class TestCTK_retry_until_timeout(TestCase):
 
     def test_retry_should_pass(self):
         def num_is_five(val):
-            return val == 5
-        @self.ctk.retry_until(condition=num_is_five, timeout=5)
+            assert val == 5
+        @self.ctk.retry_until(assertion_fn=num_is_five, timeout=5)
         def num_add_one():
             self.num = self.num + 1
             return self.num
@@ -106,8 +106,8 @@ class TestCTK_retry_until_timeout(TestCase):
     def test_retry_should_timeout(self):
         start = time.time()
         def num_is_negative(val):
-            return val < 0
-        @self.ctk.retry_until(condition=num_is_negative, timeout=5)
+            assert val < 0
+        @self.ctk.retry_until(assertion_fn=num_is_negative, timeout=5)
         def num_add_one():
             self.num = self.num + 1
             return self.num
@@ -119,8 +119,8 @@ class TestCTK_retry_until_timeout(TestCase):
 
     def test_retry_should_pass_multiple_arguments(self):
         def num_is_five(val):
-            return val == 5
-        @self.ctk.retry_until(condition=num_is_five, timeout=5)
+            assert val == 5
+        @self.ctk.retry_until(assertion_fn=num_is_five, timeout=5)
         def num_add_one(dummy, dummy1, dummy2="dummy2"):
             self.num = self.num + 1
             return self.num
@@ -131,8 +131,8 @@ class TestCTK_retry_until_timeout(TestCase):
     def test_retry_should_timeout_multiple_arguments(self):
         start = time.time()
         def num_is_negative(val):
-            return val < 0
-        @self.ctk.retry_until(condition=num_is_negative, timeout=5)
+            assert val < 0
+        @self.ctk.retry_until(assertion_fn=num_is_negative, timeout=5)
         def num_add_one(dummy, dummy1, dummy2="dummy2"):
             self.num = self.num + 1
             return self.num
