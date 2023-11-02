@@ -359,9 +359,7 @@ class AWSCtk:
                         return True
                     except AssertionError as e:
                         LOG.debug(f"Assertion failed: {e}")
-                    except Exception as e:
-                        LOG.debug(f"An unexpected exception was thrown by assertion_fn: {e}")
-
+                        
         LOG.debug(f"timeout after {params.timeout_seconds} seconds")
         LOG.debug("no matching event found")
         return False
@@ -521,8 +519,6 @@ class AWSCtk:
                         return True
                     except AssertionError as e:
                         LOG.debug(f"Assertion failed: {e}")
-                    except Exception as e:
-                        LOG.debug(f"An unexpected exception was thrown by assertion_fn: {e}")
                     time.sleep(math.pow(2, attempt) * delay)
                     attempt += 1
                 LOG.debug(f"timeout after {timeout} seconds")
