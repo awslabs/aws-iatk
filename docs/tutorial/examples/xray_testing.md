@@ -173,25 +173,21 @@ class Example03(TestCase):
         )
         
     def test_retry_get_trace_tree_until(self):
-        def condition(output: zion.GetTraceTreeOutput) -> bool:
+        def assertion(output: zion.GetTraceTreeOutput) -> None:
             tree = output.trace_tree
-            try:
-                self.assertEqual(len(tree.paths), 3)
-                self.assertEqual(
-                    [[seg.origin for seg in path] for path in tree.paths],
-                    [
-                        ["AWS::StepFunctions::StateMachine", "AWS::Lambda"],
-                        ["AWS::StepFunctions::StateMachine", "AWS::Lambda"],
-                        ["AWS::StepFunctions::StateMachine", "AWS::SNS"],
-                    ]
-                )
-                return True
-            except AssertionError:
-                return False
+            self.assertEqual(len(tree.paths), 3)
+            self.assertEqual(
+                [[seg.origin for seg in path] for path in tree.paths],
+                [
+                    ["AWS::StepFunctions::StateMachine", "AWS::Lambda"],
+                    ["AWS::StepFunctions::StateMachine", "AWS::Lambda"],
+                    ["AWS::StepFunctions::StateMachine", "AWS::SNS"],
+                ]
+            )
 
         self.assertTrue(self.z.retry_get_trace_tree_until(
             tracing_header=self.tracing_header,
-            condition=condition,
+            assertion_fn=assertion,
             timeout_seconds=20,
         ))
 
