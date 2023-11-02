@@ -46,20 +46,10 @@ runs:
       with:
         name: ${{ inputs.provenance_name }}
 
-    - id: sync-release-tag
-      name: Update draft release tag to release commit tag
-      run: |
-        CURRENT_DRAFT_RELEASE=$(gh release list | awk '{ if ($2 == "Draft") print $1}')
-        gh release edit "${CURRENT_DRAFT_RELEASE}" --tag v"${RELEASE_VERSION}"
-      env:
-        RELEASE_VERSION: ${{ inputs.release_version }}
-        GH_TOKEN: ${{ inputs.github_token }}
-      shell: bash
-
     - id: upload-provenance
       name: Upload provenance to release tag
       # clobber flag means overwrite release asset if available (eventual consistency, retried failed steps)
-      run: gh release upload --clobber v"${RELEASE_VERSION}" "${PROVENANCE_FILE}"
+      run: gh release upload v"${RELEASE_VERSION}" "${PROVENANCE_FILE}" --clobber 
       env:
         RELEASE_VERSION: ${{ inputs.release_version }}
         PROVENANCE_FILE: ${{ inputs.provenance_name }}

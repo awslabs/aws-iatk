@@ -86,12 +86,13 @@ jobs:
           git config user.email "aws-ctk-feedback@amazon.com"
           git config remote.origin.url >&-
 
-      - name: Create Git Tag
+      - name: Create Git Tag and draft release
         env:
           RELEASE_VERSION: ${{ needs.seal.outputs.RELEASE_VERSION }}
         run: |
           git tag -a v"${RELEASE_VERSION}" -m "release_version: v${RELEASE_VERSION}"
           git push origin v"${RELEASE_VERSION}"
+          gh release create v"${RELEASE_VERSION}" --draft --generate-notes --title "Release version: v${RELEASE_VERSION}"
 
       - name: Upload provenance
         id: upload-provenance
