@@ -354,11 +354,14 @@ class AWSCtk:
             if events:
                 for event in events:
                     try: 
+                        breakpoint()
                         params.assertion_fn(event)
                         LOG.debug("event matched")
                         return True
-                    except AssertionError:
-                        pass
+                    except AssertionError as e:
+                        LOG.debug(f"Assertion failed: {e}")
+                    except Exception as e:
+                        LOG.debug(f"An unexpected exception was thrown by assertion_fn: {e}")
 
         LOG.debug(f"timeout after {params.timeout_seconds} seconds")
         LOG.debug("no matching event found")
@@ -517,8 +520,10 @@ class AWSCtk:
                     try:
                         assertion_fn(output)
                         return True
-                    except AssertionError:
-                        pass
+                    except AssertionError as e:
+                        LOG.debug(f"Assertion failed: {e}")
+                    except Exception as e:
+                        LOG.debug(f"An unexpected exception was thrown by assertion_fn: {e}")
                     time.sleep(math.pow(2, attempt) * delay)
                     attempt += 1
                 LOG.debug(f"timeout after {timeout} seconds")

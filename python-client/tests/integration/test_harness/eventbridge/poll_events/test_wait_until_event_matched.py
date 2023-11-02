@@ -42,31 +42,27 @@ class EbEvent:
 def assertion_func_0(received: str) -> None:
     LOG.debug("received: %s", received)
     payload = json.loads(received)
-    try:
-        detail = payload["detail"]
-        detail_type = payload["detail-type"]
-        source = payload["source"]
-        assert detail["abc"] == "def"
-        assert detail["id"] == "2"
-        assert source == "com.test.0"
-        assert detail_type == "foo"
-        LOG.debug("matched: %s", True)
-    except AssertionError as e:
-        LOG.debug("error: %s", e)
-        raise
+    detail = payload["detail"]
+    detail_type = payload["detail-type"]
+    source = payload["source"]
+    assert detail["abc"] == "def"
+    assert detail["id"] == "2"
+    assert source == "com.test.0"
+    assert detail_type == "foo"
+    LOG.debug("matched: %s", True)
 
 
-def assertion_func_1(received: str) -> bool:
+def assertion_func_1(received: str) -> None:
     LOG.debug("received: %s", received)
     assert received == '"hello, world!"'
 
 
-def assertion_func_2(received: str) -> bool:
+def assertion_func_2(received: str) -> None:
     LOG.debug("received: %s", received)
     assert received == '"xyz"'
 
 
-def assertion_func_3(received: str) -> bool:
+def assertion_func_3(received: str) -> None:
     LOG.debug("received: %s", received)
     assert received == '{"source": "com.test.3", "foo": "bar"}'
 
