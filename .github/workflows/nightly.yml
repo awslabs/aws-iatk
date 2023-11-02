@@ -95,7 +95,7 @@ jobs:
 
       - name: Upload provenance
         id: upload-provenance
-        uses: ./github/actions/upload-release-provenance
+        uses: .github/actions/upload-release-provenance
         with:
           release_version: ${{ needs.seal.outputs.RELEASE_VERSION }}
           provenance_name: ${{ needs.release-python-client.outputs.provenance_name }}
