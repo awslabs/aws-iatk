@@ -354,7 +354,6 @@ class AWSCtk:
             if events:
                 for event in events:
                     try: 
-                        breakpoint()
                         params.assertion_fn(event)
                         LOG.debug("event matched")
                         return True
