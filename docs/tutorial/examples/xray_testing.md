@@ -175,7 +175,6 @@ class Example03(TestCase):
     def test_retry_get_trace_tree_until(self):
         def assertion(output: zion.GetTraceTreeOutput) -> None:
             tree = output.trace_tree
-            try:
             self.assertEqual(len(tree.paths), 3)
             self.assertEqual(
                 [[seg.origin for seg in path] for path in tree.paths],
