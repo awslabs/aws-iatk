@@ -1,19 +1,19 @@
 ---
-title: Generate Mock Events
+title: Generate mock events
 description: Example to showcase how to generate mock events
 ---
 
-Zion provides the capability for you to generate mock events from a schema stored in [Amazon Eventbridge schema registries](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-schema-registry.html){target="_blank"}. This allows you to generate a mock event and invoke any consumer (such as Lambda Function, StepFunction State Machine) with the generated event.
+AWS Cloud Test Kit (AWS CTK) provides the capability for you to generate mock events from a schema stored in the [Amazon EventBridge schema registry](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-schema-registry.html){target="_blank"}. This allows you to generate a mock event and invoke any consumer (such as an AWS Lambda function or AWS Step Functions state machine) with the generated event.
 
-### System Under Test
+### System Under Test (SUT)
 
-In this example, we use AWS CDK to define the SUT. The SUT consists of one Schema Registry, one Schema and one Lambda Function.
+In this example, we use AWS CDK to define the SUT. The SUT consists of one schema registry, one schema and one Lambda function.
 
 We added some `CfnOutput` constructs to expose certain attributes from the SUT. These include:
 
-* the name of the Lambda Function
-* the name of the Schema Registry
-* the name of the Schema
+* The name of the Lambda function.
+* The name of the schema registry.
+* The name of the schema.
 
 These values will be used during the tests.
 
@@ -141,7 +141,7 @@ After deploying, an output file `outputs.json` is created, with contents similar
 
 #### Python
 
-In the test, we use three tests, `test_generate_barebone_event`, `test_generate_contextful_event` and `test_generate_eventbridge_event`, to demostrate how you can generate mock events:
+This test uses three testse, `test_generate_barebone_event`, `test_generate_contextful_event` and `test_generate_eventbridge_event`, to demostrate how you can generate mock events:
 
 In `test_generate_barebone_event`, we call `generate_mock_event` by providing only `registry_name`, `schema_name` and `event_ref`. This gives you a "barebone" event:
 
@@ -155,7 +155,7 @@ In `test_generate_barebone_event`, we call `generate_mock_event` by providing on
 }
 ```
 
-As shown in `test_generate_contextful_event`, you can supply contexts to enrich the generated event. We defined a function `apply_context` which populates the `customerId` field and the `address` field, and also add five items into `orderItems`. We then supply this function into the `contexts` argument in the `generate_mock_event` call. Note that `contexts` accepts a list of functions, meaning that you can apply multiple contexts. The generated events looks like:
+As shown in `test_generate_contextful_event`, you can supply contexts to enrich the generated event. We defined a function `apply_context` which populates the `customerId` field and the `address` field. Also, we add five items into `orderItems`. We then supply this function into the `contexts` argument in the `generate_mock_event` call. Note that `contexts` accepts a list of functions, meaning that you can apply multiple contexts. The generated events looks like:
 
 ```json
 {
@@ -188,9 +188,9 @@ As shown in `test_generate_contextful_event`, you can supply contexts to enrich 
 }
 ```
 
-In the same test, we then use the generated event as payload to invoke the Lambda Function, and assert if the return from the invocation equals to the expected value.
+In the same test, we then use the generated event as payload to invoke the Lambda function, and assert if the return from the invocation equals the expected value.
 
-As shown in `test_generate_eventbridge_event`, if you are generating Event Bridge events, Zion provides `zion.context_generation.eventbridge_event_context` for you to enrich a barebone Event Bridge event.
+As shown in `test_generate_eventbridge_event`, if you are generating EventBridge events, AWS CTK provides `zion.context_generation.eventbridge_event_context` for you to enrich a barebone EventBridge event.
 
 === "04-event_generation/tests/python/test_example_04.py"
 ```python
