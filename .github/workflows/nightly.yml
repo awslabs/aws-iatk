@@ -98,6 +98,6 @@ jobs:
         uses: ./github/actions/upload-release-provenance
         with:
           release_version: ${{ needs.seal.outputs.RELEASE_VERSION }}
-          provenance_name: ${{ needs.release-python-client.outputs.}}
+          provenance_name: ${{ needs.release-python-client.outputs.provenance_name }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
