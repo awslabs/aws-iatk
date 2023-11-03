@@ -99,7 +99,7 @@ jobs:
           make integ-test
           
   python-client-build-test:
-    name: python-client-built-test-${{ matrix.os }}-x86_64-Python${{ matrix.python }}
+    name: python-client-build-test-${{ matrix.os }}-x86_64-Python${{ matrix.python }}
     strategy:
       fail-fast: false
       matrix:

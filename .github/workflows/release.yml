@@ -33,6 +33,14 @@ jobs:
           echo $RELEASE_VERSION
           echo "RELEASE_VERSION=${RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
 
+      - name: check version tag
+        run: |
+          if [ $(git tag --list "v${{ steps.release_version.outputs.RELEASE_VERSION }}") ]
+          then
+            echo "Tag v${{ steps.release_version.outputs.RELEASE_VERSION }} already exists. Exiting"
+            exit 1
+          fi
+
   # This job runs tests and linting before building artifacts
   quality-check:
     needs: [get-version]
