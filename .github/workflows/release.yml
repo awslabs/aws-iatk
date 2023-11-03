@@ -46,15 +46,15 @@ jobs:
 
       - name: check version tag
         run: |
-          if [ $(git tag --list "v${{ needs.get-version.RELEASE_VERSION }}") ]
+          if [ $(git tag --list "v${{ needs.get-version.outputs.RELEASE_VERSION }}") ]
           then
-            echo "Tag v${{ needs.get-version.RELEASE_VERSION }} already exists. Exiting."
+            echo "Tag v${{ needs.get-version.outputs.RELEASE_VERSION }} already exists. Exiting."
             exit 1
           fi
 
   # This job runs tests and linting before building artifacts
   quality-check:
-    needs: [get-version]
+    needs: [get-version, check-tag]
     uses: ./.github/workflows/reusable_quality-check.yml
     with:
       ref: ${{ github.sha }} # cannot use env
