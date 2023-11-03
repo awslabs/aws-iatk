@@ -33,9 +33,23 @@ jobs:
           echo $RELEASE_VERSION
           echo "RELEASE_VERSION=${RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
 
+  check-tag:
+    needs: [get-version]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    step:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+        with:
+          ref: ${{ env.RELEASE_COMMIT }}
+          fetch-depth: 0
       - name: check version tag
         run: |
-          git tag --list
+          if [ $(git tag --list "v${{ needs.get-version.RELEASE_VERSION }}") ]
+          then
+            echo "Tag v${{ needs.get-version.RELEASE_VERSION }} already exists. Exiting."
+            exit 1
+          fi
 
   # This job runs tests and linting before building artifacts
   quality-check:
