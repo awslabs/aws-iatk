@@ -38,11 +38,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    step:
+    steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
           ref: ${{ env.RELEASE_COMMIT }}
           fetch-depth: 0
+
       - name: check version tag
         run: |
           if [ $(git tag --list "v${{ needs.get-version.RELEASE_VERSION }}") ]
