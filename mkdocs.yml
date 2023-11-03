@@ -5,25 +5,25 @@ repo_url: https://github.com/awslabs/aws-ctk
 edit_uri: edit/develop/docs
 
 nav:
-  - Homepage:
+  - AWS CTK Overview:
       - index.md
-      - Changelog: changelog.md
-      - Python API reference: api/python" target="_blank
-      - Roadmap: roadmap.md
-  - Tutorial: 
-      - tutorial/index.md
-      - Examples:
-        - Retrieving information from a deployed CloudFormation Stack: tutorial/examples/retrieve_cfn_info.md
-        - Testing EventBridge Event Bus with Listener: tutorial/examples/eb_testing.md
-        - Testing with X-Ray Traces: tutorial/examples/xray_testing.md
-        - Generate Mock Events: tutorial/examples/generate_mock_events.md
-  - Processes:
-      - Security: security.md
-      - Roadmap: roadmap.md
+      - Tutorial: 
+        - tutorial/index.md
+        - Examples:
+          - Retrieving information from a deployed CloudFormation Stack: tutorial/examples/retrieve_cfn_info.md
+          - Testing EventBridge Event Bus with Listener: tutorial/examples/eb_testing.md
+          - Testing with X-Ray Traces: tutorial/examples/xray_testing.md
+          - Generate Mock Events: tutorial/examples/generate_mock_events.md
+      - References:
+        - Python API reference: api/python" target="_blank
       - Contributing:
-          - Development environment: contributing/setup.md
-          - Your first contribution: contributing/getting_started.md
-          - Conventions: contributing/conventions.md
+        - Development environment: contributing/setup.md
+        - Your first contribution: contributing/getting_started.md
+        - Conventions: contributing/conventions.md
+      - Code of Conduct: code_of_conduct.md
+      - Changelog: changelog.md
+      - Security: security.md
+      
 theme:
   name: material
   font:

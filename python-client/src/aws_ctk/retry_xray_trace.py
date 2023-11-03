@@ -20,22 +20,22 @@ class RetryGetTraceTreeUntilParams:
     ----------
     trace_header:
         x-ray trace header
-    condition : Callable[[GetTraceTreeOutput], bool]
-        Callable fuction that takes a str and returns a bool
+    assertion_fn : Callable[[GetTraceTreeOutput], None]
+        Callable fuction that makes an assertion and raises an AssertionError if it fails
     timeout_seconds : int
         Timeout (in seconds) to stop the fetching
     """
-    condition: Callable[[GetTraceTreeOutput], bool]    
+    assertion_fn: Callable[[GetTraceTreeOutput], None]    
     timeout_seconds: int
     tracing_header: str
 
     def __init__(
         self,
         tracing_header: str,
-        condition: Callable[[GetTraceTreeOutput], bool],
+        assertion_fn: Callable[[GetTraceTreeOutput], None],
         timeout_seconds: int = 30,
     ):
-        self.condition = condition
+        self.assertion_fn = assertion_fn
         self.timeout_seconds = timeout_seconds
         self.tracing_header = tracing_header
 
