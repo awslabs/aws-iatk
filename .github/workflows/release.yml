@@ -7,8 +7,7 @@ env:
 on:
   push:
     branches:
-      # TODO (hawflau): update to develop on launch
-      - "dev-release-pipeline"
+      - "develop"
     paths:
       - "python-client/src/aws_ctk/version.py"
   workflow_dispatch:
