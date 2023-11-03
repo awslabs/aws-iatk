@@ -54,7 +54,7 @@ jobs:
 
   # This job runs tests and linting before building artifacts
   quality-check:
-    needs: [get-version, check-tag]
+    needs: [check-tag]
     uses: ./.github/workflows/reusable_quality-check.yml
     with:
       ref: ${{ github.sha }} # cannot use env
@@ -74,7 +74,7 @@ jobs:
 
   # This job creates git tag and a draft release on GitHub
   create-tag:
-    needs: [get-version, quality-check, release-python-client]
+    needs: [get-version, release-python-client]
     runs-on: ubuntu-latest
     permissions:
       contents: write
