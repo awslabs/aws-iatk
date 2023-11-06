@@ -72,8 +72,8 @@ jobs:
       # TODO (hawflau): remove the line below on launch
       skip_pypi: true
 
-  # This job creates git tag and a draft release on GitHub
-  create-tag:
+  # This job creates a draft release on GitHub
+  release-github:
     needs: [get-version, release-python-client]
     runs-on: ubuntu-latest
     permissions:
