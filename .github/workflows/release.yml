@@ -32,7 +32,8 @@ jobs:
           echo $RELEASE_VERSION
           echo "RELEASE_VERSION=${RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
 
-  check-tag:
+  # This job validates if a tag of the release version has already been created
+  validate-tag:
     needs: [get-version]
     runs-on: ubuntu-latest
     permissions:
@@ -53,7 +54,7 @@ jobs:
 
   # This job runs tests and linting before building artifacts
   quality-check:
-    needs: [check-tag]
+    needs: [validate-tag]
     uses: ./.github/workflows/reusable_quality-check.yml
     with:
       ref: ${{ github.sha }} # cannot use env
@@ -82,21 +83,22 @@ jobs:
         with:
           ref: ${{ env.RELEASE_COMMIT }}
 
-      - name: Git client setup and refresh tip
-        id: setup-git
-        run: |
-          git config user.name "AWS CTK bot"
-          git config user.email "aws-ctk-feedback@amazon.com"
-          git config remote.origin.url >&-
+      # - name: Git client setup and refresh tip
+      #   id: setup-git
+      #   run: |
+      #     git config user.name "AWS CTK bot"
+      #     git config user.email "aws-ctk-feedback@amazon.com"
+      #     git config remote.origin.url >&-
 
       - name: Create Git Tag and draft release
         env:
           RELEASE_VERSION: ${{ needs.get-version.outputs.RELEASE_VERSION }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git tag -a v"${RELEASE_VERSION}" -m "release_version: v${RELEASE_VERSION}"
-          git push origin v"${RELEASE_VERSION}"
-          gh release create v"${RELEASE_VERSION}" --draft --generate-notes --title "Release version: v${RELEASE_VERSION}"
+          gh release create v"${RELEASE_VERSION}" \
+            --draft --generate-notes \
+            --title "Release version: v${RELEASE_VERSION}" \
+            --target "${{ env.RELEASE_COMMIT }}" 
 
       - name: Upload provenance
         id: upload-provenance
