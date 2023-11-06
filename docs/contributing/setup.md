@@ -1,4 +1,4 @@
-## Prerequisite
+## Prerequisites
 
 First ensure you have Go 1.20+ and Python 3.8+ installed. Note: you only need python installed if you are editing the python code under `python-client` directory. You will also need to clone the repo.
 

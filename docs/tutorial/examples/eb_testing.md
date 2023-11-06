@@ -3,26 +3,26 @@ title: Testing EventBridge Event Bus with "Listener"
 description: Example to showcase how to use Listener to test a Rule on a given Event Bus
 ---
 
-This example shows how to use a "Listener" to test a Rule on a given Event Bus. A "Listener" is a "Test Harness" that Zion helps you create for testing event delivery.
+In this example, we use a "Listener" to test a rule on an Amazon EventBridge event bus. A "Listener" is a "Test Harness" that AWS CTK helps you create for testing event delivery.
 
 ### System Under Test
 
-In this example, we use AWS CDK to define the SUT. The SUT consists of these resources:
+For this example, we use AWS CDK to define the System Under Test (SUT). The SUT consists of these resources:
 
-* an API Gateway Rest API (Entry Point)
-* a Lambda Function (Producer)
-* an Eventbridge Event Bus
-* an Eventbridge Rule
-* a Lambda Function (Consumer), as a target of the Rule
+* An Amazon API Gateway REST API (Entry Point).
+* An AWS Lambda function (Producer).
+* An EventBridge event bus.
+* An EventBridge rule.
+* A Lambda function (Consumer), as a target of the rule.
 
-When the Rest API receives a request, it invokes the Producer. The Producer then sends an event to the Event Bus, which then delivers the event to Consumer according to the Rule.
+When the REST API receives a request, it invokes the producer. The producer then sends an event to the event bus, which then delivers the event to the consumer according to the rule.
 
-We added some `CfnOutput` constructs to expose certain attributes from the SUT. These include:
+We added some `CfnOutput` constructs to expose certain attributes from the System Under Test (SUT). These include:
 
-* the name of the Event Bus
-* the URL of the API endpoint
-* the Eventbridge Rule name
-* the Target ID in the Rule
+* The name of the event bus.
+* The URL of the API endpoint.
+* The EventBridge rule name.
+* The target ID in the rule.
 
 These values will be used during the tests.
 
@@ -137,7 +137,7 @@ npm run deploy
 
 ```
 
-After deploying, an output file `outputs.json` is created, with contents similar to below:
+After deploying, the output file `outputs.json` is created, with contents similar to below:
 
 === "outputs.json"
 ```json
@@ -157,12 +157,12 @@ After deploying, an output file `outputs.json` is created, with contents similar
 
 #### Python
 
-In the test code, we follow the "Arrage, Act, Assert" pattern. In Python, we do it by using [`unittest.TestCase`](https://docs.python.org/3/library/unittest.html#unittest.TestCase){target="_blank"}. We use `setUpClass` and `tearDownClass` to create and destroy Test Harnesses before and after individual tests respectively. Specifically:
+In the test code, we follow the "Arrage, Act, Assert" pattern. In Python, we do this by using [`unittest.TestCase`](https://docs.python.org/3/library/unittest.html#unittest.TestCase){target="_blank"}. We use `setUpClass` and `tearDownClass` to create and destroy Test Harnesses before and after individual tests respectively. Specifically:
 
-* In `setUpClass`, we first call `remove_listeners` with `tag_filters` to destroy any previous orphaned listener. Then we call `add_listener` to create a listener by providing the Event Bus Name, the Rule Name, and the Target ID. Those values are retrieved from the "outputs.json" file. We also attach a tag to the listener so we can look it up more easily. The `add_listener` returns the listener ID. We keep the listener ID throughout the tests.
-* In `tearDownClass`, we call `remove_listeners` to the listener created during `setUpClass`.
+* In `setUpClass`, we first call `remove_listeners` with `tag_filters` to shut down any previous orphaned listener. Then we call `add_listener` to create a listener by providing the event bus name, the rule name, and the target ID. Those values are retrieved from the "outputs.json" file. We also attach a tag to the listener so we can look it up more easily. The `add_listener` returns the listener ID. We keep the listener ID throughout the tests.
+* In `tearDownClass`, we call `remove_listeners` to shut down the listener created during `setUpClass`.
 
-We have two tests `test_event_lands_at_eb` and `test_poll_events`, which showcase the `wait_until_event_matched` method and the `poll_events` method respectively:
+We have two tests, `test_event_lands_at_eb` and `test_poll_events`, which showcase the `wait_until_event_matched` method and the `poll_events` method respectively:
 
 * In `test_event_lands_at_eb`, we define a function `assert_fn` to determine if a received event is matching expectation. We supply `assert_fn` to the `wait_until_event_matched` method as an argument. The method will keep polling events from the listener until the given `assert_fn` succeeds or until timeout.
 * In `test_poll_events`, we call the `poll_events` method. This method is a primitive method of `wait_until_event_matched`, i.e. it polls from the listener just once.

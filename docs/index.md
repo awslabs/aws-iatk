@@ -5,7 +5,10 @@ description: AWS Cloud Test Kit
 
 !!! alert "AWS Cloud Test Kit is in Public Preview"
 
-AWS Cloud Test Kit (CTK) is a framework that makes it easy for developers to write integration tests that run against their Event Driven Application in the cloud. CTK simplifies writing integration tests for serverless applications, providing utilities to generate test events to trigger an application, validate event flow and structure in EventBridge, and assert event flow against X-Ray traces. 
+AWS Cloud Test Kit (AWS CTK) is a framework that developers can use to write integration tests to run against their event-driven applications in the AWS Cloud. AWS CTK simplifies the writing of integration tests for serverless applications by doing the following:
+- Providing utilities that generate test events to trigger an application.
+- Validating event flow and structure in Amazon EventBridge.
+- Asserting event flow against AWS X-Ray traces. 
 
 ## Install
 
@@ -18,13 +21,11 @@ pip install aws-ctk
 
 !!! question "Looking for Pip signed releases? [Learn more about verifying signed builds](./security.md#verifying-signed-builds)"
 
-## Quick getting started
+## Set up 
 
-See [Tutorial's](./tutorial/index.md) page for more information.
+### Credentials Configurations
 
-## Credentials Configurations
-
-AWS CTK requires AWS Credentials in order to interact with AWS Resources in your account. You can specify this in `AWSCtk` directly, as shown below. You can also set [Environment Variables](#environment-variables) instead.
+AWS CTK requires AWS credentials in order to interact with the AWS resources in your account. You can specify this in `AWSCtk` directly, as shown below. You can also set [Environment Variables](#environment-variables) instead.
 
 ```
 from aws_ctk import AWSCtk
@@ -35,7 +36,7 @@ ctk = AWSCtk(
 )
 ```
 
-## Environment variables
+### Environment variables
 
 ???+ info
 	Explicit parameters take precedence over environment variables
@@ -47,7 +48,9 @@ ctk = AWSCtk(
 | AWS_SECRET_ACCESS_KEY | AWS Secret Access Key to use |
 | AWS_SESSION_TOKEN     | AWS Session Token to use (optional) |
 
+## Quick getting started
 
+To start using AWS CTK, see [Tutorial](./tutorial/index.md).
 
 ## Concepts
 
@@ -57,10 +60,8 @@ The system being tested for correct operations (including happy and error paths)
 
 ### Test Harness
 
-A group of AWS resources Testing SDK creates for the purpose of facilitating testing around an integration. These resources are intended to exist only for the duration of the test run, and should be destroyed after the test run completes.
+A group of AWS resources AWS CTK creates for the purpose of facilitating testing around an integration. These resources are intended to exist only for the duration of the test run, and should be destroyed after the test run completes.
 
-### Arrange, Assert, Act Testing Pattern
+### Arrange, Act, Assert Testing Pattern
 
-AWS CTK enables testing done through the Arrange, Assert, Act Testing Pattern. AWS CTK
-will help setup and get deployed resources (Arrange) and give you the information from
-in order to Assert on those resources.
+AWS CTK enables testing done through the Arrange, Act, Assert testing pattern. AWS CTK will help setup and retrieve deployed resources (Arrange). Then, AWS CTK gives you the information in order to Assert on those resources.
