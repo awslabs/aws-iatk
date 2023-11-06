@@ -83,20 +83,13 @@ jobs:
         with:
           ref: ${{ env.RELEASE_COMMIT }}
 
-      # - name: Git client setup and refresh tip
-      #   id: setup-git
-      #   run: |
-      #     git config user.name "AWS CTK bot"
-      #     git config user.email "aws-ctk-feedback@amazon.com"
-      #     git config remote.origin.url >&-
-
-      - name: Create Git Tag and draft release
+      - name: Create release
         env:
           RELEASE_VERSION: ${{ needs.get-version.outputs.RELEASE_VERSION }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create v"${RELEASE_VERSION}" \
-            --draft --generate-notes \
+            --generate-notes \
             --title "Release version: v${RELEASE_VERSION}" \
             --target "${{ env.RELEASE_COMMIT }}" 
 
