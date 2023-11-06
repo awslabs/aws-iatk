@@ -63,8 +63,6 @@ sam deploy --stack-name example-01 --template ./template.json
 
 In the test code, we use both `get_stack_outputs` and `get_physical_id_from_stack` to get the Queue URL, then assert the values returned from both methods are equal.
 
-// Need to change zion when name is settled
-
 === "01-cfn_utils/test_example_01.py"
 ```python
 import os

@@ -1,6 +1,6 @@
 ---
 title: Tutorial
-description: Introduction to Zion
+description: Introduction to AWS CTK
 ---
 
 This tutorial introduces AWS Cloud Test Kit (AWS CTK) by going through four examples. Each of them showcases one feature at a time.
@@ -22,15 +22,15 @@ Here are some terminologies we will use throughout the examples:
 * [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html){target="_blank"} and [configured with your credentials](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started-set-up-credentials.html){target="_blank"}.
 * [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html){target="_blank"} installed.
 * [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) installed.
-// Add python here? 
+* [Python 3.8+](https://www.python.org/downloads/) installed.
 
 ## Getting started
 
 Clone the examples:
 
 ```bash
-git clone --single-branch --branch examples git@github.com:awslabs/aws-zion-private.git zion-examples
-cd zion-examples
+git clone --single-branch --branch examples git@github.com:awslabs/aws-ctk.git ctk-examples
+cd ctk-examples
 ```
 
 To run the Python (3.8+) examples:
