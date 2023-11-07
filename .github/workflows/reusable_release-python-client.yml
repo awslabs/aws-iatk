@@ -165,7 +165,7 @@ jobs:
 
       - name: file count check
         run: |
-          all=$(find . \( -type file \) | wc -l)
+          all=$(find . \( -type f \) | wc -l)
           echo $all
           sdist=$(find . \( -name aws-ctk-*.tar.gz \) | wc -l)
           echo $sdist
