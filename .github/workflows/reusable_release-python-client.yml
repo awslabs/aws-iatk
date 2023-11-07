@@ -166,8 +166,8 @@ jobs:
       - name: file count check
         run: |
           all=$(find . | wc -l)
-          sdist=$(find . \( -name aws-ctk-*.tar.gz \))
-          wheels=$(find . \( -name aws_ctk-*.whl \))
+          sdist=$(find . \( -name aws-ctk-*.tar.gz \) | wc -l)
+          wheels=$(find . \( -name aws_ctk-*.whl \) | wc -l)
           [ $all -eq $(($sdist + $wheels)) ]
 
       # NOTE: SLSA retraces our build to its artifact to ensure it wasn't tampered
