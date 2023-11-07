@@ -103,20 +103,6 @@ jobs:
         working-directory: ./python-client
         run: make copy-service-source-for-sdist
 
-      - name: print identifiers
-        working-directory: "python-client"
-        env:
-          CIBW_BUILD_FRONTEND: build
-          CIBW_SKIP: "*-musllinux*"
-          CIBW_ARCHS: ${{ matrix.CIBW_ARCHS }}
-          CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.arch }}" CTK_SKIP_BUILD_BINARY="1"
-          CIBW_BEFORE_ALL_LINUX: |
-            curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && 
-            tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && 
-            export PATH=$PATH:/usr/local/go/bin && 
-            env GOOS=linux GOARCH=${{ matrix.arch }} go build -C ./src/ctk_src -o ../ctk_service/ ./cmd/ctk
-        run: python -m cibuildwheel --print-build-identifiers
-
       - name: Build wheels
         working-directory: "python-client"
         env:
@@ -176,6 +162,13 @@ jobs:
         with:
           name: ${{ inputs.artifact_name }}
           path: ./dist/
+
+      - name: file count check
+        run: |
+          all=$(find . | wc -l)
+          sdist=$(find . \( -name aws-ctk-*.tar.gz \))
+          wheels=$(find . \( -name aws_ctk-*.whl \))
+          [ $all -eq $(($sdist + $wheels)) ]
 
       # NOTE: SLSA retraces our build to its artifact to ensure it wasn't tampered
       # coupled with GitHub OIDC, SLSA can then confidently sign it came from this release pipeline+commit+branch+org+repo+actor+integrity hash
