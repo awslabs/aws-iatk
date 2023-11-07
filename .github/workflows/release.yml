@@ -1,182 +1,103 @@
-name: release
+name: Release Workflow
+
+env:
+  RELEASE_COMMIT: ${{ github.sha }}
+  GO_VERSION: "1.20"
 
 on:
+  push:
+    branches:
+      - "develop"
+    paths:
+      - "python-client/src/aws_ctk/version.py"
   workflow_dispatch:
-    
+
 jobs:
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: "1.20"
-
-      # Used to host cibuildwheel
-      - uses: actions/setup-python@v3
-
-      - name: copy go source codebase
-        working-directory: ./python-client
-        run: make copy-service-source-for-sdist
-
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel
-
-      - name: Build wheels
-        working-directory: ./python-client
-        run: python -m cibuildwheel --output-dir wheels
-        env: 
-          CIBW_ARCHS_MACOS: "x86_64 arm64"
-          CIBW_ARCHS_WINDOWS: "AMD64 ARM64"
-      
-      - uses: actions/upload-artifact@v3
-        with:
-          name: wheels-test-artifact
-          path: ./python-client/wheels/*.whl
-          retention-days: 15
-
-  build_wheels_linux:
-    name: Build wheels on ubuntu-latest
+  # This job get the version from the version file and exports it for subsequent jobs to use
+  get-version:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        GO_ARCHITECTURE: [amd64, arm64]
-        LINUX_ARCHITECTURE: [x86_64, aarch64]
-        exclude:
-          - GO_ARCHITECTURE: amd64
-            LINUX_ARCHITECTURE: aarch64
-          - GO_ARCHITECTURE: arm64
-            LINUX_ARCHITECTURE: x86_64
-
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@326560df218a7ea9cf6ab49bbc88b8b306bb437e
-        with:
-          platforms: all
-
-      # Used to host cibuildwheel
-      - uses: actions/setup-python@v3
-
-      - name: copy go source codebase
-        working-directory: ./python-client
-        run: make copy-service-source-for-sdist
-
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel
-
-      - name: Build wheels
-        working-directory: ./python-client
-        run: python -m cibuildwheel --output-dir wheels
-        env: 
-          CIBW_SKIP: "*-musllinux*" 
-          CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.GO_ARCHITECTURE }}"
-          CIBW_ARCHS_LINUX: "${{matrix.LINUX_ARCHITECTURE}}"
-          CIBW_BEFORE_ALL_LINUX: 
-            curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && 
-            tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && 
-            export PATH=$PATH:/usr/local/go/bin && 
-            env GOOS=linux GOARCH=${{ matrix.GO_ARCHITECTURE }} go build -C ./src/zion_src -o ../zion_service/ ./cmd/zion
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: wheels-test-artifact
-          path: ./python-client/wheels/*.whl
-          retention-days: 15
-
-  check_version_bump:
-    name: check version on macos-latest
-    runs-on: macos-latest
-    needs: [build_wheels, build_wheels_linux]
-    steps:
-      - name: checkout develop branch
-        uses: actions/checkout@v4
-        with:
-            ref: develop
-            
-      - id: version-develop
-        name: Get Zion Version Develop
-        run: echo "VERSION_DEVELOP=$(awk '/_version =/ {print $3}' python-client/src/zion/version.py)" >> "$GITHUB_ENV"
-
-      - name: checkout source branch
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - id: version-source
-        name: Get Zion Version Main
-        run: echo "PAST_VERSION=$(awk '/_version =/ {print $3}' python-client/src/zion/version.py)" >> "$GITHUB_ENV"
-          
-
-      - name: Check Version Bump
-        run: 
-            if [ $PAST_VERSION = $VERSION_DEVELOP ]; then 
-                  echo "No version change, exiting!";
-                  exit 1;
-                else
-                  echo Versions are different;
-                  exit 0;
-                fi
-    
-  release:
-    name: release on macos-latest
-    runs-on: macos-latest
-    needs: check_version_bump
     permissions:
-      id-token: write
       contents: read
-    env:
-      AWS_REGION: "us-east-1"
-      ACCOUNT_ID: ${{ secrets.ZION_GH_RELEASE_ACCOUNT_ID }}
-      CODEARTIFACT_REPO: "zion-release"
+    outputs:
+      RELEASE_VERSION: ${{ steps.release_version.outputs.RELEASE_VERSION }}
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v3
-
-      - name: copy go source codebase
-        working-directory: ./python-client
-        run: make copy-service-source-for-sdist
-
-      - name: create sdist for ctk
-        working-directory: ./python-client
-        run: |
-            pip install build
-            make build-client
-
-      - name: Make Wheels Directory
-        run: mkdir wheels
-
-      - uses: actions/download-artifact@v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
-          name: wheels-test-artifact
-          path: wheels
+          ref: ${{ env.RELEASE_COMMIT }}
 
-      - name: Install dependencies
+      - name: Export release version
+        id: release_version
         run: |
-            python -m pip install --upgrade pip
-                pip install twine awscli
+          RELEASE_VERSION=$(awk -F '"' '/_version = /{print $2}' python-client/src/aws_ctk/version.py)
+          echo $RELEASE_VERSION
+          echo "RELEASE_VERSION=${RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+  # This job validates if a tag of the release version has already been created
+  validate-tag:
+    needs: [get-version]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
-            role-to-assume: ${{secrets.ZION_TEST_RELEASE_IAM_ARN}} 
-            role-session-name: CiReleaseTest
-            aws-region: ${{env.AWS_REGION}}
+          ref: ${{ env.RELEASE_COMMIT }}
+          fetch-depth: 0
 
-      - name: Upload to CodeArtifact
-        run: 
-            |      
-            export TWINE_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain aws --domain-owner $ACCOUNT_ID --repository $CODEARTIFACT_REPO --region $AWS_REGION --format pypi --query repositoryEndpoint --output text`
-            export TWINE_PASSWORD=`aws codeartifact get-authorization-token --domain aws --domain-owner $ACCOUNT_ID --region $AWS_REGION --query authorizationToken --output text`
-            export TWINE_USERNAME=aws
-            python -m twine upload --verbose wheels/*.whl
-            python -m twine upload --verbose python-client/dist/*.tar.gz
+      - name: check version tag
+        run: |
+          if [ $(git tag --list "v${{ needs.get-version.outputs.RELEASE_VERSION }}") ]
+          then
+            echo "Tag v${{ needs.get-version.outputs.RELEASE_VERSION }} already exists. Exiting."
+            exit 1
+          fi
+
+  # This job runs tests and linting before building artifacts
+  quality-check:
+    needs: [validate-tag]
+    uses: ./.github/workflows/reusable_quality-check.yml
+    with:
+      ref: ${{ github.sha }} # cannot use env
+    secrets:
+      CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
+
+  # This job builds python client artifacts and publishes them to PyPi
+  # It returns the provenance information for subsequent jobs to use.
+  release-python-client:
+    needs: [get-version, quality-check]
+    uses: ./.github/workflows/reusable_release-python-client.yml
+    with:
+      ref: ${{ github.sha }} # cannot use env
+      release_version: ${{ needs.get-version.outputs.RELEASE_VERSION }}
+      artifact_name: "python-client-artifacts"
+      # TODO (hawflau): remove the line below on launch
+      skip_pypi: true
+
+  # This job creates a draft release on GitHub
+  release-github:
+    needs: [get-version, release-python-client]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+        with:
+          ref: ${{ env.RELEASE_COMMIT }}
+
+      - name: Create release
+        env:
+          RELEASE_VERSION: ${{ needs.get-version.outputs.RELEASE_VERSION }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create v"${RELEASE_VERSION}" \
+            --generate-notes \
+            --title "Release version: v${RELEASE_VERSION}" \
+            --target "${{ env.RELEASE_COMMIT }}" 
+
+      - name: Upload provenance
+        id: upload-provenance
+        uses: ./.github/actions/upload-release-provenance
+        with:
+          release_version: ${{ needs.get-version.outputs.RELEASE_VERSION }}
+          provenance_name: ${{ needs.release-python-client.outputs.provenance_name }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

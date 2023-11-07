@@ -13,8 +13,7 @@ from setuptools.command.sdist import sdist
 
 def build_and_install_ctk(packages: List[str]) -> None:
     cmd = ['go', 'build', '-C', './src/ctk_src', '-o', '../ctk_service/', './cmd/ctk']
-    # TODO (hawflau): introduce env var to control whether to build or not
-    if not os.getenv("GOARCH") or not os.path.isfile("./src/ctk_service/ctk"):
+    if not os.getenv("CTK_SKIP_BUILD_BINARY"):
         out = call(cmd)
         if out != 0:
             raise CompileError("Failed to build CTK Service. Golang version >1.20 required and on PATH")
