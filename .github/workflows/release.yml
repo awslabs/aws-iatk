@@ -68,7 +68,7 @@ jobs:
     uses: ./.github/workflows/reusable_release-python-client.yml
     with:
       ref: ${{ github.sha }} # cannot use env
-      release_version: ${{ needs.get-version.output.RELEASE_VERSION }}
+      release_version: ${{ needs.get-version.outputs.RELEASE_VERSION }}
       artifact_name: "python-client-artifacts"
       # TODO (hawflau): remove the line below on launch
       skip_pypi: true
