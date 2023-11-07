@@ -1,18 +1,18 @@
 ---
-title: Testing with X-Ray Traces
-description: Example to showcase how to test with X-Ray Traces
+title: Testing with X-Ray traces
+description: Example to showcase how to test with X-Ray traces
 ---
 
-This example shows how to test with X-Ray Traces. If you have X-Ray instrumented throughout your application, X-Ray Traces provide a good amount of details for you to inspect for testing purpose. Zion helps you fetch traces and parse them into easily-queryable objects for inspectation. For example, you can easily verify if a trace hit an expected sequeunce of AWS resources.
+This example shows how to test with AWS X-Ray traces. When implemented throughout your application, X-Ray traces provides a good amount of detail that you can inspect for testing purposes. AWS CTK helps you fetch traces and parse them into objects that can easily be queried for inspection. For example, you can easily verify if a trace hits an expected sequence of AWS resources.
 
-### System Under Test
+### System Under Test (SUT)
 
-In this example, we use AWS CDK to define the SUT. The SUT consists of one StepFunction State Machine.
+In this example, we use AWS CDK to define the SUT. The SUT consists of one AWS Step Functions State Machine.
 
 We added some `CfnOutput` constructs to expose certain attributes from the SUT. These include:
 
-* the name of the State Machine
-* the ARN of the State Machine
+* The name of the state machine.
+* The ARN of the state machine.
 
 These values will be used during the tests.
 
@@ -102,12 +102,12 @@ After deploying, an output file `outputs.json` is created, with contents similar
 
 #### Python
 
-In the test code, we first implement the `setUp` method to start a State Machine execution, and wait for the execution to complete. We keep the tracing header of the execution.
+In the test code, we first implement the `setUp` method to start a state machine execution, and wait for the execution to complete. We keep the tracing header of the execution.
 
-We have two tests `test_get_trace_tree` and `test_retry_get_trace_tree_until`, which showcase the `get_trace_tree` method and the `retry_get_trace_tree_until` method:
+We have two tests, `test_get_trace_tree` and `test_retry_get_trace_tree_until`, which showcase the `get_trace_tree` method and the `retry_get_trace_tree_until` method:
 
-* In `test_get_trace_tree`, we added a sleep of 5 seconds to wait for the trace to be fetchable. The `get_trace_tree` uses the fetched Trace to build and return a Trace Tree. Nodes of the tree are segments or subsegments of the trace. The root is the starting point of the trace. The method returns the root segment and also all the paths in the tree. Each path is a sequence of nodes from root to leaf. In the test, we extract the `origin` attribute of each node of each path to assert if the expected sequence of AWS resources were invoked. 
-* In `test_retry_get_trace_tree_until`, no sleep is needed as the `retry_get_trace_tree_until` method handles the latency issue by retrying fetching the trace with exponential backoff. In this test, we also define function called `assertion` to do assertion on the returned Trace Tree. We supply `assertion` to the `retry_get_trace_tree_until` as a stopping condition.
+* In `test_get_trace_tree`, we added a sleep of 5 seconds to wait for the trace to be fetchable. The `get_trace_tree` uses the fetched trace to build and return a trace tree. Nodes of the tree are segments or subsegments of the trace. The root is the starting point of the trace. The method returns the root segment and also all the paths in the tree. Each path is a sequence of nodes from root to leaf. In the test, we extract the `origin` attribute of each node of each path to assert if the expected sequence of AWS resources were invoked. 
+* In `test_retry_get_trace_tree_until`, no sleep is needed as the `retry_get_trace_tree_until` method handles the latency issue by retrying fetching the trace with exponential backoff. In this test, we also define function called `condition` to do assertion on the returned Trace Tree. We supply `condition` to the `retry_get_trace_tree_until` as a stopping condition.
 
 === "03-xray_trace_tree/tests/python/test_example_03.py"
 ```python

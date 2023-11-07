@@ -3,7 +3,7 @@ title: Retrieving information from a deployed CloudFormation Stack
 description: Example to showcase how to retrieve info from a CloudFormation Stack
 ---
 
-This example shows how to use `get_stack_outputs` and `get_physical_id_from_stack` to retrieve information from a deployed CloudFormation Stack. They are useful if you deploy your stack directly with a CloudFormation template.
+This example shows how to use `get_stack_outputs` and `get_physical_id_from_stack` to retrieve information from a deployed AWS CloudFormation Stack. They are useful if you deploy your stack directly with a CloudFormation template.
 
 ### System Under Test
 
