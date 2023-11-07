@@ -64,10 +64,11 @@ jobs:
   # This job builds python client artifacts and publishes them to PyPi
   # It returns the provenance information for subsequent jobs to use.
   release-python-client:
-    needs: [quality-check]
+    needs: [get-version, quality-check]
     uses: ./.github/workflows/reusable_release-python-client.yml
     with:
       ref: ${{ github.sha }} # cannot use env
+      release_version: ${{ needs.get-version.output.RELEASE_VERSION }}
       artifact_name: "python-client-artifacts"
       # TODO (hawflau): remove the line below on launch
       skip_pypi: true

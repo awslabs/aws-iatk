@@ -7,6 +7,10 @@ on:
         required: true
         type: string
         description: "the ref (branch, commit sha, or tag) to run tests against"
+      release_version:
+        required: true
+        type: string
+        description: "the release version for sanity check after building artifacts"
       GO_VERSION:
         required: false
         type: string
@@ -163,14 +167,17 @@ jobs:
           name: ${{ inputs.artifact_name }}
           path: ./dist/
 
+      # NOTE: this is a sanity check to ensure the artifacts contain only wheels and sdist
+      # with correct name and version
       - name: file count check
         run: |
           all=$(find . \( -type f \) | wc -l)
           echo $all
-          sdist=$(find . \( -name aws-ctk-*.tar.gz \) | wc -l)
+          sdist=$(find . \( -name aws-ctk-${{ inputs.release_version }}.tar.gz \) | wc -l)
           echo $sdist
-          wheels=$(find . \( -name aws_ctk-*.whl \) | wc -l)
+          wheels=$(find . \( -name aws_ctk-${{ inputs.release_version }}-*.whl \) | wc -l)
           echo $wheels
+          [ $sdist -eq 1 ]
           [ $all -eq $(($sdist + $wheels)) ]
 
       # NOTE: SLSA retraces our build to its artifact to ensure it wasn't tampered
