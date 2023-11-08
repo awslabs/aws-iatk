@@ -66,19 +66,19 @@ In the test code, we use both `get_stack_outputs` and `get_physical_id_from_stac
 === "01-cfn_utils/test_example_01.py"
 ```python
 import os
-import zion
+import aws_iatk
 
-def test_zion_utils():
+def test_iatk_utils():
     stack_name = os.getenv("STACK_NAME", "example-01")
     region = os.getenv("AWS_REGION", "us-east-1")
-    z = zion.Zion(region=region)
+    iatk = aws_iatk.AwsIatk(region=region)
 
-    outputs = z.get_stack_outputs(
+    outputs = iatk.get_stack_outputs(
         stack_name=stack_name,
         output_names=["QueueURL"],
     ).outputs
 
-    physical_id = z.get_physical_id_from_stack(
+    physical_id = iatk.get_physical_id_from_stack(
         stack_name=stack_name,
         logical_resource_id="SQSQueue",
     ).physical_id

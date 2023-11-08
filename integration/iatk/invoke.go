@@ -1,4 +1,4 @@
-package ctk
+package iatk
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 )
 
 func Invoke(t *testing.T, in []byte, out *strings.Builder, sErr *strings.Builder, env *[]string) {
-	cmd := exec.Command("ctk")
+	cmd := exec.Command("iatk")
 	if env != nil {
 		cmd.Env = *env
 	}
@@ -27,7 +27,7 @@ func Invoke(t *testing.T, in []byte, out *strings.Builder, sErr *strings.Builder
 }
 
 func SInvoke(t *testing.T, in string, out *strings.Builder, sErr *strings.Builder, env *[]string, ignoreErr bool) {
-	cmd := exec.Command("ctk")
+	cmd := exec.Command("iatk")
 	if env != nil {
 		cmd.Env = *env
 	}

@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class RetryGetTraceTreeUntilParams:
     """
-    AWSCtk.wait_until_event_matched params
+    AwsIatk.wait_until_event_matched params
 
     Parameters
     ----------

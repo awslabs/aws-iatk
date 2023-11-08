@@ -1,6 +1,6 @@
 ---
 title: Code of Conduct
-description: Code of Conduct for AWS CTK
+description: Code of Conduct for AWS IATK
 ---
 
 ## Overview

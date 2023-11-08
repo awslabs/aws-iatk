@@ -1,24 +1,24 @@
-## AWS Cloud Test Kit
+## AWS Integrated Application Test Kit (IATK)
 
-:warning: **AWS Cloud Test Kit is under Public Preview**
+:warning: **AWS Integrated Application Test Kit is under Public Preview**
 
-AWS Cloud Test Kit (CTK), a new open-source test library that makes it easier for developers to create tests for cloud applications with increased speed and accuracy. With AWS CTK, developers can quickly write tests that exercise their code and its AWS integrations against an environment in the cloud, making it easier to catch mistakes early in the development process. CTK includes utilities to generate test events, validate event delivery and structure in Amazon EventBridge Event Bus, and assertions to validate call flow using AWS X-Ray traces.
+AWS Integrated Application Test Kit (IATK), a new open-source test library that makes it easier for developers to create tests for cloud applications with increased speed and accuracy. With AWS IATK, developers can quickly write tests that exercise their code and its AWS integrations against an environment in the cloud, making it easier to catch mistakes early in the development process. IATK includes utilities to generate test events, validate event delivery and structure in Amazon EventBridge Event Bus, and assertions to validate call flow using AWS X-Ray traces.
 
-The CTK is available for Python3.8+
+The AWS IATK is available for Python3.8+
 
 ## Getting Started
 
-For a detailed walkthrough, see the tutorial or [examples](https://github.com/awslabs/aws-ctk/tree/examples).
+For a detailed walkthrough, see the tutorial or [examples](https://github.com/awslabs/aws-iatk/tree/examples).
 
 ### Install
 
 ```
-pip3 install aws-ctk
+pip3 install aws-iatk
 ```
 
 ## Getting Help
 
-The best way to interact with our team is through Github. You can open an [issue](https://github.com/awslabs/aws-ctk/issues).
+The best way to interact with our team is through Github. You can open an [issue](https://github.com/awslabs/aws-iatk/issues).
 
 ## Contributing
 

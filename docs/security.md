@@ -1,6 +1,6 @@
 ---
 title: Security
-description: Security practices and processes for AWS CTK
+description: Security practices and processes for AWS IATK
 ---
 
 <!-- markdownlint-disable MD041 MD043 -->

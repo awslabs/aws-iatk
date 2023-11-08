@@ -23,7 +23,7 @@ Navigate to `python-client`. Make changes as needed.
 
 Before committing and submitting a PR, please run the following:
 
-1. `make build-ctk-service`
+1. `make build-iatk-service`
 2. `make init`
 3. `make unit-test`
 4. `make contract-test`

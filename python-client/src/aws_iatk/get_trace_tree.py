@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class GetTraceTreeOutput:
     """
-    AWSCtk.get_trace_tree output
+    AwsIatk.get_trace_tree output
 
     Parameters
     ----------
@@ -31,7 +31,7 @@ class GetTraceTreeOutput:
 @dataclass
 class GetTraceTreeParams:
     """
-    AWSCtk.get_trace_tree parameters
+    AwsIatk.get_trace_tree parameters
 
     Parameters
     ----------

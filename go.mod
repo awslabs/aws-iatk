@@ -1,4 +1,4 @@
-module ctk
+module iatk
 
 go 1.19
 

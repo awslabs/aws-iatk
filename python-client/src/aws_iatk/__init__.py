@@ -53,8 +53,8 @@ if TYPE_CHECKING:
     import boto3
 
 __all__ = [
-    "AWSCtk", 
-    "CtkException", 
+    "AwsIatk", 
+    "IatkException", 
     "PhysicalIdFromStackOutput", 
     "GetStackOutputsOutput", 
     "AddEbListenerOutput", 
@@ -67,7 +67,7 @@ __all__ = [
 ]
 
 LOG = logging.getLogger(__name__)
-ctk_service_logger = logging.getLogger("ctk.service")
+iatk_service_logger = logging.getLogger("iatk.service")
 
 
 def _log_duration(func):
@@ -81,7 +81,7 @@ def _log_duration(func):
     return wrapper
 
 
-class CtkException(Exception):
+class IatkException(Exception):
     def __init__(self, message, error_code) -> None:
         super().__init__(message)
 
@@ -92,9 +92,9 @@ class RetryableException(Exception):
         super().__init__(message)
 
 @dataclass
-class AWSCtk:
+class AwsIatk:
     """
-    Creates and setups AWS Cloud Testing Kit
+    Creates and setups AWS Integrated Application Test Kit
 
     Parameters
     ----------
@@ -106,8 +106,8 @@ class AWSCtk:
     region: Optional[str] = None
     profile: Optional[str] = None
 
-    _ctk_binary_path = (
-        pathlib.Path(__file__).parent.parent.joinpath("ctk_service", "ctk").absolute()
+    _iatk_binary_path = (
+        pathlib.Path(__file__).parent.parent.joinpath("iatk_service", "iatk").absolute()
     )
 
     def get_physical_id_from_stack(
@@ -134,12 +134,12 @@ class AWSCtk:
 
         Raises
         ------
-        CtkException
+        IatkException
             When failed to fetch Phsyical Id
         """
         params = PhysicalIdFromStackParams(logical_resource_id, stack_name)
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_ctk(payload)
+        response = self._invoke_iatk(payload)
         output = PhysicalIdFromStackOutput(response)
         LOG.debug(f"Physical id: {output.physical_id}, Logical id: {params.logical_resource_id}")
         return output
@@ -166,12 +166,12 @@ class AWSCtk:
 
         Raises
         ------
-        CtkException
+        IatkException
             When failed to fetch Stack Outputs
         """
         params = GetStackOutputsParams(stack_name, output_names)
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_ctk(payload)
+        response = self._invoke_iatk(payload)
         output = GetStackOutputsOutput(response)
         LOG.debug(f"Output: {output}")
         return output
@@ -214,12 +214,12 @@ class AWSCtk:
 
         Raises
         ------
-        CtkException
+        IatkException
             When failed to add listener
         """
         params = AddEbListenerParams(event_bus_name, rule_name, target_id, tags)
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_ctk(payload)
+        response = self._invoke_iatk(payload)
         output = AddEbListenerOutput(response)
         LOG.debug(f"Output: {output}")
         return output
@@ -255,12 +255,12 @@ class AWSCtk:
 
         Raises
         ------
-        CtkException
+        IatkException
             When failed to remove listener(s)
         """
         params = RemoveListenersParams(ids, tag_filters)
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_ctk(payload)
+        response = self._invoke_iatk(payload)
         output = RemoveListenersOutput(response)
         LOG.debug(f"Output: {output}")
         return output
@@ -270,7 +270,7 @@ class AWSCtk:
         underlying implementation for poll_events and wait_until_event_matched
         """
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_ctk(payload, caller)
+        response = self._invoke_iatk(payload, caller)
         output = PollEventsOutput(response)
         return output
 
@@ -304,7 +304,7 @@ class AWSCtk:
 
         Raises
         ------
-        CtkException
+        IatkException
             When failed to Poll Events
         """
         params = PollEventsParams(listener_id, wait_time_seconds, max_number_of_messages)
@@ -342,7 +342,7 @@ class AWSCtk:
 
         Raises
         ------
-        CtkException
+        IatkException
             When failed to Poll Events
         """
         params = WaitUntilEventMatchedParams(listener_id, assertion_fn, timeout_seconds)
@@ -369,7 +369,7 @@ class AWSCtk:
         underlying implementation for get_trace_tree and retry_get_trace_tree_until
         """
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_ctk(payload, caller)
+        response = self._invoke_iatk(payload, caller)
         output = GetTraceTreeOutput(response)
         return output
 
@@ -395,7 +395,7 @@ class AWSCtk:
 
         Raises
         ------
-        CtkException
+        IatkException
             When failed to fetch a trace tree
         """
         params = GetTraceTreeParams(tracing_header)
@@ -406,7 +406,7 @@ class AWSCtk:
         self, params: GenerateBareboneEventParams,
     ) -> GenerateBareboneEventOutput:
         payload = params.to_payload(self.region, self.profile)
-        response = self._invoke_ctk(payload)
+        response = self._invoke_iatk(payload)
         output = GenerateBareboneEventOutput(response)
         return output
 
@@ -448,7 +448,7 @@ class AWSCtk:
 
         Raises
         ------
-        CtkException
+        IatkException
             When failed to fetch a trace tree
         """
         params = GenerateMockEventParams(registry_name, schema_name, schema_version, event_ref, skip_optional, contexts)
@@ -536,9 +536,9 @@ class AWSCtk:
             try:
                 json.dumps(generated_event)
             except TypeError:
-                raise CtkException(f"context applier {func.__name__} returns a non-JSON-serializable result", 400)
+                raise IatkException(f"context applier {func.__name__} returns a non-JSON-serializable result", 400)
         if generated_event is None:
-            raise CtkException("event is empty, make sure function returns a valid event", 404)
+            raise IatkException("event is empty, make sure function returns a valid event", 404)
         return generated_event
         
     def patch_aws_client(self, client: "boto3.client", sampled = 1) -> "boto3.client":
@@ -572,10 +572,10 @@ class AWSCtk:
         return client
 
     @_log_duration
-    def _invoke_ctk(self, payload: Payload, caller: str=None) -> dict:
+    def _invoke_iatk(self, payload: Payload, caller: str=None) -> dict:
         input_data = payload.dump_bytes(caller)
         LOG.debug("payload: %s", input_data)
-        stdout_data = self._popen_ctk(input_data)
+        stdout_data = self._popen_iatk(input_data)
         jsonrpc_data = stdout_data.decode("utf-8")
         data_dict = json.loads(jsonrpc_data.strip())
 
@@ -583,17 +583,17 @@ class AWSCtk:
         if data_dict.get("error", None):
             message = data_dict.get("error", {}).get("message", "")
             error_code = data_dict.get("error", {}).get("Code", 0)
-            raise CtkException(message=message, error_code=error_code)
+            raise IatkException(message=message, error_code=error_code)
         
         return data_dict
 
-    def _popen_ctk(self, input: bytes, env_vars: Optional[dict]=None) -> bytes:
-        LOG.debug("calling ctk rpc with input %s", input)
-        p = Popen([self._ctk_binary_path], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+    def _popen_iatk(self, input: bytes, env_vars: Optional[dict]=None) -> bytes:
+        LOG.debug("calling iatk rpc with input %s", input)
+        p = Popen([self._iatk_binary_path], stdout=PIPE, stdin=PIPE, stderr=PIPE)
 
         out, err = p.communicate(input=input)
         for line in err.splitlines():
-            ctk_service_logger.debug(line.decode())
+            iatk_service_logger.debug(line.decode())
         return out
 
     def _raise_error_if_returned(self, output):
@@ -604,7 +604,7 @@ class AWSCtk:
         if data_dict.get("error", None):
             message = data_dict.get("error", {}).get("message", "")
             error_code = data_dict.get("error", {}).get("Code", 0)
-            raise CtkException(message=message, error_code=error_code)
+            raise IatkException(message=message, error_code=error_code)
 
         
     def retry_get_trace_tree_until(self, tracing_header: str, assertion_fn: Callable[[GetTraceTreeOutput], None], timeout_seconds: int = 30):
@@ -631,7 +631,7 @@ class AWSCtk:
 
         Raises
         ------
-        CtkException
+        IatkException
             When an exception occurs during get_trace_tree
         """
         params = RetryGetTraceTreeUntilParams(tracing_header, assertion_fn, timeout_seconds)
@@ -643,17 +643,17 @@ class AWSCtk:
                     caller="retry_get_trace_tree_until",
                 )
                 return response
-            except CtkException as e:
+            except IatkException as e:
                  if "trace not found" in str(e):
                     pass
                     raise RetryableException(e)
                  else:
-                    raise CtkException(e, 500)
+                    raise IatkException(e, 500)
         try:
             response = fetch_trace_tree()
             return response
-        except CtkException as e:
-            raise CtkException(e, 500)
+        except IatkException as e:
+            raise IatkException(e, 500)
 
 
 # Set up logging to ``/dev/null`` like a library is supposed to.
@@ -663,4 +663,4 @@ class NullHandler(logging.Handler):
         pass
 
 
-logging.getLogger("aws_ctk").addHandler(NullHandler())
+logging.getLogger("aws_iatk").addHandler(NullHandler())

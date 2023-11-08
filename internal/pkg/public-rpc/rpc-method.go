@@ -2,10 +2,10 @@ package publicrpc
 
 import (
 	"bytes"
-	"ctk/internal/pkg/jsonrpc"
-	"ctk/internal/pkg/public-rpc/types"
 	"encoding/json"
 	"fmt"
+	"iatk/internal/pkg/jsonrpc"
+	"iatk/internal/pkg/public-rpc/types"
 	"reflect"
 )
 

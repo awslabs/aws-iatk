@@ -2,11 +2,11 @@ package publicrpc
 
 import (
 	"context"
-	"ctk/internal/pkg/aws/config"
-	ctkcfn "ctk/internal/pkg/cloudformation"
-	"ctk/internal/pkg/jsonrpc"
-	"ctk/internal/pkg/public-rpc/types"
 	"fmt"
+	"iatk/internal/pkg/aws/config"
+	iatkcfn "iatk/internal/pkg/cloudformation"
+	"iatk/internal/pkg/jsonrpc"
+	"iatk/internal/pkg/public-rpc/types"
 	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
@@ -28,7 +28,7 @@ func (p *GetStackOutputParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Res
 
 	cfnClient := cloudformation.NewFromConfig(cfg)
 
-	mOutputKeys, err := ctkcfn.GetStackOuput(p.StackName, p.OutputNames, cfnClient)
+	mOutputKeys, err := iatkcfn.GetStackOuput(p.StackName, p.OutputNames, cfnClient)
 
 	// Fowards id and err to caller for handling
 	return &types.Result{
@@ -37,7 +37,7 @@ func (p *GetStackOutputParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Res
 }
 
 func (p *GetStackOutputParams) ReflectOutput() reflect.Value {
-	ft := reflect.TypeOf(ctkcfn.GetStackOuput)
+	ft := reflect.TypeOf(iatkcfn.GetStackOuput)
 	out0 := ft.Out(0)
 	return reflect.New(out0).Elem()
 }

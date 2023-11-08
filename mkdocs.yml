@@ -1,11 +1,11 @@
-site_name: AWS CTK
-site_description: AWS CTK
+site_name: AWS IATK
+site_description: AWS IATK
 site_author: Amazon Web Services
-repo_url: https://github.com/awslabs/aws-ctk
+repo_url: https://github.com/awslabs/aws-iatk
 edit_uri: edit/develop/docs
 
 nav:
-  - AWS CTK Overview:
+  - AWS IATK Overview:
       - index.md
       - Tutorial: 
         - tutorial/index.md

@@ -5,12 +5,12 @@ package gettracetree_test
 
 import (
 	"context"
-	cfn "ctk/integration/cloudformation"
-	"ctk/integration/ctk"
-	ctkcfn "ctk/internal/pkg/cloudformation"
-	"ctk/internal/pkg/jsonrpc"
 	"encoding/json"
 	"fmt"
+	cfn "iatk/integration/cloudformation"
+	"iatk/integration/iatk"
+	iatkcfn "iatk/internal/pkg/cloudformation"
+	"iatk/internal/pkg/jsonrpc"
 	"strings"
 	"testing"
 	"time"
@@ -73,7 +73,7 @@ func (s *GetTraceTreeSuite) SetupSuite() {
 			types.CapabilityCapabilityAutoExpand,
 		})
 	s.Require().NoError(err, "failed to create stack")
-	output, _ := ctkcfn.GetStackOuput(
+	output, _ := iatkcfn.GetStackOuput(
 		s.stackName,
 		[]string{"ProducerFunctionName", "StateMachineArn"},
 		s.cfnClient,
@@ -220,7 +220,7 @@ func (s *GetTraceTreeSuite) invoke(req []byte) jsonrpc.Response {
 	var stderr strings.Builder
 	test := s.T()
 	test.Logf("request: %v", string(req))
-	ctk.Invoke(test, req, &stdout, &stderr, nil)
+	iatk.Invoke(test, req, &stdout, &stderr, nil)
 
 	test.Logf("response: %v", stdout.String())
 	var res jsonrpc.Response

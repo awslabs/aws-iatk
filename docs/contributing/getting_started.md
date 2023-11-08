@@ -1,14 +1,14 @@
-Great you want to contribute to AWS Cloud Test Kit (AWS CTK)!
+Great you want to contribute to AWS Integrated Application Test Kit (AWS IATK)!
 
 Before moving forward, see [Conventions](./conventions.md) to learn about our coding practices, coding style, and package setup.
 
 ## Overview
 
-AWS CTK is built as a mono repo, in which we have both a RPC binary (the Golang code) and the "language client" (currently Python). 
+AWS IATK is built as a mono repo, in which we have both a RPC binary (the Golang code) and the "language client" (currently Python). 
 
 Everything under `python-client` is the Python related code. We embed the Go binary into this at release but locally you can build the binary and install the Python Client as needed.
 
-Typically, changes will be focused within the Go code. This holds the code that powers AWS CTK and provides easy language expansion.
+Typically, changes will be focused within the Go code. This holds the code that powers AWS IATK and provides easy language expansion.
 
 ## How to contribute
 

@@ -62,10 +62,10 @@ type Response struct {
 	// Result contains the payload of the response.
 	Result interface{} `json:"result,omitempty"`
 	// Error contains the error response details.
-	Error *ErrCtk `json:"error,omitempty"`
+	Error *ErrIatk `json:"error,omitempty"`
 }
 
-type ErrCtk struct {
+type ErrIatk struct {
 	Code    int    `json:"code,omitempty"`
 	Message string `json:"message,omitempty"`
 	// Data should be here but not sure about the type (jfuss)

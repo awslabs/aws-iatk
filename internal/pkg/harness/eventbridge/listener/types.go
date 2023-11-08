@@ -5,13 +5,13 @@ package listener
 
 import (
 	"context"
-	"ctk/internal/pkg/harness"
-	"ctk/internal/pkg/harness/resource/eventbus"
-	"ctk/internal/pkg/harness/resource/eventrule"
-	"ctk/internal/pkg/harness/resource/queue"
-	"ctk/internal/pkg/harness/tags"
 	"errors"
 	"fmt"
+	"iatk/internal/pkg/harness"
+	"iatk/internal/pkg/harness/resource/eventbus"
+	"iatk/internal/pkg/harness/resource/eventrule"
+	"iatk/internal/pkg/harness/resource/queue"
+	"iatk/internal/pkg/harness/tags"
 	"log"
 	"strconv"
 	"time"
@@ -126,7 +126,7 @@ func (lr *Listener) Deploy(ctx context.Context) error {
 	accountID := lr.eventBus.ARN.AccountID
 
 	rn := ruleName(lr.ID())
-	description := fmt.Sprintf("rule for Listener %q; created by ctk", lr.ID())
+	description := fmt.Sprintf("rule for Listener %q; created by iatk", lr.ID())
 	r, err := lr.opts.createRule(ctx, lr.opts.ebClient, rn, lr.eventBus.Name, lr.eventPattern, description, tags)
 	if err != nil {
 		return fmt.Errorf("failed to deploy eb listener %v: %w", lr.ID(), err)

@@ -5,11 +5,11 @@ package getstackoutputs_test
 
 import (
 	"context"
-	cfn "ctk/integration/cloudformation"
-	"ctk/integration/ctk"
-	"ctk/internal/pkg/aws/config"
-	"ctk/internal/pkg/jsonrpc"
 	"encoding/json"
+	cfn "iatk/integration/cloudformation"
+	"iatk/integration/iatk"
+	"iatk/internal/pkg/aws/config"
+	"iatk/internal/pkg/jsonrpc"
 	"log"
 	"strings"
 	"testing"
@@ -138,7 +138,7 @@ func (s *GetStackOutputsSuite) TestGetStackOutputs() {
 			log.Printf("request: %v", string(input))
 			var out strings.Builder
 			var sErr strings.Builder
-			ctk.Invoke(t, input, &out, &sErr, nil)
+			iatk.Invoke(t, input, &out, &sErr, nil)
 			log.Printf("response: %v", out.String())
 			var actual jsonrpc.Response
 			json.Unmarshal([]byte(out.String()), &actual)
@@ -187,7 +187,7 @@ func (s *GetStackOutputsSuite) TestErrGetStackOutputs() {
 			log.Printf("request: %v", string(input))
 			var out strings.Builder
 			var sErr strings.Builder
-			ctk.Invoke(t, input, &out, &sErr, nil)
+			iatk.Invoke(t, input, &out, &sErr, nil)
 			log.Printf("response: %v", out.String())
 			var actual jsonrpc.Response
 			json.Unmarshal([]byte(out.String()), &actual)

@@ -5,9 +5,9 @@ package eventbus
 
 import (
 	"context"
-	"ctk/internal/pkg/harness"
 	"errors"
 	"fmt"
+	"iatk/internal/pkg/harness"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"

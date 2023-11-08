@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class PollEventsOutput:
     """
-    AWSCtk.poll_events Output
+    AwsIatk.poll_events Output
 
     Parameters
     ----------
@@ -31,7 +31,7 @@ class PollEventsOutput:
 @dataclass
 class PollEventsParams:
     """
-    AWSCtk.poll_events params
+    AwsIatk.poll_events params
 
     Parameters
     ----------
@@ -64,7 +64,7 @@ class PollEventsParams:
 @dataclass
 class WaitUntilEventMatchedParams:
     """
-    AWSCtk.wait_until_event_matched params
+    AwsIatk.wait_until_event_matched params
 
     Parameters
     ----------

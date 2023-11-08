@@ -5,10 +5,10 @@ package destroytestingresources_test
 
 import (
 	"context"
-	"ctk/integration/ctk"
-	"ctk/internal/pkg/harness/eventbridge/listener"
-	"ctk/internal/pkg/jsonrpc"
 	"encoding/json"
+	"iatk/integration/iatk"
+	"iatk/internal/pkg/harness/eventbridge/listener"
+	"iatk/internal/pkg/jsonrpc"
 	"log"
 	"strings"
 	"testing"
@@ -191,7 +191,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestRemoveListenersByResourceGrou
 			input := tt.input(resourceGroupIDs)
 			var out strings.Builder
 			var sErr strings.Builder
-			ctk.Invoke(t, input, &out, &sErr, nil)
+			iatk.Invoke(t, input, &out, &sErr, nil)
 			log.Printf("response: %v", out.String())
 			var actual jsonrpc.Response
 			json.Unmarshal([]byte(out.String()), &actual)
@@ -253,7 +253,7 @@ func (s *EventBusDestroyTestingResourcesSuite) TestRemoveListenersByTagFilters()
 			log.Printf("request: %v", string(input))
 			var out strings.Builder
 			var sErr strings.Builder
-			ctk.Invoke(t, input, &out, &sErr, nil)
+			iatk.Invoke(t, input, &out, &sErr, nil)
 			log.Printf("response: %v", out.String())
 			var actual jsonrpc.Response
 			json.Unmarshal([]byte(out.String()), &actual)
@@ -283,7 +283,7 @@ func createTestingResources(t *testing.T, cfg aws.Config, eventBusName, eventBus
 	resquest, _ := json.Marshal(rJson)
 	var out strings.Builder
 	var sErr strings.Builder
-	ctk.Invoke(t, resquest, &out, &sErr, nil)
+	iatk.Invoke(t, resquest, &out, &sErr, nil)
 	var response jsonrpc.Response
 	json.Unmarshal([]byte(out.String()), &response)
 	t.Log(response.Error)

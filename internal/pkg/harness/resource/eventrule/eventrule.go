@@ -5,9 +5,9 @@ package eventrule
 
 import (
 	"context"
-	"ctk/internal/pkg/harness"
-	"ctk/internal/pkg/harness/resource/queue"
 	"fmt"
+	"iatk/internal/pkg/harness"
+	"iatk/internal/pkg/harness/resource/queue"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"

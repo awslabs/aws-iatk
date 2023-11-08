@@ -6,9 +6,9 @@
 package main
 
 import (
-	publicrpc "ctk/internal/pkg/public-rpc"
 	"encoding/json"
 	"flag"
+	publicrpc "iatk/internal/pkg/public-rpc"
 	"log"
 	"os"
 	"path/filepath"
@@ -31,7 +31,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	log.Print("generating CTK RPC specs")
+	log.Print("generating IATK RPC specs")
 	methodMap := publicrpc.MethodMap
 	out := Output{Methods: map[string]Method{}}
 

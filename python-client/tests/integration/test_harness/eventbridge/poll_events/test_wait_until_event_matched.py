@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Integration tests for aws_ctk.wait_until_event_matched
+Integration tests for aws_iatk.wait_until_event_matched
 """
 import json
 import logging
@@ -15,13 +15,13 @@ import boto3
 from botocore.exceptions import ClientError
 from parameterized import parameterized
 
-from aws_ctk import AWSCtk
-from aws_ctk.poll_events import InvalidParamException
+from aws_iatk import AwsIatk
+from aws_iatk.poll_events import InvalidParamException
 
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
-boto3.set_stream_logger(name="aws_ctk", level=logging.DEBUG)
+boto3.set_stream_logger(name="aws_iatk", level=logging.DEBUG)
 
 
 @dataclass
@@ -78,8 +78,8 @@ class EbConfiguration:
     input_path: str = None
 
 
-class TestCTK_wait_until_event_matched(TestCase):
-    ctk = AWSCtk()
+class TestIatk_wait_until_event_matched(TestCase):
+    iatk = AwsIatk()
     eb_client = boto3.client("events")
     sqs_client = boto3.client("sqs")
     sns_client = boto3.client("sns")
@@ -327,7 +327,7 @@ class TestCTK_wait_until_event_matched(TestCase):
         self.send_events(events)
 
         LOG.debug("waiting for event")
-        found = self.ctk.wait_until_event_matched(
+        found = self.iatk.wait_until_event_matched(
             listener_id=self.listener_ids[listener_idx],
             assertion_fn=assertion_func,
             timeout_seconds=timeout_seconds
@@ -385,7 +385,7 @@ class TestCTK_wait_until_event_matched(TestCase):
         self.send_events(events)
 
         LOG.debug("waiting for event")
-        found = self.ctk.wait_until_event_matched(
+        found = self.iatk.wait_until_event_matched(
             listener_id=self.listener_ids[listener_idx],
             assertion_fn=assertion_func,
             timeout_seconds=timeout_seconds
@@ -395,18 +395,18 @@ class TestCTK_wait_until_event_matched(TestCase):
     def test_invalid_input(self):
         listener_idx = 0
         with self.assertRaises(InvalidParamException):
-            self.ctk.wait_until_event_matched(
+            self.iatk.wait_until_event_matched(
                 listener_id=self.listener_ids[listener_idx],
                 assertion_fn=assertion_func_0,
                 timeout_seconds=10000
             )
 
     def purge_listener(self, listener_idx):
-        # TODO (hawflau): revisit if this should be baked into CTK
+        # TODO (hawflau): revisit if this should be baked into IATK
         # A listener might have leftover events from previous test cases and might affect current test run
         consecutive_empty_count = 0
         while consecutive_empty_count < 5:
-            output = self.ctk.poll_events(
+            output = self.iatk.poll_events(
                 listener_id=self.listener_ids[listener_idx],
                 wait_time_seconds=0,
                 max_number_of_messages=10,
@@ -418,14 +418,14 @@ class TestCTK_wait_until_event_matched(TestCase):
 
     @classmethod
     def add_listener(cls, event_bus_name, rule_name, target_id) -> str:
-        output = cls.ctk.add_listener(event_bus_name, rule_name, target_id)
+        output = cls.iatk.add_listener(event_bus_name, rule_name, target_id)
         cls.listener_ids.append(output.id)
         cls.queue_urls.append(output.components[0].physical_id)
         return output.id
 
     @classmethod
     def remove_listeners(cls, ids: List[str]):
-        output = cls.ctk.remove_listeners(ids=ids)
+        output = cls.iatk.remove_listeners(ids=ids)
         LOG.debug(output)
 
     def send_events(self, events: List[EbEvent]):

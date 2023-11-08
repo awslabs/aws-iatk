@@ -16,7 +16,7 @@ LOG = logging.getLogger(__name__)
 class AddEbListener_Resource:
     """
     Data class that represents the a Resource created during
-    AWSCtk.add_listener
+    AwsIatk.add_listener
 
     Parameters
     ----------
@@ -40,7 +40,7 @@ class AddEbListener_Resource:
 @dataclass
 class AddEbListenerOutput:
     """
-    AWSCtk.add_listener output
+    AwsIatk.add_listener output
 
     Parameters
     ----------
@@ -70,7 +70,7 @@ class AddEbListenerOutput:
 @dataclass
 class AddEbListenerParams:
     """
-    AWSCtk.add_listener parameters
+    AwsIatk.add_listener parameters
 
     Parameters
     ----------

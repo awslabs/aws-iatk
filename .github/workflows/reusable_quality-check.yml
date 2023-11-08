@@ -11,7 +11,7 @@ on:
         required: false
         type: string
         default: "1.20"
-        description: "Go version for building CTK binary"
+        description: "Go version for building IATK binary"
     secrets:
       CI_IAM_ROLE_ARN:
         required: true
@@ -134,9 +134,9 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          CTK_VERSION=$(python -c "import pkg_resources;print(pkg_resources.get_distribution('aws_ctk').version)")
-          [ -f ./python-client/dist/aws-ctk-${CTK_VERSION}.tar.gz ]
-          python -c "import aws_ctk; from aws_ctk import AWSCtk; z = AWSCtk()"
+          IATK_VERSION=$(python -c "import pkg_resources;print(pkg_resources.get_distribution('aws_iatk').version)")
+          [ -f ./python-client/dist/aws-iatk-${IATK_VERSION}.tar.gz ]
+          python -c "import aws_iatk; from aws_iatk import AwsIatk; z = AwsIatk()"
           
   python-client-unit-test:
     runs-on: ubuntu-latest
