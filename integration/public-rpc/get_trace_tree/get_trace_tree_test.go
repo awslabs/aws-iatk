@@ -144,7 +144,7 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 			sleep:                        10,
 			expectNumPaths:               2,
 			expectSourceTraceNumSegments: 5,
-			expectPathLength:             5,
+			expectPathLength:             3,
 			fetchChildTraces:             false,
 		},
 		{
@@ -165,7 +165,7 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 			expectNumPaths:               1,
 			expectSourceTraceNumSegments: 2,
 			expectPathLength:             4,
-			fetchChildTraces:             false,
+			fetchChildTraces:             true,
 		},
 	}
 
