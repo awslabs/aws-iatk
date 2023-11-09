@@ -11,6 +11,7 @@ import (
 	"iatk/integration/iatk"
 	iatkcfn "iatk/internal/pkg/cloudformation"
 	"iatk/internal/pkg/jsonrpc"
+	"iatk/internal/pkg/xray"
 	"strings"
 	"testing"
 	"time"
@@ -178,13 +179,13 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 
 			// Get Trace Tree
 			tree := s.assertAndReturnTraceTree(tracingHeader, tt.fetchChildTraces)
-			paths := tree["paths"].([]any)
+			paths := tree["paths"].([][]xray.Segment)
 			assert.Equal(t, tt.expectNumPaths, len(paths), "expected num paths is different than actual")
 			sourceTrace := tree["source_trace"].(map[string]any)
 			require.Contains(t, sourceTrace, "segments")
 			segments := sourceTrace["segments"].([]any)
 			assert.Equal(t, tt.expectSourceTraceNumSegments, len(segments))
-			assert.Equal(t, tt.expectPathLength, paths[0])
+			assert.Equal(t, tt.expectPathLength, len(paths[0]))
 		})
 	}
 }
