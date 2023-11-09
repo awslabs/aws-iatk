@@ -1,6 +1,6 @@
 # Examples
 
-Below lists the examples to showcase how you can use AWS CTK to write integration against the cloud more easily.
+Below lists the examples to showcase how you can use AWS IATK to write integration against the cloud more easily.
 
 To run the examples in Python (3.8+):
 ```bash
@@ -74,7 +74,7 @@ Note that, after deploy completes, an output file `outputs.json` is created, wit
 
 ```
 
-This is one of the ways to pass deployed values into the tests. Alternatively, you can also use AWS CTK's `get_stack_outputs` method to retrieve stack outputs.
+This is one of the ways to pass deployed values into the tests. Alternatively, you can also use AWS IATK's `get_stack_outputs` method to retrieve stack outputs.
 
 Here are the example test code:
 
@@ -131,7 +131,7 @@ Note that, after deploy completes, an output file `outputs.json` is created, wit
 
 ```
 
-This is one of the ways to pass deployed values into the tests. Alternatively, you can also use AWS CTK's `get_stack_outputs` method to retrieve stack outputs.
+This is one of the ways to pass deployed values into the tests. Alternatively, you can also use AWS IATK's `get_stack_outputs` method to retrieve stack outputs.
 
 Here are the example test code:
 
@@ -188,7 +188,7 @@ Note that, after deploy completes, an output file `outputs.json` is created, wit
 
 ```
 
-This is one of the ways to pass deployed values into the tests. Alternatively, you can also use AWS CTK's `get_stack_outputs` method to retrieve stack outputs.
+This is one of the ways to pass deployed values into the tests. Alternatively, you can also use AWS IATK's `get_stack_outputs` method to retrieve stack outputs.
 
 Here are the example test code:
 

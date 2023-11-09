@@ -5,7 +5,7 @@ import time
 from unittest import TestCase
 
 import boto3
-import aws_ctk
+import aws_iatk
 
 
 LOG = logging.getLogger(__name__)
@@ -21,9 +21,9 @@ class Example03(TestCase):
     stack_name: str = "cdk-example-sfnStack"
     stack_outputs: dict = read_cdk_outputs().get(stack_name, {}) 
     statemachine_arn: str = stack_outputs["StateMachineArn"]
-    z: aws_ctk.AWSCtk = aws_ctk.AWSCtk()
+    iatk: aws_iatk.AwsIatk = aws_iatk.AwsIatk()
     # patch sfn client to ensure trace is sampled
-    sfn_client: boto3.client = z.patch_aws_client(boto3.client("stepfunctions"))
+    sfn_client: boto3.client = iatk.patch_aws_client(boto3.client("stepfunctions"))
 
     def setUp(self):
         self.tracing_header = None
@@ -45,7 +45,7 @@ class Example03(TestCase):
 
     def test_get_trace_tree(self):
         time.sleep(5)
-        trace_tree = self.z.get_trace_tree(
+        trace_tree = self.iatk.get_trace_tree(
             tracing_header=self.tracing_header,
         ).trace_tree
 
@@ -60,7 +60,7 @@ class Example03(TestCase):
         )
         
     def test_retry_get_trace_tree_until(self):
-        def assertion(output: aws_ctk.GetTraceTreeOutput) -> None:
+        def assertion(output: aws_iatk.GetTraceTreeOutput) -> None:
             tree = output.trace_tree
             self.assertEqual(len(tree.paths), 3)
             self.assertEqual(
@@ -72,7 +72,7 @@ class Example03(TestCase):
                 ]
             )
 
-        self.assertTrue(self.z.retry_get_trace_tree_until(
+        self.assertTrue(self.iatk.retry_get_trace_tree_until(
             tracing_header=self.tracing_header,
             assertion_fn=assertion,
             timeout_seconds=20,
