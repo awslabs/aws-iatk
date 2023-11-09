@@ -5,7 +5,7 @@ bin
 # mocks
 mock_*_test.go
 
-# CTK (Python Client)
+# IATK (Python Client)
 python-client/src/iatk_service/
 python-client/src/iatk_src/
 
