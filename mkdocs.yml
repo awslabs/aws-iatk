@@ -21,7 +21,7 @@ nav:
         - Your first contribution: contributing/getting_started.md
         - Conventions: contributing/conventions.md
       - Code of Conduct: code_of_conduct.md
-      - Changelog: changelog.md
+      - Changelog: https://github.com/awslabs/aws-iatk/releases
       - Security: security.md
       
 theme:
