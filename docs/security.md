@@ -21,7 +21,7 @@ Within our [releases page](https://github.com/awslabs/aws-iatk/releases), you wi
 
 For this to be useful, we need a **verification tool** - [SLSA Verifier](https://github.com/slsa-framework/slsa-verifier). SLSA Verifier decodes attestation to confirm the authenticity, identity, and the steps we took in our release pipeline (_e.g., inputs, git commit/branch, GitHub org/repo, build SHA256, etc._).
 
-#### HOWTO
+#### HOW TO
 
 * Download [SLSA Verifier binary](https://github.com/slsa-framework/slsa-verifier#download-the-binary)
 * Download the [latest release artifact from PyPi](https://pypi.org/project/aws-iatk/#files) (either wheel or tar.gz )
