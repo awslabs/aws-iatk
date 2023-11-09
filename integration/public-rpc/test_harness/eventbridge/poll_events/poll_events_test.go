@@ -5,10 +5,10 @@ package pollevents_test
 
 import (
 	"context"
-	"ctk/integration/ctk"
-	"ctk/internal/pkg/jsonrpc"
 	"encoding/json"
 	"fmt"
+	"iatk/integration/iatk"
+	"iatk/internal/pkg/jsonrpc"
 	"strings"
 	"testing"
 	"time"
@@ -454,7 +454,7 @@ func (s *PollEventsSuite) invoke(req []byte) jsonrpc.Response {
 	var stderr strings.Builder
 	test := s.T()
 	test.Logf("request: %v", string(req))
-	ctk.Invoke(test, req, &stdout, &stderr, nil)
+	iatk.Invoke(test, req, &stdout, &stderr, nil)
 
 	test.Logf("response: %v", stdout.String())
 	var res jsonrpc.Response

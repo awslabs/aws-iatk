@@ -2,12 +2,12 @@ package publicrpc
 
 import (
 	"context"
-	"ctk/internal/pkg/aws/config"
-	"ctk/internal/pkg/harness/eventbridge/listener"
-	"ctk/internal/pkg/jsonrpc"
-	"ctk/internal/pkg/public-rpc/types"
 	"errors"
 	"fmt"
+	"iatk/internal/pkg/aws/config"
+	"iatk/internal/pkg/harness/eventbridge/listener"
+	"iatk/internal/pkg/jsonrpc"
+	"iatk/internal/pkg/public-rpc/types"
 	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"

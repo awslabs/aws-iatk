@@ -5,9 +5,9 @@ bin
 # mocks
 mock_*_test.go
 
-# CTK (Python Client)
-python-client/src/ctk_service/
-python-client/src/ctk_src/
+# IATK (Python Client)
+python-client/src/iatk_service/
+python-client/src/iatk_src/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

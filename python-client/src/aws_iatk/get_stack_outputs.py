@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class GetStackOutputsOutput:
     """
-    AWSCtk.get_stack_outputs output
+    AwsIatk.get_stack_outputs output
 
     Parameters
     ----------
@@ -31,7 +31,7 @@ class GetStackOutputsOutput:
 @dataclass
 class GetStackOutputsParams:
     """
-    AWSCtk.get_stack_outputs parameters
+    AwsIatk.get_stack_outputs parameters
 
     Parameters
     ----------

@@ -3,7 +3,7 @@ title: Generate mock events
 description: Example to showcase how to generate mock events
 ---
 
-AWS Cloud Test Kit (AWS CTK) provides the capability for you to generate mock events from a schema stored in the [Amazon EventBridge schema registry](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-schema-registry.html){target="_blank"}. This allows you to generate a mock event and invoke any consumer (such as an AWS Lambda function or AWS Step Functions state machine) with the generated event.
+AWS Integrated Application Test Kit (AWS IATK) provides the capability for you to generate mock events from a schema stored in the [Amazon EventBridge schema registry](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-schema-registry.html){target="_blank"}. This allows you to generate a mock event and invoke any consumer (such as an AWS Lambda function or AWS Step Functions state machine) with the generated event.
 
 ### System Under Test (SUT)
 
@@ -190,7 +190,7 @@ As shown in `test_generate_contextful_event`, you can supply contexts to enrich 
 
 In the same test, we then use the generated event as payload to invoke the Lambda function, and assert if the return from the invocation equals the expected value.
 
-As shown in `test_generate_eventbridge_event`, if you are generating EventBridge events, AWS CTK provides `zion.context_generation.eventbridge_event_context` for you to enrich a barebone EventBridge event.
+As shown in `test_generate_eventbridge_event`, if you are generating EventBridge events, AWS IATK provides `aws_iatk.context_generation.eventbridge_event_context` for you to enrich a barebone EventBridge event.
 
 === "04-event_generation/tests/python/test_example_04.py"
 ```python
@@ -200,8 +200,8 @@ import pathlib
 import uuid
 
 import boto3
-import zion
-from zion.context_generation import eventbridge_event_context
+import aws_iatk
+from aws_iatk.context_generation import eventbridge_event_context
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -217,8 +217,8 @@ def test_generate_barebone_event():
     stack_outputs = read_cdk_outputs().get(stack_name, {})
     registry_name = stack_outputs["RegistryName"]
     schema_name = stack_outputs["SchemaName"]
-    z = zion.Zion()
-    barebone_event = z.generate_mock_event(
+    iatk = aws_iatk.AwsIatk()
+    barebone_event = iatk.generate_mock_event(
         registry_name=registry_name,
         schema_name=schema_name,
         event_ref="MyEvent",
@@ -236,7 +236,7 @@ def test_generate_contextful_event():
     registry_name = stack_outputs["RegistryName"]
     schema_name = stack_outputs["SchemaName"]
     function_name = stack_outputs["CalculatorFunction"]
-    z = zion.Zion()
+    iatk = aws_iatk.AwsIatk()
     
     def apply_context(event: dict) -> dict:
         event["customerId"] = str(uuid.uuid4())
@@ -249,7 +249,7 @@ def test_generate_contextful_event():
             event["orderItems"].append(item)
         return event
         
-    mock_event = z.generate_mock_event(
+    mock_event = iatk.generate_mock_event(
         registry_name=registry_name,
         schema_name=schema_name,
         event_ref="MyEvent",
@@ -270,9 +270,9 @@ def test_generate_contextful_event():
     assert result == 110
 
 def test_generate_eventbridge_event():
-    z = zion.Zion()
+    iatk = aws_iatk.AwsIatk()
 
-    mock_eb_event = z.generate_mock_event(
+    mock_eb_event = iatk.generate_mock_event(
         registry_name="aws.events",
         schema_name="aws.autoscaling@EC2InstanceLaunchSuccessful",
         schema_version="2",

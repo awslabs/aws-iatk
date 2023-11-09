@@ -5,11 +5,11 @@ package listener
 
 import (
 	"context"
-	"ctk/internal/pkg/harness"
-	"ctk/internal/pkg/harness/resource/eventrule"
-	"ctk/internal/pkg/slice"
 	"errors"
 	"fmt"
+	"iatk/internal/pkg/harness"
+	"iatk/internal/pkg/harness/resource/eventrule"
+	"iatk/internal/pkg/slice"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -18,7 +18,7 @@ import (
 
 const (
 	TestHarnessType = "EventBridge.Listener"
-	IDPrefix        = "ctk_eb_"
+	IDPrefix        = "iatk_eb_"
 )
 
 // Creates a Listener for an event bus resource

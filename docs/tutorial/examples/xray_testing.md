@@ -3,7 +3,7 @@ title: Testing with X-Ray traces
 description: Example to showcase how to test with X-Ray traces
 ---
 
-This example shows how to test with AWS X-Ray traces. When implemented throughout your application, X-Ray traces provides a good amount of detail that you can inspect for testing purposes. AWS CTK helps you fetch traces and parse them into objects that can easily be queried for inspection. For example, you can easily verify if a trace hits an expected sequence of AWS resources.
+This example shows how to test with AWS X-Ray traces. When implemented throughout your application, X-Ray traces provides a good amount of detail that you can inspect for testing purposes. AWS IATK helps you fetch traces and parse them into objects that can easily be queried for inspection. For example, you can easily verify if a trace hits an expected sequence of AWS resources.
 
 ### System Under Test (SUT)
 
@@ -118,7 +118,7 @@ import time
 from unittest import TestCase
 
 import boto3
-import zion
+import aws_iatk
 
 
 LOG = logging.getLogger(__name__)
@@ -134,9 +134,9 @@ class Example03(TestCase):
     stack_name: str = "cdk-example-sfnStack"
     stack_outputs: dict = read_cdk_outputs().get(stack_name, {}) 
     statemachine_arn: str = stack_outputs["StateMachineArn"]
-    z: zion.Zion = zion.Zion()
+    iatk: aws_iatk.AwsIatk = aws_iatk.AwsIatk()
     # patch sfn client to ensure trace is sampled
-    sfn_client: boto3.client = z.patch_aws_client(boto3.client("stepfunctions"))
+    sfn_client: boto3.client = iatk.patch_aws_client(boto3.client("stepfunctions"))
 
     def setUp(self):
         self.tracing_header = None
@@ -158,7 +158,7 @@ class Example03(TestCase):
 
     def test_get_trace_tree(self):
         time.sleep(5)
-        trace_tree = self.z.get_trace_tree(
+        trace_tree = self.iatk.get_trace_tree(
             tracing_header=self.tracing_header,
         ).trace_tree
 
@@ -173,7 +173,7 @@ class Example03(TestCase):
         )
         
     def test_retry_get_trace_tree_until(self):
-        def assertion(output: zion.GetTraceTreeOutput) -> None:
+        def assertion(output: aws_iatk.GetTraceTreeOutput) -> None:
             tree = output.trace_tree
             self.assertEqual(len(tree.paths), 3)
             self.assertEqual(
@@ -185,7 +185,7 @@ class Example03(TestCase):
                 ]
             )
 
-        self.assertTrue(self.z.retry_get_trace_tree_until(
+        self.assertTrue(self.iatk.retry_get_trace_tree_until(
             tracing_header=self.tracing_header,
             assertion_fn=assertion,
             timeout_seconds=20,

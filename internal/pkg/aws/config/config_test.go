@@ -5,7 +5,7 @@ package config
 
 import (
 	"context"
-	"ctk/internal/pkg/jsonrpc"
+	"iatk/internal/pkg/jsonrpc"
 	"reflect"
 	"runtime"
 	"testing"

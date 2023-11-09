@@ -2,12 +2,12 @@ package generatebareboneevent_test
 
 import (
 	"context"
-	cfn "ctk/integration/cloudformation"
-	"ctk/integration/ctk"
-	ctkcfn "ctk/internal/pkg/cloudformation"
-	"ctk/internal/pkg/jsonrpc"
 	"encoding/json"
 	"fmt"
+	cfn "iatk/integration/cloudformation"
+	"iatk/integration/iatk"
+	iatkcfn "iatk/internal/pkg/cloudformation"
+	"iatk/internal/pkg/jsonrpc"
 	"strings"
 	"testing"
 
@@ -61,7 +61,7 @@ func (s *GenerateBareboneEventSuite) SetupSuite() {
 		"./test_stack.yaml",
 		[]types.Capability{})
 	s.Require().NoError(err, "failed to create stack")
-	output, err := ctkcfn.GetStackOuput(
+	output, err := iatkcfn.GetStackOuput(
 		s.stackName,
 		[]string{
 			"TestSchemaRegistryName",
@@ -356,7 +356,7 @@ func (s *GenerateBareboneEventSuite) invoke(t *testing.T, req []byte) jsonrpc.Re
 	var stdout strings.Builder
 	var stderr strings.Builder
 	t.Logf("request: %v", string(req))
-	ctk.Invoke(t, req, &stdout, &stderr, nil)
+	iatk.Invoke(t, req, &stdout, &stderr, nil)
 
 	t.Logf("response: %v", stdout.String())
 	var res jsonrpc.Response

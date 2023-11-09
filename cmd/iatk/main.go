@@ -4,11 +4,11 @@
 package main
 
 import (
-	"ctk/internal/pkg/jsonrpc"
-	publicrpc "ctk/internal/pkg/public-rpc"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"iatk/internal/pkg/jsonrpc"
+	publicrpc "iatk/internal/pkg/public-rpc"
 	"log"
 	"os"
 
@@ -60,7 +60,7 @@ func main() {
 			resp = jsonrpc.Response{
 				JSONRPC: "2.0",
 				ID:      jsonrpcData.ID,
-				Error: &jsonrpc.ErrCtk{
+				Error: &jsonrpc.ErrIatk{
 					Code:    10,
 					Message: fmt.Sprintf("failed to call service: %s, operation: %s, error: %v", oe.Service(), oe.Operation(), oe.Unwrap()),
 				},
@@ -73,7 +73,7 @@ func main() {
 			resp = jsonrpc.Response{
 				JSONRPC: "2.0",
 				ID:      jsonrpcData.ID,
-				Error: &jsonrpc.ErrCtk{
+				Error: &jsonrpc.ErrIatk{
 					Code:    10,
 					Message: apiErr.ErrorMessage(),
 				},
@@ -85,7 +85,7 @@ func main() {
 		resp = jsonrpc.Response{
 			JSONRPC: "2.0",
 			ID:      jsonrpcData.ID,
-			Error: &jsonrpc.ErrCtk{
+			Error: &jsonrpc.ErrIatk{
 				Code:    10,
 				Message: errRPC.Error(),
 			},

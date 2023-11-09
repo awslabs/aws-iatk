@@ -1,9 +1,9 @@
 ---
 title: Tutorial
-description: Introduction to AWS CTK
+description: Introduction to AWS IATK
 ---
 
-This tutorial introduces AWS Cloud Test Kit (AWS CTK) by going through four examples. Each of them showcases one feature at a time.
+This tutorial introduces AWS Integrated Application Test Kit (AWS IATK) by going through four examples. Each of them showcases one feature at a time.
 
 For each example, we will execute the following steps:
 
@@ -15,7 +15,7 @@ For each example, we will execute the following steps:
 Here are some terminologies we will use throughout the examples:
 
 * System Under Test (SUT) - the system being tested for correct operations (including happy and error paths)
-* Test Harness - Test Harness is a group of AWS resources AWS CTK creates for the purpose of facilitating testing around an integration. These resources are intended to exist only for the duration of the test run, and should be destroyed after the test run completes.
+* Test Harness - Test Harness is a group of AWS resources AWS IATK creates for the purpose of facilitating testing around an integration. These resources are intended to exist only for the duration of the test run, and should be destroyed after the test run completes.
 
 ## Requirements
 
@@ -29,8 +29,8 @@ Here are some terminologies we will use throughout the examples:
 Clone the examples:
 
 ```bash
-git clone --single-branch --branch examples git@github.com:awslabs/aws-ctk.git ctk-examples
-cd ctk-examples
+git clone --single-branch --branch examples git@github.com:awslabs/aws-iatk.git iatk-examples
+cd iatk-examples
 ```
 
 To run the Python (3.8+) examples:

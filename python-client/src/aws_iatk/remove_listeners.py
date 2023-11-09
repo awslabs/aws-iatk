@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class RemoveListenersOutput:
     """
-    AWSCtk.remove_listeners Output
+    AwsIatk.remove_listeners Output
 
     Parameters
     ----------
@@ -54,7 +54,7 @@ class RemoveListeners_TagFilter:
 @dataclass
 class RemoveListenersParams:
     """
-    AWSCtk.remove_listeners parameters
+    AwsIatk.remove_listeners parameters
 
     Parameters
     ----------

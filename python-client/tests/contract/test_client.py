@@ -11,7 +11,7 @@ import inspect
 from pathlib import Path
 from unittest import TestCase
 
-import aws_ctk
+import aws_iatk
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -24,11 +24,11 @@ class NotAClientMethodException(Exception):
 
 class ClientMethod:
     def __init__(self, name: str):
-        obj = getattr(aws_ctk.AWSCtk, name)
+        obj = getattr(aws_iatk.AwsIatk, name)
         signature = inspect.signature(obj)
         if name in ["patch_aws_client", "retry_until", "retry_get_trace_tree_until", "wait_until_event_matched"]:
             raise NotAClientMethodException(
-                f"{name} is not a client method of aws_ctk.AWSCtk"
+                f"{name} is not a client method of aws_iatk.AwsIatk"
             )
         self.params = signature.parameters.keys() - ['self']
         self.returns_cls = signature.return_annotation
@@ -60,8 +60,8 @@ class ClientContractTest(TestCase):
             cls.specs = json.loads(f.read())
 
         cls.client_methods = {}
-        for name in dir(aws_ctk.AWSCtk):
-            if callable(getattr(aws_ctk.AWSCtk, name)) and not name.startswith("_"):
+        for name in dir(aws_iatk.AwsIatk):
+            if callable(getattr(aws_iatk.AwsIatk, name)) and not name.startswith("_"):
                 try:
                     LOG.debug("name: %s", name)
                     cls.client_methods[name] = ClientMethod(name)

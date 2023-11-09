@@ -5,12 +5,12 @@ package publicrpc
 
 import (
 	"context"
-	"ctk/internal/pkg/aws/config"
-	"ctk/internal/pkg/jsonrpc"
-	mockevent "ctk/internal/pkg/mock/event"
-	"ctk/internal/pkg/public-rpc/types"
 	"errors"
 	"fmt"
+	"iatk/internal/pkg/aws/config"
+	"iatk/internal/pkg/jsonrpc"
+	mockevent "iatk/internal/pkg/mock/event"
+	"iatk/internal/pkg/public-rpc/types"
 	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"

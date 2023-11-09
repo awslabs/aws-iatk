@@ -3,7 +3,7 @@ requires = ["setuptools", "build"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "aws-ctk"
+name = "aws-iatk"
 dynamic = ["version"]
 dependencies = []
 license = {text = "Apache-2.0"}
@@ -16,14 +16,14 @@ classifiers = [
 ]
 
 [tool.setuptools.dynamic]
-version = {attr = "aws_ctk.version._version"}
+version = {attr = "aws_iatk.version._version"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-ctk_service = ["*"]
-ctk_src = ["**", "go.mod", "go.sum"]
+iatk_service = ["*"]
+iatk_src = ["**", "go.mod", "go.sum"]
 
 [project.optional-dependencies]
 test = [

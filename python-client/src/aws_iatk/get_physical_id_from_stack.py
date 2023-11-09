@@ -13,7 +13,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class PhysicalIdFromStackOutput:
     """
-    AWSCtk.get_physical_id_from_stack output
+    AwsIatk.get_physical_id_from_stack output
 
     Parameters
     ----------
@@ -29,7 +29,7 @@ class PhysicalIdFromStackOutput:
 @dataclass
 class PhysicalIdFromStackParams:
     """
-    AWSCtk.get_physical_id_from_stack parameters
+    AwsIatk.get_physical_id_from_stack parameters
 
     Parameters
     ----------

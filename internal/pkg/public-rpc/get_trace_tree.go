@@ -7,10 +7,10 @@ import (
 	"reflect"
 	"strings"
 
-	"ctk/internal/pkg/aws/config"
-	"ctk/internal/pkg/jsonrpc"
-	"ctk/internal/pkg/public-rpc/types"
-	ctkxray "ctk/internal/pkg/xray"
+	"iatk/internal/pkg/aws/config"
+	"iatk/internal/pkg/jsonrpc"
+	"iatk/internal/pkg/public-rpc/types"
+	iatkxray "iatk/internal/pkg/xray"
 )
 
 type GetTraceTreeParams struct {
@@ -38,7 +38,7 @@ func (p *GetTraceTreeParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Resul
 		return nil, fmt.Errorf("error when loading AWS config: %v", err)
 	}
 
-	traceTree, err := ctkxray.NewTree(ctx, ctkxray.NewTreeOptions(cfg), *traceId)
+	traceTree, err := iatkxray.NewTree(ctx, iatkxray.NewTreeOptions(cfg), *traceId)
 	if err != nil {
 		return nil, fmt.Errorf("error building trace tree: %w", err)
 	}
@@ -67,7 +67,7 @@ func getTracIdFromTracingHeader(tracingHeader string) (*string, error) {
 }
 
 func (p *GetTraceTreeParams) ReflectOutput() reflect.Value {
-	ft := reflect.TypeOf(ctkxray.NewTree)
+	ft := reflect.TypeOf(iatkxray.NewTree)
 	out0 := ft.Out(0)
 	return reflect.New(out0).Elem()
 }

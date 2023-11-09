@@ -15,7 +15,7 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class GenerateBareboneEventOutput:
     """
-    AWSCtk.generate_barebone_event output
+    AwsIatk.generate_barebone_event output
     
     Parameters
     ----------
@@ -32,7 +32,7 @@ class GenerateBareboneEventOutput:
 @dataclass
 class GenerateBareboneEventParams:
     """
-    AWSCtk.generate_barebone_event parameters
+    AwsIatk.generate_barebone_event parameters
     
     Parameters
     ----------
@@ -77,7 +77,7 @@ class GenerateBareboneEventParams:
 @dataclass
 class GenerateMockEventOutput:
     """
-    AWSCtk.generate_mock_event output
+    AwsIatk.generate_mock_event output
     
     Parameters
     ----------
@@ -91,7 +91,7 @@ class GenerateMockEventOutput:
 @dataclass
 class GenerateMockEventParams:
     """
-    AWSCtk.generate_mock_event parameters
+    AwsIatk.generate_mock_event parameters
 
     Parameters
     ----------

@@ -5,9 +5,9 @@ package queue
 
 import (
 	"context"
-	"ctk/internal/pkg/harness"
-	"ctk/internal/pkg/harness/tags"
 	"errors"
+	"iatk/internal/pkg/harness"
+	"iatk/internal/pkg/harness/tags"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"

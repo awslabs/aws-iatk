@@ -1,7 +1,7 @@
 package slice_test
 
 import (
-	"ctk/internal/pkg/slice"
+	"iatk/internal/pkg/slice"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

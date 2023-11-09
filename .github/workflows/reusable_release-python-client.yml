@@ -15,7 +15,7 @@ on:
         required: false
         type: string
         default: "1.20"
-        description: "Go version for building CTK binary"
+        description: "Go version for building IATK binary"
       CIBW_PYTHON_VERSION:
         required: false
         type: string
@@ -114,12 +114,12 @@ jobs:
           CIBW_SKIP: "*-musllinux*"
           CIBW_ARCHS: ${{ matrix.CIBW_ARCHS }}
           # TODO (hawflau): find a way to build external of cibuildwheel
-          CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.arch }}" CTK_SKIP_BUILD_BINARY="1"
+          CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.arch }}" IATK_SKIP_BUILD_BINARY="1"
           CIBW_BEFORE_ALL_LINUX: |
             curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && 
             tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && 
             export PATH=$PATH:/usr/local/go/bin && 
-            env GOOS=linux GOARCH=${{ matrix.arch }} go build -C ./src/ctk_src -o ../ctk_service/ ./cmd/ctk
+            env GOOS=linux GOARCH=${{ matrix.arch }} go build -C ./src/iatk_src -o ../iatk_service/ ./cmd/iatk
         run: python -m cibuildwheel --output-dir dist
 
       - uses: actions/upload-artifact@v3
@@ -173,9 +173,9 @@ jobs:
         run: |
           all=$(find . \( -type f \) | wc -l)
           echo $all
-          sdist=$(find . \( -name aws-ctk-${{ inputs.release_version }}.tar.gz \) | wc -l)
+          sdist=$(find . \( -name aws-iatk-${{ inputs.release_version }}.tar.gz \) | wc -l)
           echo $sdist
-          wheels=$(find . \( -name aws_ctk-${{ inputs.release_version }}-*.whl \) | wc -l)
+          wheels=$(find . \( -name aws_iatk-${{ inputs.release_version }}-*.whl \) | wc -l)
           echo $wheels
           [ $sdist -eq 1 ]
           [ $all -eq $(($sdist + $wheels)) ]
