@@ -6,6 +6,7 @@ description: AWS Integrated Application Test Kit
 !!! alert "Integrated Application Test Kit is in Public Preview"
 
 AWS Integrated Application Test Kit (AWS IATK) is a framework that developers can use to write integration tests to run against their event-driven applications in the AWS Cloud. AWS IATK simplifies the writing of integration tests for serverless applications by doing the following:
+
 - Providing utilities that generate test events to trigger an application.
 - Validating event flow and structure in Amazon EventBridge.
 - Asserting event flow against AWS X-Ray traces. 
