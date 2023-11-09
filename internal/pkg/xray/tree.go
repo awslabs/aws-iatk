@@ -9,7 +9,9 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string) (*Tree, error) {
+const MAX_TREE_DEPTH = 5
+
+func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string, fetchLinkedTraces bool) (*Tree, error) {
 	// Fetch input source trace.
 	traceMap, err := opts.getTraces(ctx, opts.xrayClient, []string{sourceTraceId})
 
@@ -27,7 +29,7 @@ func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string) (*Tree
 		return nil, fmt.Errorf("failed to fetch trace %s with error: no trace segments found", sourceTraceId)
 	}
 
-	tree, err := buildTree(traceMap, trace)
+	tree, err := buildTree(traceMap, trace, fetchLinkedTraces, ctx, opts, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build trace tree %s with error: %w", sourceTraceId, err)
 	}
@@ -35,7 +37,7 @@ func NewTree(ctx context.Context, opts treeOptions, sourceTraceId string) (*Tree
 	return tree, nil
 }
 
-func buildTree(traceMap map[string]*Trace, sourceTrace *Trace) (*Tree, error) {
+func buildTree(traceMap map[string]*Trace, sourceTrace *Trace, fetchLinkedTraces bool, ctx context.Context, opts treeOptions, depth int) (*Tree, error) {
 	// Sort the segments by starttime before creating a tree
 	sort.Slice(sourceTrace.Segments,
 		func(i, j int) bool {
@@ -47,13 +49,16 @@ func buildTree(traceMap map[string]*Trace, sourceTrace *Trace) (*Tree, error) {
 
 	// Recursively get a map of segment/subsegment ids to the corresponding Segment
 	mapSegSubsegsIdToSeg := CreateSegIdtoSegMap(sourceTrace.Segments)
-
+	linkedTraceToSegment := map[string]*Segment{}
 	// Insert original trace segments, skip the root segment
 	for _, segment := range sourceTrace.Segments[1:] {
 		if segment.ParentId != nil {
 			// ParentId could be pointing to a segmentId or a subsegmentId
 			if parentSegment, ok := mapSegSubsegsIdToSeg[*segment.ParentId]; ok {
 				InsertSegmentChild(parentSegment, segment)
+				if fetchLinkedTraces {
+					getLinkedTraces(segment, linkedTraceToSegment)
+				}
 			} else {
 				return nil, fmt.Errorf("found a segment %s with no parent", *segment.Id)
 			}
@@ -62,6 +67,28 @@ func buildTree(traceMap map[string]*Trace, sourceTrace *Trace) (*Tree, error) {
 
 	// Find all the leaf nodes and their complete paths using DFS algorithm
 	var singlePath []*Segment
+
+	linkedTraceIds := maps.Keys(linkedTraceToSegment)
+
+	//get all linked traces in one call
+	if fetchLinkedTraces && len(linkedTraceIds) > 0 && depth < MAX_TREE_DEPTH {
+		linkedTraceMap, err := opts.getTraces(ctx, opts.xrayClient, linkedTraceIds)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch linked traces %s with error: %w", linkedTraceIds, err)
+		}
+
+		for linkedTraceId, linkedTrace := range linkedTraceMap {
+			linkedTree, err := buildTree(linkedTraceMap, linkedTrace, fetchLinkedTraces, ctx, opts, depth+1)
+			if err != nil {
+				return nil, fmt.Errorf("failed to build trace tree %s with error: %w", linkedTraceId, err)
+			}
+
+			parentSegment := linkedTraceToSegment[*linkedTree.Root.TraceId]
+			parentSegment.children = append(parentSegment.children, linkedTree.Root)
+		}
+	}
+
 	leafPaths := FindLeafSegmentPaths(treeRootSegment, singlePath)
 
 	return &Tree{
@@ -69,6 +96,25 @@ func buildTree(traceMap map[string]*Trace, sourceTrace *Trace) (*Tree, error) {
 		Paths:       leafPaths,
 		SourceTrace: sourceTrace,
 	}, nil
+}
+
+// check if there are any linked traces associated with the segment and add them to the map
+func getLinkedTraces(segment *Segment, linksToSegMap map[string]*Segment) {
+	linkedTraces := segment.Links
+	for _, trace := range linkedTraces {
+		if *trace.Attributes.ReferenceType == "child" {
+			linksToSegMap[*trace.TraceId] = segment
+		}
+	}
+
+	for _, subseg := range segment.Subsegments {
+		for _, trace := range subseg.Links {
+			if *trace.Attributes.ReferenceType == "child" {
+				linksToSegMap[*trace.TraceId] = segment
+			}
+		}
+	}
+
 }
 
 // Add the provided child segment to the parentSegment's children
