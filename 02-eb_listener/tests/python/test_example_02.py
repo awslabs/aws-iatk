@@ -4,7 +4,7 @@ import pathlib
 from unittest import TestCase
 
 import requests
-import aws_ctk
+import aws_iatk
 
 
 LOG = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ def read_cdk_outputs() -> dict:
 class Example02(TestCase):
     stack_name: str = "cdk-example-ebStack"
     stack_outputs: dict = read_cdk_outputs().get(stack_name, {}) 
-    z: aws_ctk.AWSCtk = aws_ctk.AWSCtk()
+    iatk: aws_iatk.AwsIatk = aws_iatk.AwsIatk()
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -29,9 +29,9 @@ class Example02(TestCase):
         cls.target_id = cls.stack_outputs["TargetId"]
 
         # remote orphaned listeners from previous test runs (if any)
-        cls.z.remove_listeners(
+        cls.iatk.remove_listeners(
             tag_filters=[
-                aws_ctk.RemoveListeners_TagFilter(
+                aws_iatk.RemoveListeners_TagFilter(
                     key="stage",
                     values=["example02"],
                 )
@@ -39,7 +39,7 @@ class Example02(TestCase):
         )
 
         # create listener
-        listener_id = cls.z.add_listener(
+        listener_id = cls.iatk.add_listener(
             event_bus_name=cls.event_bus_name,
             rule_name=cls.rule_name,
             target_id=cls.target_id,
@@ -51,7 +51,7 @@ class Example02(TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        cls.z.remove_listeners(
+        cls.iatk.remove_listeners(
             ids=cls.listeners,
         )
         LOG.debug("destroyed listeners: %s", cls.listeners)
@@ -67,7 +67,7 @@ class Example02(TestCase):
             assert received == customer_id
 
         self.assertTrue(
-            self.z.wait_until_event_matched(
+            self.iatk.wait_until_event_matched(
                 listener_id=self.listeners[0],
                 assertion_fn=assertion_fn,
             )
@@ -77,7 +77,7 @@ class Example02(TestCase):
         customer_id = "def456"
         requests.post(self.api_endpoint, params={"customerId": customer_id})
 
-        received = self.z.poll_events(
+        received = self.iatk.poll_events(
             listener_id=self.listeners[0],
             wait_time_seconds=5,
             max_number_of_messages=10,

@@ -4,8 +4,8 @@ import pathlib
 import uuid
 
 import boto3
-import aws_ctk
-from aws_ctk.context_generation import eventbridge_event_context
+import aws_iatk
+from aws_iatk.context_generation import eventbridge_event_context
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -21,8 +21,8 @@ def test_generate_barebone_event():
     stack_outputs = read_cdk_outputs().get(stack_name, {})
     registry_name = stack_outputs["RegistryName"]
     schema_name = stack_outputs["SchemaName"]
-    z = aws_ctk.AWSCtk()
-    barebone_event = z.generate_mock_event(
+    iatk = aws_iatk.AwsIatk()
+    barebone_event = iatk.generate_mock_event(
         registry_name=registry_name,
         schema_name=schema_name,
         event_ref="MyEvent",
@@ -40,7 +40,7 @@ def test_generate_contextful_event():
     registry_name = stack_outputs["RegistryName"]
     schema_name = stack_outputs["SchemaName"]
     function_name = stack_outputs["CalculatorFunction"]
-    z = aws_ctk.AWSCtk()
+    iatk = aws_iatk.AwsIatk()
     
     def apply_context(event: dict) -> dict:
         event["customerId"] = str(uuid.uuid4())
@@ -53,7 +53,7 @@ def test_generate_contextful_event():
             event["orderItems"].append(item)
         return event
         
-    mock_event = z.generate_mock_event(
+    mock_event = iatk.generate_mock_event(
         registry_name=registry_name,
         schema_name=schema_name,
         event_ref="MyEvent",
@@ -74,9 +74,9 @@ def test_generate_contextful_event():
     assert result == 110
 
 def test_generate_eventbridge_event():
-    z = aws_ctk.AWSCtk()
+    iatk = aws_iatk.AwsIatk()
 
-    mock_eb_event = z.generate_mock_event(
+    mock_eb_event = iatk.generate_mock_event(
         registry_name="aws.events",
         schema_name="aws.autoscaling@EC2InstanceLaunchSuccessful",
         schema_version="2",
