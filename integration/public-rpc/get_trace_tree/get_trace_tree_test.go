@@ -178,13 +178,14 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 
 			// Get Trace Tree
 			tree := s.assertAndReturnTraceTree(tracingHeader, tt.fetchChildTraces)
-			paths := tree["paths"].([][]any)
+			paths := tree["paths"].([]any)
 			assert.Equal(t, tt.expectNumPaths, len(paths), "expected num paths is different than actual")
 			sourceTrace := tree["source_trace"].(map[string]any)
 			require.Contains(t, sourceTrace, "segments")
 			segments := sourceTrace["segments"].([]any)
 			assert.Equal(t, tt.expectSourceTraceNumSegments, len(segments))
-			assert.Equal(t, tt.expectPathLength, len(paths[0]))
+			path := paths[0].([]any)
+			assert.Equal(t, tt.expectPathLength, len(path))
 		})
 	}
 }
