@@ -113,7 +113,6 @@ jobs:
           CIBW_BUILD_FRONTEND: build
           CIBW_SKIP: "*-musllinux*"
           CIBW_ARCHS: ${{ matrix.CIBW_ARCHS }}
-          # TODO (hawflau): find a way to build external of cibuildwheel
           CIBW_ENVIRONMENT_LINUX: GOARCH="${{ matrix.arch }}" IATK_SKIP_BUILD_BINARY="1"
           CIBW_BEFORE_ALL_LINUX: |
             curl -O -L "https://golang.org/dl/go1.21.1.linux-amd64.tar.gz" && 
@@ -187,7 +186,6 @@ jobs:
         working-directory: dist
         run: echo "attestation_hashes=$(sha256sum ./* | base64 -w0)" >> "$GITHUB_OUTPUT"
 
-  # TODO: uncomment provenance job once repo is public
   # create provenance file
   # This job creates a provenance file that describes how our release was built (all steps)
   # after it verifies our build is reproducible within the same pipeline
@@ -201,23 +199,14 @@ jobs:
       contents: write # nested job explicitly require despite upload assets being set to false
       actions: read # To read the workflow path.
       id-token: write # To sign the provenance.
-    # TODO: remove
-    runs-on: ubuntu-latest
-    steps:
-      - run: touch ${{ inputs.provenance_name }} && echo "hello, world!" >> ${{ inputs.provenance_name }}
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ${{ inputs.provenance_name }}
-          path: ${{ inputs.provenance_name }}
-    #####
   #   # NOTE: provenance fails if we use action pinning... it's a Github limitation
   #   # because SLSA needs to trace & attest it came from a given branch; pinning doesn't expose that information
   #   # https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md#referencing-the-slsa-generator
-  #   uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.9.0
-  #   with:
-  #     base64-subjects: ${{ needs.collate.outputs.attestation_hashes }}
-  #     upload-assets: false  # we upload its attestation in create_tag job, otherwise it creates a new release
-  #     provenance-name: ${{ inputs.provenance_name }}
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.9.0
+    with:
+      base64-subjects: ${{ needs.collate.outputs.attestation_hashes }}
+      upload-assets: false  # we upload its attestation in create_tag job, otherwise it creates a new release
+      provenance-name: ${{ inputs.provenance_name }}
 
   publish:
     needs: [build-wheels, build-sdist, collate, provenance]

@@ -70,8 +70,6 @@ jobs:
       ref: ${{ github.sha }} # cannot use env
       release_version: ${{ needs.get-version.outputs.RELEASE_VERSION }}
       artifact_name: "python-client-artifacts"
-      # TODO (hawflau): remove the line below on launch
-      skip_pypi: true
 
   # This job creates a draft release on GitHub
   release-github:
