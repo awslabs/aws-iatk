@@ -77,7 +77,8 @@ class TestIatk_retry_fetch_until(TestCase):
         response = self.iatk.retry_get_trace_tree_until(
             tracing_header=self.xray_trace_header,
             assertion_fn=trace_header_is_root,
-            timeout_seconds=10
+            timeout_seconds=10,
+            fetch_child_traces=False
         )
         end = time.time()
         self.assertTrue(response)
@@ -92,7 +93,8 @@ class TestIatk_retry_fetch_until(TestCase):
         response = self.iatk.retry_get_trace_tree_until(
             tracing_header=self.xray_trace_header,
             assertion_fn=num_is_10,
-            timeout_seconds=10
+            timeout_seconds=10,
+            fetch_child_traces=False
         )
         end = time.time()
         self.assertFalse(response)
@@ -110,7 +112,8 @@ class TestIatk_retry_fetch_until(TestCase):
         response = self.iatk.retry_get_trace_tree_until(
             tracing_header=self.xray_trace_header,
             assertion_fn=num_is_10,
-            timeout_seconds=0
+            timeout_seconds=0,
+            fetch_child_traces=False
         )
         end = time.time()
         self.assertTrue(response)
@@ -125,7 +128,8 @@ class TestIatk_retry_fetch_until(TestCase):
             self.iatk.retry_get_trace_tree_until(
                 tracing_header="test",
                 assertion_fn=num_is_10,
-                timeout_seconds=10
+                timeout_seconds=10,
+                fetch_child_traces=False
             )
         self.assertNotEqual(self.counter, 10)
         self.assertIn("error while getting trace_id from", str(e.value))
@@ -135,7 +139,8 @@ class TestIatk_retry_fetch_until(TestCase):
             self.iatk.retry_get_trace_tree_until(
                 tracing_header=self.xray_trace_header,
                 assertion_fn=0,
-                timeout_seconds=10
+                timeout_seconds=10,
+                fetch_child_traces=False
             )
             self.assertNotEqual(self.counter, 10)
         self.assertEqual(str(e.value), "condition is not a callable function")
@@ -147,7 +152,8 @@ class TestIatk_retry_fetch_until(TestCase):
         response = self.iatk.retry_get_trace_tree_until(
             tracing_header="Root=1-652850da-255d5ae071f55e4aef339837;Sampled=1",
             assertion_fn=num_is_5,
-            timeout_seconds=10
+            timeout_seconds=10,
+            fetch_child_traces=False
         )
         end = time.time()
         self.assertGreaterEqual(end - start, 10)

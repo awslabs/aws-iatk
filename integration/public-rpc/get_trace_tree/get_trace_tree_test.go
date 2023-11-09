@@ -101,6 +101,8 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 		sleep                        int
 		expectSourceTraceNumSegments int
 		expectNumPaths               int
+		expectPathLength             int
+		fetchChildTraces             bool
 	}{
 		{
 			testname: "invoke lambda",
@@ -119,6 +121,8 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 			sleep:                        10,
 			expectNumPaths:               1,
 			expectSourceTraceNumSegments: 2,
+			expectPathLength:             2,
+			fetchChildTraces:             false,
 		},
 		{
 			testname: "invoke state machine",
@@ -140,6 +144,28 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 			sleep:                        10,
 			expectNumPaths:               2,
 			expectSourceTraceNumSegments: 5,
+			expectPathLength:             5,
+			fetchChildTraces:             false,
+		},
+		{
+			testname: "invoke lambda with linked traces",
+			invoke: func(t *testing.T) string {
+				t.Logf("invoke lambda function %q", s.producerFunctionName)
+				invokeLambdaOut, err := s.lambdaClient.Invoke(context.TODO(), &lambda.InvokeInput{
+					FunctionName: aws.String(s.producerFunctionName),
+					Payload:      []byte("{}"),
+				})
+				require.NoError(t, err, "failed to invoke producer lambda function")
+				rawResponse := middleware.GetRawResponse(invokeLambdaOut.ResultMetadata).(*awshttp.Response)
+				tracingHeader := rawResponse.Header["X-Amzn-Trace-Id"][0]
+				return tracingHeader
+
+			},
+			sleep:                        10,
+			expectNumPaths:               1,
+			expectSourceTraceNumSegments: 2,
+			expectPathLength:             4,
+			fetchChildTraces:             false,
 		},
 	}
 
@@ -151,13 +177,14 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 			time.Sleep(time.Duration(tt.sleep) * time.Second)
 
 			// Get Trace Tree
-			tree := s.assertAndReturnTraceTree(tracingHeader)
+			tree := s.assertAndReturnTraceTree(tracingHeader, tt.fetchChildTraces)
 			paths := tree["paths"].([]any)
 			assert.Equal(t, tt.expectNumPaths, len(paths), "expected num paths is different than actual")
 			sourceTrace := tree["source_trace"].(map[string]any)
 			require.Contains(t, sourceTrace, "segments")
 			segments := sourceTrace["segments"].([]any)
 			assert.Equal(t, tt.expectSourceTraceNumSegments, len(segments))
+			assert.Equal(t, tt.expectPathLength, paths[0])
 		})
 	}
 }
@@ -229,7 +256,7 @@ func (s *GetTraceTreeSuite) invoke(req []byte) jsonrpc.Response {
 	return res
 }
 
-func (s *GetTraceTreeSuite) assertAndReturnTraceTree(tracingHeader string) map[string]any {
+func (s *GetTraceTreeSuite) assertAndReturnTraceTree(tracingHeader string, fetchChildTraces bool) map[string]any {
 	req := []byte(fmt.Sprintf(`
 	{
 		"jsonrpc": "2.0",
@@ -237,9 +264,10 @@ func (s *GetTraceTreeSuite) assertAndReturnTraceTree(tracingHeader string) map[s
 		"method": %q,
 		"params": {
 			"TracingHeader": %q,
-			"Region": %q
+			"Region": %q,
+			"FetchChildTraces": %t
 		}
-	}`, test_method, tracingHeader, s.region))
+	}`, test_method, tracingHeader, s.region, fetchChildTraces))
 	t := s.T()
 	t.Log("get trace tree")
 	res := s.invoke(req)
