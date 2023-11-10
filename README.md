@@ -10,12 +10,6 @@ The AWS IATK is available for Python3.8+
 
 For a detailed walkthrough, see the tutorial or [examples](https://github.com/awslabs/aws-iatk/tree/examples).
 
-### Install
-
-```
-pip3 install aws-iatk
-```
-
 ## Getting Help
 
 The best way to interact with our team is through Github. You can open an [issue](https://github.com/awslabs/aws-iatk/issues).
