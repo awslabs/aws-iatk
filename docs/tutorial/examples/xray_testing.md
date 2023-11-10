@@ -160,6 +160,7 @@ class Example03(TestCase):
         time.sleep(5)
         trace_tree = self.iatk.get_trace_tree(
             tracing_header=self.tracing_header,
+            fetch_child_traces=false
         ).trace_tree
 
         self.assertEqual(len(trace_tree.paths), 3)
@@ -189,6 +190,7 @@ class Example03(TestCase):
             tracing_header=self.tracing_header,
             assertion_fn=assertion,
             timeout_seconds=20,
+            fetch_child_traces=false,
         ))
 
 ```
