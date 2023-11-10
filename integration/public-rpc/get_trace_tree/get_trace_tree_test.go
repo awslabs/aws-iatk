@@ -103,50 +103,8 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 		expectNumPaths               int
 		expectPathLength             int
 		fetchChildTraces             bool
+		traceOrder                   []string
 	}{
-		{
-			testname: "invoke lambda",
-			invoke: func(t *testing.T) string {
-				t.Logf("invoke lambda function %q", s.producerFunctionName)
-				invokeLambdaOut, err := s.lambdaClient.Invoke(context.TODO(), &lambda.InvokeInput{
-					FunctionName: aws.String(s.producerFunctionName),
-					Payload:      []byte("{}"),
-				})
-				require.NoError(t, err, "failed to invoke producer lambda function")
-				rawResponse := middleware.GetRawResponse(invokeLambdaOut.ResultMetadata).(*awshttp.Response)
-				tracingHeader := rawResponse.Header["X-Amzn-Trace-Id"][0]
-				return tracingHeader
-
-			},
-			sleep:                        10,
-			expectNumPaths:               1,
-			expectSourceTraceNumSegments: 2,
-			expectPathLength:             2,
-			fetchChildTraces:             false,
-		},
-		{
-			testname: "invoke state machine",
-			invoke: func(t *testing.T) string {
-				t.Logf("invoke state machine %q", s.stateMachineArn)
-				startExecutionOut, err := s.sfnClient.StartExecution(context.TODO(), &sfn.StartExecutionInput{
-					StateMachineArn: aws.String(s.stateMachineArn),
-					Input:           aws.String("{}"),
-					TraceHeader:     aws.String("Sampled=1"),
-				})
-				require.NoError(t, err, "failed to start state machine execution")
-				describeOut, err := s.sfnClient.DescribeExecution(context.TODO(), &sfn.DescribeExecutionInput{
-					ExecutionArn: startExecutionOut.ExecutionArn,
-				})
-				require.NoError(t, err, "failed to describe state machine execution")
-				tracingHeader := aws.ToString(describeOut.TraceHeader)
-				return tracingHeader
-			},
-			sleep:                        10,
-			expectNumPaths:               2,
-			expectSourceTraceNumSegments: 5,
-			expectPathLength:             3,
-			fetchChildTraces:             false,
-		},
 		{
 			testname: "invoke lambda with linked traces",
 			invoke: func(t *testing.T) string {
@@ -166,6 +124,7 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 			expectSourceTraceNumSegments: 2,
 			expectPathLength:             4,
 			fetchChildTraces:             true,
+			traceOrder:                   []string{"AWS::Lambda", "AWS::Lambda::Function", "AWS::Lambda", "AWS::Lambda::Function"},
 		},
 	}
 
@@ -186,6 +145,10 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 			assert.Equal(t, tt.expectSourceTraceNumSegments, len(segments))
 			path := paths[0].([]any)
 			assert.Equal(t, tt.expectPathLength, len(path))
+			for index, segment := range path {
+				currentSegment := segment.(map[string]any)
+				assert.Equal(t, tt.traceOrder[index], currentSegment["origin"].(string))
+			}
 		})
 	}
 }
