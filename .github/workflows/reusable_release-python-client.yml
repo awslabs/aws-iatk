@@ -31,11 +31,6 @@ on:
         type: string
         default: "python-client.multiple.intoto.jsonl"
         description: "name of provenance file"
-      skip_pypi:
-        required: false
-        type: boolean
-        default: false
-        description: "boolean to skip publishing to PyPi"
     outputs:
       attestation_hashes:
         description: "Attestation encoded hash for provenance"
@@ -207,19 +202,3 @@ jobs:
       base64-subjects: ${{ needs.collate.outputs.attestation_hashes }}
       upload-assets: false  # we upload its attestation in create_tag job, otherwise it creates a new release
       provenance-name: ${{ inputs.provenance_name }}
-
-  publish:
-    needs: [build-wheels, build-sdist, collate, provenance]
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write # OIDC for PyPi Trusted Publisher feature
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
-        with:
-          name: ${{ inputs.artifact_name }}
-          path: ./dist/
-
-      - name: Upload to PyPi prod
-        if: ${{ !inputs.skip_pypi }}
-        uses: pypa/gh-action-pypi-publish@b7f401de30cb6434a1e19f805ff006643653240e # v1.8.10
