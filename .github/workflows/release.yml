@@ -61,9 +61,9 @@ jobs:
     secrets:
       CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
 
-  # This job builds python client artifacts and publishes them to PyPi
+  # This job builds python client artifacts
   # It returns the provenance information for subsequent jobs to use.
-  release-python-client:
+  build-python-client:
     needs: [get-version, quality-check]
     uses: ./.github/workflows/reusable_release-python-client.yml
     with:
@@ -71,9 +71,27 @@ jobs:
       release_version: ${{ needs.get-version.outputs.RELEASE_VERSION }}
       artifact_name: "python-client-artifacts"
 
-  # This job creates a draft release on GitHub
+  # This job publishes python client artifacts to PyPi
+  # NOTE: This job cannot be moved into reusable workflow. See https://docs.pypi.org/trusted-publishers/troubleshooting/#reusable-workflows-on-github
+  publish-python-client:
+    needs: [build-python-client]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDC for PyPi Trusted Publisher feature
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: ${{ needs.build-python-client.outputs.artifact_name }}
+          path: ./dist/
+
+      - name: Upload to PyPi prod
+        if: ${{ !inputs.skip_pypi }}
+        uses: pypa/gh-action-pypi-publish@b7f401de30cb6434a1e19f805ff006643653240e # v1.8.10
+
+  # This job publishes a release note on GitHub
   release-github:
-    needs: [get-version, release-python-client]
+    needs: [get-version, publish-python-client]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -97,5 +115,5 @@ jobs:
         uses: ./.github/actions/upload-release-provenance
         with:
           release_version: ${{ needs.get-version.outputs.RELEASE_VERSION }}
-          provenance_name: ${{ needs.release-python-client.outputs.provenance_name }}
+          provenance_name: ${{ needs.publish-python-client.outputs.provenance_name }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
