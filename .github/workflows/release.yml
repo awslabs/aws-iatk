@@ -91,7 +91,7 @@ jobs:
 
   # This job publishes a release note on GitHub
   release-github:
-    needs: [get-version, release-python-client]
+    needs: [get-version, publish-python-client]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -115,5 +115,5 @@ jobs:
         uses: ./.github/actions/upload-release-provenance
         with:
           release_version: ${{ needs.get-version.outputs.RELEASE_VERSION }}
-          provenance_name: ${{ needs.release-python-client.outputs.provenance_name }}
+          provenance_name: ${{ needs.publish-python-client.outputs.provenance_name }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
