@@ -332,7 +332,8 @@ func TestBuildTreeFromTraceDoc(t *testing.T) {
 			traceMap := map[string]*Trace{
 				*trace.Id: &trace,
 			}
-			tree, err := buildTree(traceMap, &trace, false, ctx, opts, 0)
+			depth := 0
+			tree, err := buildTree(traceMap, &trace, false, ctx, opts, &depth)
 			require.NoError(t, err)
 			assert.Len(t, tree.Paths, tt.expectNumPaths)
 		})
@@ -390,7 +391,8 @@ func TestBuildTreeWithLinkedTrace(t *testing.T) {
 			traceMap := map[string]*Trace{
 				*trace.Id: &trace,
 			}
-			tree, err := buildTree(traceMap, &trace, true, ctx, opts, 0)
+			depth := 0
+			tree, err := buildTree(traceMap, &trace, true, ctx, opts, &depth)
 			require.NoError(t, err)
 			assert.Len(t, tree.Paths, 1)
 			assert.Len(t, tree.Paths[0], 4)

@@ -57,8 +57,9 @@ type GetTraceTreeSuite struct {
 	lambdaClient *lambda.Client
 	sfnClient    *sfn.Client
 
-	producerFunctionName string
-	stateMachineArn      string
+	producerFunctionName             string
+	stateMachineArn                  string
+	producerFunctionNameLinkedTraces string
 }
 
 func (s *GetTraceTreeSuite) SetupSuite() {
@@ -75,15 +76,18 @@ func (s *GetTraceTreeSuite) SetupSuite() {
 	s.Require().NoError(err, "failed to create stack")
 	output, _ := iatkcfn.GetStackOuput(
 		s.stackName,
-		[]string{"ProducerFunctionName", "StateMachineArn"},
+		[]string{"ProducerFunctionName", "StateMachineArn", "ProducerFunctionNameLinkedTraces"},
 		s.cfnClient,
 	)
 	s.Require().Contains(output, "ProducerFunctionName")
 	s.Require().Contains(output, "StateMachineArn")
+	s.Require().Contains(output, "ProducerFunctionNameLinkedTraces")
+	s.Require().Contains(output, "ProducerFunctionNameLinkedTraces")
 	s.Require().NotZero(output["ProducerFunctionName"])
 	s.Require().NotZero(output["StateMachineArn"])
 	s.producerFunctionName = output["ProducerFunctionName"]
 	s.stateMachineArn = output["StateMachineArn"]
+	s.producerFunctionNameLinkedTraces = output["ProducerFunctionNameLinkedTraces"]
 	s.T().Log("setup suite complete")
 }
 
@@ -191,6 +195,50 @@ func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTree() {
 					assert.Equal(t, tt.traceOrderWithLinks[index], currentSegment["origin"].(string))
 				}
 			}
+		})
+	}
+}
+
+func (s *GetTraceTreeSuite) TestInvokeAndGetTraceTreeWithManyLinks() {
+	cases := []struct {
+		testname                string
+		invoke                  func(*testing.T) string
+		sleep                   int
+		fetchChildTraces        bool
+		expectLimitExceededFlag bool
+	}{
+		{
+			testname: "invoke lambda with > 5 child traces",
+			invoke: func(t *testing.T) string {
+				t.Logf("invoke lambda function %q", s.producerFunctionNameLinkedTraces)
+				invokeLambdaOut, err := s.lambdaClient.Invoke(context.TODO(), &lambda.InvokeInput{
+					FunctionName: aws.String(s.producerFunctionNameLinkedTraces),
+					Payload:      []byte("{}"),
+				})
+				require.NoError(t, err, "failed to invoke producer lambda function")
+				rawResponse := middleware.GetRawResponse(invokeLambdaOut.ResultMetadata).(*awshttp.Response)
+				tracingHeader := rawResponse.Header["X-Amzn-Trace-Id"][0]
+				return tracingHeader
+
+			},
+			sleep:                   10,
+			fetchChildTraces:        true,
+			expectLimitExceededFlag: true,
+		},
+	}
+
+	for _, tt := range cases {
+		s.T().Run(tt.testname, func(t *testing.T) {
+			tracingHeader := tt.invoke(t)
+			t.Logf("tracing header: %v", tracingHeader)
+			t.Logf("sleeping for %v seconds", tt.sleep)
+			time.Sleep(time.Duration(tt.sleep) * time.Second)
+
+			// Get Trace Tree
+			tree := s.assertAndReturnTraceTree(tracingHeader, tt.fetchChildTraces)
+			linked_trace_limit_exceeded := tree["linked_trace_limit_exceeded"].(bool)
+			assert.Equal(t, tt.expectLimitExceededFlag, linked_trace_limit_exceeded)
+
 		})
 	}
 }
