@@ -4,16 +4,23 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aws-iatk"
+readme = {content-type = "text/markdown", file = "README.md"}
 dynamic = ["version"]
 dependencies = []
 license = {text = "Apache-2.0"}
 requires-python = ">=3.8"
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 4 - Beta",
   "Topic :: Software Development :: Testing",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python"
 ]
+
+[project.urls]
+homepage = "https://github.com/awslabs/aws-iatk"
+documentation = "https://awslabs.github.io/aws-iatk/"
+repository = "https://github.com/awslabs/aws-iatk"
+changelog = "https://github.com/awslabs/aws-iatk/releases"
 
 [tool.setuptools.dynamic]
 version = {attr = "aws_iatk.version._version"}
