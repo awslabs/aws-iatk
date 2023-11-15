@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aws-iatk"
+readme = {content-type = "text/markdown", file = "README.md"}
 dynamic = ["version"]
 dependencies = []
 license = {text = "Apache-2.0"}
