@@ -6,6 +6,8 @@ AWS Integrated Application Test Kit (IATK), a new open-source test library that 
 
 The AWS IATK is available for Python3.8+
 
+Documentation: https://awslabs.github.io/aws-iatk/
+
 ## Getting Started
 
 For a detailed walkthrough, see the tutorial or [examples](https://github.com/awslabs/aws-iatk/tree/examples).
