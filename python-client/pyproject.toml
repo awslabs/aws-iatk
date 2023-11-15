@@ -19,7 +19,7 @@ classifiers = [
 [project.urls]
 homepage = "https://github.com/awslabs/aws-iatk"
 documentation = "https://awslabs.github.io/aws-iatk/"
-repository = "https://github.com/awslabs/aws-iatk""
+repository = "https://github.com/awslabs/aws-iatk"
 changelog = "https://github.com/awslabs/aws-iatk/releases"
 
 [tool.setuptools.dynamic]
