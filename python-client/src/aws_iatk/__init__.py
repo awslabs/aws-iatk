@@ -374,7 +374,7 @@ class AwsIatk:
         return output
 
     def get_trace_tree(
-        self, tracing_header: str, fetch_child_traces: Optional[bool]
+        self, tracing_header: str, fetch_child_traces: Optional[bool] = False
     ) -> GetTraceTreeOutput:
         """
         Fetch the trace tree structure using the provided tracing_header
@@ -609,7 +609,7 @@ class AwsIatk:
             raise IatkException(message=message, error_code=error_code)
 
         
-    def retry_get_trace_tree_until(self, tracing_header: str, assertion_fn: Callable[[GetTraceTreeOutput], None], fetch_child_traces: Optional[bool], timeout_seconds: int = 30):
+    def retry_get_trace_tree_until(self, tracing_header: str, assertion_fn: Callable[[GetTraceTreeOutput], None], fetch_child_traces: Optional[bool] = False, timeout_seconds: int = 30):
         """
         function to retry get_trace_tree condition or timeout is met
 
