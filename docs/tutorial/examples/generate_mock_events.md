@@ -141,7 +141,7 @@ After deploying, an output file `outputs.json` is created, with contents similar
 
 #### Python
 
-This test uses three testse, `test_generate_barebone_event`, `test_generate_contextful_event` and `test_generate_eventbridge_event`, to demostrate how you can generate mock events:
+This test uses three tests, `test_generate_barebone_event`, `test_generate_contextful_event` and `test_generate_eventbridge_event`, to demostrate how you can generate mock events:
 
 In `test_generate_barebone_event`, we call `generate_mock_event` by providing only `registry_name`, `schema_name` and `event_ref`. This gives you a "barebone" event:
 
