@@ -52,7 +52,7 @@ func (m *Metadata) UserAgentValue() string {
 		log.Printf("invalid caller: %v", m.Caller)
 		return "unknown"
 	}
-	return strings.ToLower(m.Client) + "#" + m.Version + "#" + m.Caller
+	return strings.ToLower(m.Client) + "#" + m.ClientVersion + "#" + m.Version + "#" + m.Caller
 }
 
 type Response struct {
