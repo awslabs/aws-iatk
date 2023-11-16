@@ -25,9 +25,10 @@ type Request struct {
 }
 
 type Metadata struct {
-	Client  string `json:"client"`
-	Version string `json:"version"`
-	Caller  string `json:"caller"`
+	Client        string `json:"client"`
+	Version       string `json:"version"`
+	Caller        string `json:"caller"`
+	ClientVersion string `json:"client_version"`
 }
 
 // Returns a string that serves as a user agent key, indicating the client version and the caller method, e.g. 0.0.3#retry_get_trace_tree_until
