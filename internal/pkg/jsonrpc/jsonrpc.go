@@ -31,7 +31,7 @@ type Metadata struct {
 	ClientVersion string `json:"client_version"`
 }
 
-// Returns a string that serves as a user agent key, indicating the client version and the caller method, e.g. 0.0.3#retry_get_trace_tree_until
+// Returns a string that serves as a user agent key, indicating the language, language version,client version and the caller method, e.g. python#3.10.9#0.0.3#retry_get_trace_tree_until
 func (m *Metadata) UserAgentValue() string {
 	supportedClients := []string{"python"}
 	if !slices.Contains(supportedClients, strings.ToLower(m.Client)) {
