@@ -114,7 +114,7 @@ class AwsIatk:
         self, logical_resource_id: str, stack_name: str
     ) -> PhysicalIdFromStackOutput:
         """
-        Fetch a Phsyical Id from a Logical Id within an AWS CloudFormation stack
+        Fetch a Physical Id from a Logical Id within an AWS CloudFormation stack
 
         IAM Permissions Needed
         ----------------------
@@ -130,12 +130,12 @@ class AwsIatk:
         Returns
         -------
         PhysicalIdFromStackOutput
-            Data Class that holds the Phsyical Id of the resource
+            Data Class that holds the Physical Id of the resource
 
         Raises
         ------
         IatkException
-            When failed to fetch Phsyical Id
+            When failed to fetch Physical Id
         """
         params = PhysicalIdFromStackParams(logical_resource_id, stack_name)
         payload = params.to_payload(self.region, self.profile)
