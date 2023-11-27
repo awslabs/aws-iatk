@@ -1,0 +1,90 @@
+{
+    "Id": "1-654c0557-5611b044040fc7224c4790b6",
+    "Duration": 0.781,
+    "LimitExceeded": false,
+    "Segments": [
+        {
+            "id": "0285bf1261be05ff",
+            "name": "xray-stuff-ProducerA-LbbjYUkcchrB",
+            "start_time": 1699480919.389,
+            "trace_id": "1-654c0557-5611b044040fc7224c4790b6",
+            "end_time": 1699480920.17,
+            "http": {
+                "response": {
+                    "status": 200
+                }
+            },
+            "aws": {
+                "request_id": "74ba6aea-2855-490a-a20d-d6dd1c39916c"
+            },
+            "origin": "AWS::Lambda",
+            "resource_arn": "arn:aws:lambda:us-west-2:123456789012:function:xray-stuff-ProducerA-LbbjYUkcchrB"
+        },
+        {
+            "id": "17e84e76450d1777",
+            "name": "xray-stuff-ProducerA-LbbjYUkcchrB",
+            "start_time": 1699480919.9095895,
+            "trace_id": "1-654c0557-5611b044040fc7224c4790b6",
+            "end_time": 1699480920.1668363,
+            "parent_id": "0285bf1261be05ff",
+            "aws": {
+                "account_id": "123456789012",
+                "function_arn": "arn:aws:lambda:us-west-2:123456789012:function:xray-stuff-ProducerA-LbbjYUkcchrB",
+                "cloudwatch_logs": [
+                    {
+                        "log_group": "/aws/lambda/xray-stuff-ProducerA-LbbjYUkcchrB"
+                    }
+                ],
+                "resource_names": [
+                    "xray-stuff-ProducerA-LbbjYUkcchrB"
+                ]
+            },
+            "origin": "AWS::Lambda::Function",
+            "subsegments": [
+                {
+                    "id": "36297616ffd7bf54",
+                    "name": "Initialization",
+                    "start_time": 1699480919.5493197,
+                    "end_time": 1699480919.9040341,
+                    "aws": {
+                        "function_arn": "arn:aws:lambda:us-west-2:123456789012:function:xray-stuff-ProducerA-LbbjYUkcchrB"
+                    }
+                },
+                {
+                    "id": "7869f11198c79dd1",
+                    "name": "Invocation",
+                    "start_time": 1699480919.9098928,
+                    "end_time": 1699480920.1662896,
+                    "aws": {
+                        "function_arn": "arn:aws:lambda:us-west-2:123456789012:function:xray-stuff-ProducerA-LbbjYUkcchrB"
+                    },
+                    "links": [
+                        {
+                            "trace_id": "1-654c0558-630340be09e985eb352a72e6",
+                            "id": "2acd99f6ce4d0822",
+                            "attributes": {
+                                "aws.xray.reserved.names": [
+                                    "xray-stuff-ConsumerA-kWsiXtT2gOdW"
+                                ],
+                                "aws.xray.reserved.received_event_end_time": 1699480920.181,
+                                "aws.xray.reserved.type": "AWS::Lambda",
+                                "aws.xray.reserved.dwell_end_time": 1699480920.181,
+                                "aws.xray.reserved.reference_type": "child"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "876dd8d327ff70a3",
+                    "name": "Overhead",
+                    "start_time": 1699480920.1663911,
+                    "end_time": 1699480920.166695,
+                    "aws": {
+                        "function_arn": "arn:aws:lambda:us-west-2:123456789012:function:xray-stuff-ProducerA-LbbjYUkcchrB"
+                    }
+                }
+            ]
+            
+        }
+    ]
+}

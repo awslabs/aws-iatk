@@ -37,13 +37,17 @@ class GetTraceTreeParams:
     ----------
     tracing_header : str
         Trace header to get the trace tree
+    fetch_child_traces: bool
+        Flag to determine if linked traces will be included in the tree
     """
     tracing_header: str
+    fetch_child_traces: bool
     _rpc_method: str = "get_trace_tree"
 
     def to_dict(self) -> dict:
         return {
             "TracingHeader": self.tracing_header,
+            "FetchChildTraces": self.fetch_child_traces
         }
 
     def to_payload(self, region, profile) -> Payload:

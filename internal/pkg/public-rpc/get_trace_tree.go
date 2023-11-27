@@ -14,9 +14,10 @@ import (
 )
 
 type GetTraceTreeParams struct {
-	TracingHeader string `json:"TracingHeader"`
-	Profile       string `json:"Profile,omitempty"`
-	Region        string `json:"Region,omitempty"`
+	TracingHeader    string `json:"TracingHeader"`
+	Profile          string `json:"Profile,omitempty"`
+	Region           string `json:"Region,omitempty"`
+	FetchChildTraces bool   `json:"FetchChildTraces,omitempty"`
 }
 
 func (p *GetTraceTreeParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error) {
@@ -38,7 +39,7 @@ func (p *GetTraceTreeParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Resul
 		return nil, fmt.Errorf("error when loading AWS config: %v", err)
 	}
 
-	traceTree, err := iatkxray.NewTree(ctx, iatkxray.NewTreeOptions(cfg), *traceId)
+	traceTree, err := iatkxray.NewTree(ctx, iatkxray.NewTreeOptions(cfg), *traceId, p.FetchChildTraces)
 	if err != nil {
 		return nil, fmt.Errorf("error building trace tree: %w", err)
 	}

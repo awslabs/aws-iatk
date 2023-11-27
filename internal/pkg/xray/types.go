@@ -137,9 +137,10 @@ type LinkAttributes struct {
 }
 
 type Tree struct {
-	Root        *Segment     `json:"root"`
-	Paths       [][]*Segment `json:"paths"`
-	SourceTrace *Trace       `json:"source_trace"`
+	Root                     *Segment     `json:"root"`
+	Paths                    [][]*Segment `json:"paths"`
+	SourceTrace              *Trace       `json:"source_trace"`
+	LinkedTraceLimitExceeded bool         `json:"linked_trace_limit_exceeded"`
 }
 
 type treeOptions struct {
