@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
 import logging
+from platform import python_version
 from uuid import uuid4
 from typing import Optional
 
@@ -18,6 +19,7 @@ class Payload:
     params: dict
     _client: str = "python"
     _version: str = _version
+    _client_version: str = python_version()
 
     def __init__(self, method: str, params: dict, region: str = None, profile: str = None):
         self.id = str(uuid4())
@@ -38,6 +40,7 @@ class Payload:
                 "client": self._client,
                 "version": self._version,
                 "caller": caller if caller else self.method,
+                "client_version": self._client_version
             }
         }
         return _dict
