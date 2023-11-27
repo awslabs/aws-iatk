@@ -82,7 +82,6 @@ func (s *GetTraceTreeSuite) SetupSuite() {
 	s.Require().Contains(output, "ProducerFunctionName")
 	s.Require().Contains(output, "StateMachineArn")
 	s.Require().Contains(output, "ProducerFunctionNameLinkedTraces")
-	s.Require().Contains(output, "ProducerFunctionNameLinkedTraces")
 	s.Require().NotZero(output["ProducerFunctionName"])
 	s.Require().NotZero(output["StateMachineArn"])
 	s.producerFunctionName = output["ProducerFunctionName"]

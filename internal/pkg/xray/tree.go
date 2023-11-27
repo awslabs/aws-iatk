@@ -72,24 +72,27 @@ func buildTree(traceMap map[string]*Trace, sourceTrace *Trace, fetchLinkedTraces
 	linkedTraceLimitExceeded := false
 
 	//get all linked traces in one call
-	if fetchLinkedTraces && len(linkedTraceIds) > 0 && *depth < MAX_TREE_DEPTH {
-		linkedTraceMap, err := opts.getTraces(ctx, opts.xrayClient, linkedTraceIds)
-
-		if err != nil {
-			return nil, fmt.Errorf("failed to fetch linked traces %s with error: %w", linkedTraceIds, err)
-		}
+	if fetchLinkedTraces && len(linkedTraceIds) > 0 {
 		*depth = *depth + 1
-		for linkedTraceId, linkedTrace := range linkedTraceMap {
-			linkedTree, err := buildTree(linkedTraceMap, linkedTrace, fetchLinkedTraces, ctx, opts, depth)
-			if err != nil {
-				return nil, fmt.Errorf("failed to build trace tree %s with error: %w", linkedTraceId, err)
-			}
+		if *depth <= MAX_TREE_DEPTH {
+			linkedTraceMap, err := opts.getTraces(ctx, opts.xrayClient, linkedTraceIds)
 
-			parentSegment := linkedTraceToSegment[*linkedTree.Root.TraceId]
-			parentSegment.children = append(parentSegment.children, linkedTree.Root)
+			if err != nil {
+				return nil, fmt.Errorf("failed to fetch linked traces %s with error: %w", linkedTraceIds, err)
+			}
+			for linkedTraceId, linkedTrace := range linkedTraceMap {
+				linkedTree, err := buildTree(linkedTraceMap, linkedTrace, fetchLinkedTraces, ctx, opts, depth)
+				if err != nil {
+					return nil, fmt.Errorf("failed to build trace tree %s with error: %w", linkedTraceId, err)
+				}
+
+				parentSegment := linkedTraceToSegment[*linkedTree.Root.TraceId]
+				parentSegment.children = append(parentSegment.children, linkedTree.Root)
+			}
 		}
 	}
-	if *depth >= MAX_TREE_DEPTH {
+
+	if *depth > MAX_TREE_DEPTH {
 		linkedTraceLimitExceeded = true
 	}
 	leafPaths := FindLeafSegmentPaths(treeRootSegment, singlePath)
