@@ -18,7 +18,7 @@
                 "request_id": "74ba6aea-2855-490a-a20d-d6dd1c39916c"
             },
             "origin": "AWS::Lambda",
-            "resource_arn": "arn:aws:lambda:us-west-2:1234567890123:function:xray-stuff-ProducerA-LbbjYUkcchrB"
+            "resource_arn": "arn:aws:lambda:us-west-2:123456789012:function:xray-stuff-ProducerA-LbbjYUkcchrB"
         },
         {
             "id": "17e84e76450d1777",
@@ -28,8 +28,8 @@
             "end_time": 1699480920.1668363,
             "parent_id": "0285bf1261be05ff",
             "aws": {
-                "account_id": "1234567890123",
-                "function_arn": "arn:aws:lambda:us-west-2:1234567890123:function:xray-stuff-ProducerA-LbbjYUkcchrB",
+                "account_id": "123456789012",
+                "function_arn": "arn:aws:lambda:us-west-2:123456789012:function:xray-stuff-ProducerA-LbbjYUkcchrB",
                 "cloudwatch_logs": [
                     {
                         "log_group": "/aws/lambda/xray-stuff-ProducerA-LbbjYUkcchrB"
@@ -47,7 +47,7 @@
                     "start_time": 1699480919.5493197,
                     "end_time": 1699480919.9040341,
                     "aws": {
-                        "function_arn": "arn:aws:lambda:us-west-2:1234567890123:function:xray-stuff-ProducerA-LbbjYUkcchrB"
+                        "function_arn": "arn:aws:lambda:us-west-2:123456789012:function:xray-stuff-ProducerA-LbbjYUkcchrB"
                     }
                 },
                 {
@@ -56,7 +56,7 @@
                     "start_time": 1699480919.9098928,
                     "end_time": 1699480920.1662896,
                     "aws": {
-                        "function_arn": "arn:aws:lambda:us-west-2:1234567890123:function:xray-stuff-ProducerA-LbbjYUkcchrB"
+                        "function_arn": "arn:aws:lambda:us-west-2:123456789012:function:xray-stuff-ProducerA-LbbjYUkcchrB"
                     },
                     "links": [
                         {
@@ -80,7 +80,7 @@
                     "start_time": 1699480920.1663911,
                     "end_time": 1699480920.166695,
                     "aws": {
-                        "function_arn": "arn:aws:lambda:us-west-2:1234567890123:function:xray-stuff-ProducerA-LbbjYUkcchrB"
+                        "function_arn": "arn:aws:lambda:us-west-2:123456789012:function:xray-stuff-ProducerA-LbbjYUkcchrB"
                     }
                 }
             ]
