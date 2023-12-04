@@ -20,8 +20,7 @@ jobs:
   quality-check:
     if: github.repository_owner == 'awslabs'
     uses: ./.github/workflows/reusable_quality-check.yml
-    environment: pull_request_env
     with:
       ref: ${{ github.ref }}
-    secrets: inherit
-
+    secrets:
+      CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
