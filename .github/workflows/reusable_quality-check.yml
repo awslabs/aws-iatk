@@ -60,7 +60,6 @@ jobs:
 
   integration-tests:
     runs-on: ubuntu-latest
-    environment: pull_request_env
     permissions:
       id-token: write
       contents: read
