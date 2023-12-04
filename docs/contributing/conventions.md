@@ -1,6 +1,6 @@
 # GoLang Conventions
 
-We follow [Effictive Go](https://go.dev/doc/effective_go)
+We follow [Effective Go](https://go.dev/doc/effective_go)
 
 
 # Python Conventions

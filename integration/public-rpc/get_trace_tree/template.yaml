@@ -76,9 +76,233 @@ Resources:
             FunctionName: !Ref ConsumerA
       Tracing:
         Enabled: true
-      
+
+# everything below here is for linked traces
+
+  ProducerAForLinkedTraces:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ToSQS:
+        Properties:
+          Destination:
+            QueueUrl: !Ref MySQSQueueForLinkedTracesA
+            Type: AWS::SQS::Queue
+            Arn: !GetAtt MySQSQueueForLinkedTracesA.Arn
+          Permissions:
+            - Write
+    Properties:
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref MySQSQueueForLinkedTracesA
+      InlineCode: |
+        import boto3, os
+        sqs_client = boto3.client("sqs")
+        def handler(event, context):
+            sqs_client.send_message(
+                QueueUrl=os.getenv("SQS_QUEUE_URL"),
+                MessageBody="hello, world!",
+            )
+            return True
+      Runtime: python3.11
+      Handler: index.handler
+
+  MySQSQueueForLinkedTracesA:
+    Type: AWS::SQS::Queue
+
+  ConsumerAForLinkedTraces:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ToSQS:
+        Properties:
+          Destination:
+            QueueUrl: !Ref MySQSQueueForLinkedTracesB
+            Type: AWS::SQS::Queue
+            Arn: !GetAtt MySQSQueueForLinkedTracesB.Arn
+          Permissions:
+            - Write
+    Properties:
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref MySQSQueueForLinkedTracesB
+      InlineCode: |
+        import boto3, os
+        sqs_client = boto3.client("sqs")
+        def handler(event, context):
+            sqs_client.send_message(
+                QueueUrl=os.getenv("SQS_QUEUE_URL"),
+                MessageBody="hello, world!",
+            )
+            return True
+      Runtime: python3.11
+      Handler: index.handler
+      Events:
+        SQSBatch:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MySQSQueueForLinkedTracesA.Arn
+
+  MySQSQueueForLinkedTracesB:
+    Type: AWS::SQS::Queue
+  
+  ConsumerBForLinkedTraces:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ToSQS:
+        Properties:
+          Destination:
+            QueueUrl: !Ref MySQSQueueForLinkedTracesC
+            Type: AWS::SQS::Queue
+            Arn: !GetAtt MySQSQueueForLinkedTracesC.Arn
+          Permissions:
+            - Write
+    Properties:
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref MySQSQueueForLinkedTracesC
+      InlineCode: |
+        import boto3, os
+        sqs_client = boto3.client("sqs")
+        def handler(event, context):
+            sqs_client.send_message(
+                QueueUrl=os.getenv("SQS_QUEUE_URL"),
+                MessageBody="hello, world!",
+            )
+            return True
+      Runtime: python3.11
+      Handler: index.handler
+      Events:
+        SQSBatch:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MySQSQueueForLinkedTracesB.Arn
+
+  MySQSQueueForLinkedTracesC:
+    Type: AWS::SQS::Queue
+  
+  ConsumerCForLinkedTraces:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ToSQS:
+        Properties:
+          Destination:
+            QueueUrl: !Ref MySQSQueueForLinkedTracesD
+            Type: AWS::SQS::Queue
+            Arn: !GetAtt MySQSQueueForLinkedTracesD.Arn
+          Permissions:
+            - Write
+    Properties:
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref MySQSQueueForLinkedTracesD
+      InlineCode: |
+        import boto3, os
+        sqs_client = boto3.client("sqs")
+        def handler(event, context):
+            sqs_client.send_message(
+                QueueUrl=os.getenv("SQS_QUEUE_URL"),
+                MessageBody="hello, world!",
+            )
+            return True
+      Runtime: python3.11
+      Handler: index.handler
+      Events:
+        SQSBatch:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MySQSQueueForLinkedTracesC.Arn
+
+  MySQSQueueForLinkedTracesD:
+    Type: AWS::SQS::Queue
+  
+  ConsumerDForLinkedTraces:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ToSQS:
+        Properties:
+          Destination:
+            QueueUrl: !Ref MySQSQueueForLinkedTracesE
+            Type: AWS::SQS::Queue
+            Arn: !GetAtt MySQSQueueForLinkedTracesE.Arn
+          Permissions:
+            - Write
+    Properties:
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref MySQSQueueForLinkedTracesE
+      InlineCode: |
+        import boto3, os
+        sqs_client = boto3.client("sqs")
+        def handler(event, context):
+            sqs_client.send_message(
+                QueueUrl=os.getenv("SQS_QUEUE_URL"),
+                MessageBody="hello, world!",
+            )
+            return True
+      Runtime: python3.11
+      Handler: index.handler
+      Events:
+        SQSBatch:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MySQSQueueForLinkedTracesD.Arn
+
+  MySQSQueueForLinkedTracesE:
+    Type: AWS::SQS::Queue
+  
+  ConsumerEForLinkedTraces:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ToSQS:
+        Properties:
+          Destination:
+            QueueUrl: !Ref MySQSQueueForLinkedTracesF
+            Type: AWS::SQS::Queue
+            Arn: !GetAtt MySQSQueueForLinkedTracesF.Arn
+          Permissions:
+            - Write
+    Properties:
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref MySQSQueueForLinkedTracesF
+      InlineCode: |
+        import boto3, os
+        sqs_client = boto3.client("sqs")
+        def handler(event, context):
+            sqs_client.send_message(
+                QueueUrl=os.getenv("SQS_QUEUE_URL"),
+                MessageBody="hello, world!",
+            )
+            return True
+      Runtime: python3.11
+      Handler: index.handler
+      Events:
+        SQSBatch:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MySQSQueueForLinkedTracesE.Arn
+
+  MySQSQueueForLinkedTracesF:
+    Type: AWS::SQS::Queue
+  
+  ConsumerFForLinkedTraces:
+    Type: AWS::Serverless::Function
+    Properties:
+      InlineCode: |
+        def handler(event, context):
+            print(event.get("Records"))
+            return {"statusCode": 200, "body": "hello, world!"}
+      Runtime: python3.11
+      Handler: index.handler
+      Events:
+        SQSBatch:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MySQSQueueForLinkedTracesF.Arn
+
 Outputs:
   ProducerFunctionName:
     Value: !Ref ProducerA
   StateMachineArn:
     Value: !Ref MyStateMachine
+  ProducerFunctionNameLinkedTraces:
+    Value: !Ref ProducerAForLinkedTraces

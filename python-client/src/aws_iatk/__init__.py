@@ -114,7 +114,7 @@ class AwsIatk:
         self, logical_resource_id: str, stack_name: str
     ) -> PhysicalIdFromStackOutput:
         """
-        Fetch a Phsyical Id from a Logical Id within an AWS CloudFormation stack
+        Fetch a Physical Id from a Logical Id within an AWS CloudFormation stack
 
         IAM Permissions Needed
         ----------------------
@@ -130,12 +130,12 @@ class AwsIatk:
         Returns
         -------
         PhysicalIdFromStackOutput
-            Data Class that holds the Phsyical Id of the resource
+            Data Class that holds the Physical Id of the resource
 
         Raises
         ------
         IatkException
-            When failed to fetch Phsyical Id
+            When failed to fetch Physical Id
         """
         params = PhysicalIdFromStackParams(logical_resource_id, stack_name)
         payload = params.to_payload(self.region, self.profile)
@@ -374,7 +374,7 @@ class AwsIatk:
         return output
 
     def get_trace_tree(
-        self, tracing_header: str
+        self, tracing_header: str, fetch_child_traces: Optional[bool] = False
     ) -> GetTraceTreeOutput:
         """
         Fetch the trace tree structure using the provided tracing_header
@@ -387,6 +387,8 @@ class AwsIatk:
         ----------
         tracing_header : str
             Trace header to get the trace tree
+        fetch_child_traces: bool
+            Flag to determine if linked traces will be included in the tree
         
         Returns
         -------
@@ -398,7 +400,7 @@ class AwsIatk:
         IatkException
             When failed to fetch a trace tree
         """
-        params = GetTraceTreeParams(tracing_header)
+        params = GetTraceTreeParams(tracing_header, fetch_child_traces)
         output = self._get_trace_tree(params)
         return output
 
@@ -607,7 +609,7 @@ class AwsIatk:
             raise IatkException(message=message, error_code=error_code)
 
         
-    def retry_get_trace_tree_until(self, tracing_header: str, assertion_fn: Callable[[GetTraceTreeOutput], None], timeout_seconds: int = 30):
+    def retry_get_trace_tree_until(self, tracing_header: str, assertion_fn: Callable[[GetTraceTreeOutput], None], fetch_child_traces: Optional[bool] = False, timeout_seconds: int = 30):
         """
         function to retry get_trace_tree condition or timeout is met
 
@@ -623,7 +625,8 @@ class AwsIatk:
             Callable fuction that makes an assertion and raises an AssertionError if it fails
         timeout_seconds : int
             Timeout (in seconds) to stop the fetching
-        
+        fetch_child_traces: bool
+            Flag to determine if linked traces will be included in the tree
         Returns
         -------
         bool
@@ -634,12 +637,12 @@ class AwsIatk:
         IatkException
             When an exception occurs during get_trace_tree
         """
-        params = RetryGetTraceTreeUntilParams(tracing_header, assertion_fn, timeout_seconds)
+        params = RetryGetTraceTreeUntilParams(tracing_header, assertion_fn, fetch_child_traces, timeout_seconds)
         @self.retry_until(assertion_fn=params.assertion_fn, timeout=params.timeout_seconds)
         def fetch_trace_tree():
             try:
                 response = self._get_trace_tree(
-                    params=GetTraceTreeParams(tracing_header=params.tracing_header),
+                    params=GetTraceTreeParams(tracing_header=params.tracing_header, fetch_child_traces=fetch_child_traces),
                     caller="retry_get_trace_tree_until",
                 )
                 return response
