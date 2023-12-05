@@ -3,6 +3,10 @@ name: "Quality Check"
 on:
   workflow_call:
     inputs:
+      env:
+        required: true
+        type: string
+        description: "environment to run the integration tests"
       ref:
         required: true
         type: string
@@ -12,9 +16,6 @@ on:
         type: string
         default: "1.20"
         description: "Go version for building IATK binary"
-    secrets:
-      CI_IAM_ROLE_ARN:
-        required: true
 
 env:
   GO_VERSION: "1.20"
@@ -60,7 +61,7 @@ jobs:
 
   integration-tests:
     runs-on: ubuntu-latest
-    environment: pull_request_env
+    environment: ${{ inputs.env }}
     permissions:
       id-token: write
       contents: read

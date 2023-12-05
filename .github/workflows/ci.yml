@@ -21,5 +21,6 @@ jobs:
     if: github.repository_owner == 'awslabs'
     uses: ./.github/workflows/reusable_quality-check.yml
     with:
+      env: pull_request_env
       ref: ${{ github.ref }}
     secrets: inherit

@@ -57,9 +57,9 @@ jobs:
     needs: [validate-tag]
     uses: ./.github/workflows/reusable_quality-check.yml
     with:
+      env: pull_request_env
       ref: ${{ github.sha }} # cannot use env
-    secrets:
-      CI_IAM_ROLE_ARN: ${{ secrets.CI_IAM_ROLE_ARN }}
+    secrets: inherit
 
   # This job builds python client artifacts
   # It returns the provenance information for subsequent jobs to use.
