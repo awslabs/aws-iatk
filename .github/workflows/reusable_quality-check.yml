@@ -11,6 +11,9 @@ on:
         required: true
         type: string
         description: "the ref (branch, commit sha, or tag) to run tests against"
+      integ_test_role:
+        required: true
+        type: string
       GO_VERSION:
         required: false
         type: string
@@ -82,7 +85,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a # v4.0.1
         with:
-          role-to-assume: ${{ secrets.CI_IAM_ROLE_ARN }}
+          role-to-assume: ${{ inputs.integ_test_role }}
           role-session-name: CiIntegTests
           aws-region: ${{ env.AWS_REGION }}
       

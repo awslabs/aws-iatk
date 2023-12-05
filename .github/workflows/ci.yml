@@ -23,4 +23,5 @@ jobs:
     with:
       env: pull_request_env
       ref: ${{ github.ref }}
+      integ_test_role: ${{ secrets.CI_IAM_ROLE_ARN }}
     secrets: inherit
