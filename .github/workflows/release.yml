@@ -59,7 +59,6 @@ jobs:
     with:
       env: pull_request_env
       ref: ${{ github.sha }} # cannot use env
-    secrets: inherit
 
   # This job builds python client artifacts
   # It returns the provenance information for subsequent jobs to use.
