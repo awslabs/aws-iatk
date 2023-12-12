@@ -82,7 +82,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a # v4.0.1
         with:
-          role-to-assume: "arn:aws:iam::010155974629:role/gha-ci-infra-GHACIRole-1S58K834OSTKT"
+          role-to-assume: arn:aws:iam::010155974629:role/gha-ci-infra-GHACIRole-1S58K834OSTKT
           role-session-name: CiIntegTests
           aws-region: ${{ env.AWS_REGION }}
       
