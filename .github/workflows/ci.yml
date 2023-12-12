@@ -20,6 +20,9 @@ jobs:
   quality-check:
     if: github.repository_owner == 'awslabs'
     uses: ./.github/workflows/reusable_quality-check.yml
+    permissions:
+      id-token: write
+      contents: read
     with:
       env: pull_request_env
       ref: ${{ github.ref }}
