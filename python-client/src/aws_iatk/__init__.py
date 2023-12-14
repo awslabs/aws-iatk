@@ -266,7 +266,7 @@ class AwsIatk:
         LOG.debug(f"Output: {output}")
         return output
 
-    def _poll_events(self, params: PollEventsParams, caller: dict) -> PollEventsOutput:
+    def _poll_events(self, params: PollEventsParams, caller: dict = {}) -> PollEventsOutput:
         """
         underlying implementation for poll_events and wait_until_event_matched
         """
@@ -365,7 +365,7 @@ class AwsIatk:
         LOG.debug("no matching event found")
         return False
 
-    def _get_trace_tree(self, params: GetTraceTreeParams, caller: dict) -> GetTraceTreeOutput:
+    def _get_trace_tree(self, params: GetTraceTreeParams, caller: dict = {}) -> GetTraceTreeOutput:
         """
         underlying implementation for get_trace_tree and retry_get_trace_tree_until
         """
