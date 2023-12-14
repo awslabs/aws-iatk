@@ -3,27 +3,34 @@ requires = ["setuptools", "build"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "zion"
+name = "aws-iatk"
+readme = {content-type = "text/markdown", file = "README.md"}
 dynamic = ["version"]
 dependencies = []
 license = {text = "Apache-2.0"}
 requires-python = ">=3.8"
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 4 - Beta",
   "Topic :: Software Development :: Testing",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python"
 ]
 
+[project.urls]
+homepage = "https://github.com/awslabs/aws-iatk"
+documentation = "https://awslabs.github.io/aws-iatk/"
+repository = "https://github.com/awslabs/aws-iatk"
+changelog = "https://github.com/awslabs/aws-iatk/releases"
+
 [tool.setuptools.dynamic]
-version = {attr = "zion.version._version"}
+version = {attr = "aws_iatk.version._version"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-zion_service = ["*"]
-zion_src = ["**", "go.mod", "go.sum"]
+iatk_service = ["*"]
+iatk_src = ["**", "go.mod", "go.sum"]
 
 [project.optional-dependencies]
 test = [

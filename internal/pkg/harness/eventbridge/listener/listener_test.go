@@ -6,12 +6,12 @@ package listener
 import (
 	"context"
 	"errors"
+	"iatk/internal/pkg/aws/config"
+	"iatk/internal/pkg/harness"
+	"iatk/internal/pkg/harness/resource/eventbus"
+	"iatk/internal/pkg/harness/resource/eventrule"
+	"iatk/internal/pkg/harness/resource/queue"
 	"testing"
-	"zion/internal/pkg/aws/config"
-	"zion/internal/pkg/harness"
-	"zion/internal/pkg/harness/resource/eventbus"
-	"zion/internal/pkg/harness/resource/eventrule"
-	"zion/internal/pkg/harness/resource/queue"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
@@ -22,7 +22,7 @@ import (
 
 const (
 	testBusName    string = "my-event-bus"
-	testListenerID string = "zion_eb_9m4e2mr0ui3e8a215n4g"
+	testListenerID string = "iatk_eb_9m4e2mr0ui3e8a215n4g"
 	testPartition  string = "aws"
 	testService    string = "sqs"
 	testRegion     string = "us-west-2"
@@ -285,7 +285,7 @@ func TestGet(t *testing.T) {
 		"failed due to failure to get queue": {
 			listenerID: testListenerID,
 			queueName:  testListenerID,
-			expectErr:  errors.New("faied to get eb listener zion_eb_9m4e2mr0ui3e8a215n4g: permission denied"),
+			expectErr:  errors.New("faied to get eb listener iatk_eb_9m4e2mr0ui3e8a215n4g: permission denied"),
 			mockGetQueueWithName: func(ctx context.Context, sqsClient sqsClient, queueName, queueURL string, queueARN arn.ARN) *mockGetQueueWithNameFunc {
 				mock := newMockGetQueueWithNameFunc(t)
 				mock.EXPECT().
@@ -454,14 +454,14 @@ func TestDestroyMultiple(t *testing.T) {
 	}{
 		"success": {
 			listenerIDs: []string{
-				"zion_eb_listener-1",
-				"zion_eb_listener-2",
-				"zion_eb_listener-3",
+				"iatk_eb_listener-1",
+				"iatk_eb_listener-2",
+				"iatk_eb_listener-3",
 			},
 			listeners: map[string]*Listener{
-				"zion_eb_listener-1": &Listener{},
-				"zion_eb_listener-2": &Listener{},
-				"zion_eb_listener-3": &Listener{},
+				"iatk_eb_listener-1": &Listener{},
+				"iatk_eb_listener-2": &Listener{},
+				"iatk_eb_listener-3": &Listener{},
 			},
 			expectErr: nil,
 			mockGet: func(ctx context.Context, lrs map[string]*Listener) *MockGetFunc {
@@ -481,16 +481,16 @@ func TestDestroyMultiple(t *testing.T) {
 		},
 		"succeed with duplicated resource group ids": {
 			listenerIDs: []string{
-				"zion_eb_listener-1",
-				"zion_eb_listener-1",
-				"zion_eb_listener-2",
-				"zion_eb_listener-2",
-				"zion_eb_listener-3",
+				"iatk_eb_listener-1",
+				"iatk_eb_listener-1",
+				"iatk_eb_listener-2",
+				"iatk_eb_listener-2",
+				"iatk_eb_listener-3",
 			},
 			listeners: map[string]*Listener{
-				"zion_eb_listener-1": &Listener{},
-				"zion_eb_listener-2": &Listener{},
-				"zion_eb_listener-3": &Listener{},
+				"iatk_eb_listener-1": &Listener{},
+				"iatk_eb_listener-2": &Listener{},
+				"iatk_eb_listener-3": &Listener{},
 			},
 			expectErr: nil,
 			mockGet: func(ctx context.Context, lrs map[string]*Listener) *MockGetFunc {
@@ -510,16 +510,16 @@ func TestDestroyMultiple(t *testing.T) {
 		},
 		"one of provided listener could not be get": {
 			listenerIDs: []string{
-				"zion_eb_listener-1",
-				"zion_eb_listener-2",
-				"zion_eb_listener-3",
+				"iatk_eb_listener-1",
+				"iatk_eb_listener-2",
+				"iatk_eb_listener-3",
 			},
 			listeners: map[string]*Listener{
-				"zion_eb_listener-1": &Listener{},
-				"zion_eb_listener-2": nil,
-				"zion_eb_listener-3": &Listener{},
+				"iatk_eb_listener-1": &Listener{},
+				"iatk_eb_listener-2": nil,
+				"iatk_eb_listener-3": &Listener{},
 			},
-			expectErr: errors.New("failed to destroy following listener(s): {resource group id: zion_eb_listener-2, reason: invalid ID}"),
+			expectErr: errors.New("failed to destroy following listener(s): {resource group id: iatk_eb_listener-2, reason: invalid ID}"),
 			mockGet: func(ctx context.Context, lrs map[string]*Listener) *MockGetFunc {
 				f := NewMockGetFunc(t)
 				for id, lr := range lrs {
@@ -543,16 +543,16 @@ func TestDestroyMultiple(t *testing.T) {
 		},
 		"fail to destroy two of the groups": {
 			listenerIDs: []string{
-				"zion_eb_listener-1",
-				"zion_eb_listener-2",
-				"zion_eb_listener-3",
+				"iatk_eb_listener-1",
+				"iatk_eb_listener-2",
+				"iatk_eb_listener-3",
 			},
 			listeners: map[string]*Listener{
-				"zion_eb_listener-1": {id: "listener-1"},
-				"zion_eb_listener-2": {id: "listener-2"},
-				"zion_eb_listener-3": {id: "listener-3"},
+				"iatk_eb_listener-1": {id: "listener-1"},
+				"iatk_eb_listener-2": {id: "listener-2"},
+				"iatk_eb_listener-3": {id: "listener-3"},
 			},
-			expectErr: errors.New("failed to destroy following listener(s): {resource group id: zion_eb_listener-2, reason: api failed}, {resource group id: zion_eb_listener-3, reason: api failed}"),
+			expectErr: errors.New("failed to destroy following listener(s): {resource group id: iatk_eb_listener-2, reason: api failed}, {resource group id: iatk_eb_listener-3, reason: api failed}"),
 			mockGet: func(ctx context.Context, lrs map[string]*Listener) *MockGetFunc {
 				f := NewMockGetFunc(t)
 				for id, lr := range lrs {
@@ -563,7 +563,7 @@ func TestDestroyMultiple(t *testing.T) {
 			mockDestroySingle: func(ctx context.Context, lrs map[string]*Listener) *mockDestroySingleFunc {
 				f := newMockDestroySingleFunc(t)
 				for id, lr := range lrs {
-					if id == "zion_eb_listener-1" {
+					if id == "iatk_eb_listener-1" {
 						f.EXPECT().Execute(ctx, lr).Return(nil)
 					} else {
 						f.EXPECT().Execute(ctx, lr).Return(errors.New("api failed"))
@@ -678,8 +678,8 @@ func Test_isValidId(t *testing.T) {
 	}{
 		{"valid", testListenerID, true},
 		{"empty string", "", false},
-		{"invalid prefix", "eb_zion_9m4e2mr0ui3e8a215n4g", false},
-		{"invalid suffix", "zion_eb_xxxxxxxxxxxxxxxxxxxx", false},
+		{"invalid prefix", "eb_iatk_9m4e2mr0ui3e8a215n4g", false},
+		{"invalid suffix", "iatk_eb_xxxxxxxxxxxxxxxxxxxx", false},
 	}
 
 	for _, tt := range cases {

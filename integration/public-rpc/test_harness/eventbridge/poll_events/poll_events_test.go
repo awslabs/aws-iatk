@@ -7,11 +7,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"iatk/integration/iatk"
+	"iatk/internal/pkg/jsonrpc"
 	"strings"
 	"testing"
 	"time"
-	"zion/integration/zion"
-	"zion/internal/pkg/jsonrpc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -454,7 +454,7 @@ func (s *PollEventsSuite) invoke(req []byte) jsonrpc.Response {
 	var stderr strings.Builder
 	test := s.T()
 	test.Logf("request: %v", string(req))
-	zion.Invoke(test, req, &stdout, &stderr, nil)
+	iatk.Invoke(test, req, &stdout, &stderr, nil)
 
 	test.Logf("response: %v", stdout.String())
 	var res jsonrpc.Response

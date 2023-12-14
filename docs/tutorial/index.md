@@ -1,32 +1,44 @@
-## Terms
+---
+title: Tutorial
+description: Introduction to AWS IATK
+---
 
-These are some important terms we use in Testing SDK:
+This tutorial introduces AWS Integrated Application Test Kit (AWS IATK) by going through four examples. Each of them showcases one feature at a time.
 
-•	System Under Test - the system being tested for correct operations (including happy and error paths)
+For each example, we will execute the following steps:
 
-•	Test Harness - Test Harness is a group of AWS resources Testing SDK creates for the purpose of facilitating testing around an integration. These resources are intended to exist only for the duration of the test run, and should be destroyed after the test run completes.
+1. Deploy System Under Test (SUT) with [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html){target="_blank"} or [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html).
+2. Run the example test code with [pytest](https://docs.pytest.org/){target="_blank"}.
 
-## Overview
+## Terminologies
 
-Testing SDK is a library used in your test code. See examples below for snippets of using Testing SDK in your Python test code.
+Here are some terminologies we will use throughout the examples:
 
-For more detailed docs on the Python modules [see](../api/python)
+* System Under Test (SUT) - the system being tested for correct operations (including happy and error paths)
+* Test Harness - Test Harness is a group of AWS resources AWS IATK creates for the purpose of facilitating testing around an integration. These resources are intended to exist only for the duration of the test run, and should be destroyed after the test run completes.
 
-## Gerenal Flow of Tests
-Here is a general flow to run a test written with Testing SDK:
+## Requirements
 
-1.	Deploy System Under Test with your choice of tool (e.g. SAM CLI, CDK, Terraform, etc)
+* [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html){target="_blank"} and [configured with your credentials](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started-set-up-credentials.html){target="_blank"}.
+* [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html){target="_blank"} installed.
+* [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) installed.
+* [Python 3.8+](https://www.python.org/downloads/) installed.
 
-2.	Run the test
+## Getting started
 
-    a.	Test creates Test Harness resources
+Clone the examples:
 
-    b.	Test runs test cases
+```bash
+git clone --single-branch --branch examples git@github.com:awslabs/aws-iatk.git iatk-examples
+cd iatk-examples
+```
 
-    c.	Test tears down Test Harness resources
+To run the Python (3.8+) examples:
 
-3.	Tear down System Under Test
+```bash
+python -m venv. venv
+source .venv/bin/activate
 
-Here is a recommended pattern assuming you use Python’s [`unittest.TestCase`](https://docs.python.org/3/library/unittest.html#unittest.TestCase):
-•	Create Test Harness resources in [`setUpClass`](https://docs.python.org/3/library/unittest.html#unittest.TestCase.setUpClass) method or in [`setUp`](https://docs.python.org/3/library/unittest.html#unittest.TestCase.setUp) method
-•	Tear down Test Harness resources in [`tearDownClass`](https://docs.python.org/3/library/unittest.html#unittest.TestCase.tearDownClass) method or in [`tearDown`](https://docs.python.org/3/library/unittest.html#unittest.TestCase.tearDown) method
+pip install -r requirements.txt
+```
+

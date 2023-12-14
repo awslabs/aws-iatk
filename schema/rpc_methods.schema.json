@@ -4,7 +4,7 @@
     "type": "object",
     "properties": {
         "methods": {
-            "description": "The list of available methods via Zion Binary",
+            "description": "The list of available methods via IATK Binary",
             "type": "array",
             "items": {
                 "$ref": "#/definitions/method"

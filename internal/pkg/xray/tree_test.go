@@ -2,12 +2,15 @@ package xray
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"os"
 	"strconv"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewTree(t *testing.T) {
@@ -141,7 +144,7 @@ func TestNewTree(t *testing.T) {
 					)
 				return f
 			},
-			expectErr: errors.New("found a segment segment2-id with no parent"),
+			expectErr: errors.New("failed to build trace tree 1-64de5a99-5d09aa705e56bbd0152548cb with error: found a segment segment2-id with no parent"),
 		},
 	}
 
@@ -155,7 +158,7 @@ func TestNewTree(t *testing.T) {
 				xrayClient: xrayClient,
 				getTraces:  mockGetTraces.Execute,
 			}
-			traceTree, err := NewTree(ctx, opts, tt.sourceTraceId)
+			traceTree, err := NewTree(ctx, opts, tt.sourceTraceId, false)
 			if tt.expectErr != nil {
 				assert.EqualError(t, err, tt.expectErr.Error())
 			} else {
@@ -301,6 +304,98 @@ func TestCreateSubSegIdtoSegMap(t *testing.T) {
 				assert.Equal(t, aws.ToString(tt.segment.Id), aws.ToString(got[subSegmentId].Id))
 			}
 			assert.Equal(t, len(got), len(tt.want))
+		})
+	}
+}
+
+func TestBuildTreeFromTraceDoc(t *testing.T) {
+	cases := []struct {
+		name           string
+		expectNumPaths int
+	}{
+		{
+			name:           "./testdata/trace01.json",
+			expectNumPaths: 28,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.TODO()
+			opts := treeOptions{}
+			filebytes, err := os.ReadFile(tt.name)
+			require.NoError(t, err)
+			var trace Trace
+			err = json.Unmarshal(filebytes, &trace)
+			require.NoError(t, err)
+
+			traceMap := map[string]*Trace{
+				*trace.Id: &trace,
+			}
+			depth := 0
+			tree, err := buildTree(traceMap, &trace, false, ctx, opts, &depth)
+			require.NoError(t, err)
+			assert.Len(t, tree.Paths, tt.expectNumPaths)
+		})
+	}
+}
+
+func TestBuildTreeWithLinkedTrace(t *testing.T) {
+	cases := []struct {
+		name          string
+		mockGetTraces func(ctx context.Context, api BatchGetTracesAPI, traceIds []string) *mockGetTracesFunc
+	}{
+		{
+			name: "./testdata/traceWithLinks01.json",
+			mockGetTraces: func(ctx context.Context, api BatchGetTracesAPI, traceIds []string) *mockGetTracesFunc {
+				f := newMockGetTracesFunc(t)
+				mockSegmentId1 := "2acd99f6ce4d0822"
+				mockSegmentDuration1 := float64(1.692291184114e+09)
+				mockSegmentId2 := "6f4dd50351f191e5"
+				mockSegmentDuration2 := float64(1.692291184757e+09)
+				linkedTraceId := "1-654c0558-630340be09e985eb352a72e6"
+				f.EXPECT().Execute(ctx, api, traceIds).
+					Return(
+						map[string]*Trace{
+							traceIds[0]: &Trace{
+								Id: &traceIds[0],
+								Segments: []*Segment{
+									{Id: &mockSegmentId1, StartTime: &mockSegmentDuration1, TraceId: &linkedTraceId},
+									{Id: &mockSegmentId2, StartTime: &mockSegmentDuration2, TraceId: &linkedTraceId, ParentId: &mockSegmentId1},
+								},
+							},
+						},
+						nil,
+					)
+				return f
+			},
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.TODO()
+			xrayClient := newMockXrayClient(t)
+			traceIds := []string{"1-654c0558-630340be09e985eb352a72e6"}
+			mockGetTraces := tt.mockGetTraces(ctx, xrayClient, traceIds)
+			opts := treeOptions{
+				xrayClient: xrayClient,
+				getTraces:  mockGetTraces.Execute,
+			}
+			filebytes, err := os.ReadFile(tt.name)
+			require.NoError(t, err)
+			var trace Trace
+			err = json.Unmarshal(filebytes, &trace)
+			require.NoError(t, err)
+
+			traceMap := map[string]*Trace{
+				*trace.Id: &trace,
+			}
+			depth := 0
+			tree, err := buildTree(traceMap, &trace, true, ctx, opts, &depth)
+			require.NoError(t, err)
+			assert.Len(t, tree.Paths, 1)
+			assert.Len(t, tree.Paths[0], 4)
 		})
 	}
 }

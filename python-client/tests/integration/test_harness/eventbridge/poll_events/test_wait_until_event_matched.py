@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Integration tests for zion.wait_until_event_matched
+Integration tests for aws_iatk.wait_until_event_matched
 """
 import json
 import logging
@@ -15,19 +15,13 @@ import boto3
 from botocore.exceptions import ClientError
 from parameterized import parameterized
 
-from zion import (
-    Zion,
-    AddEbListenerParams,
-    RemoveListenersParams,
-    PollEventsParams,
-    WaitUntilEventMatchedParams,
-)
-from zion.poll_events import InvalidParamException
+from aws_iatk import AwsIatk
+from aws_iatk.poll_events import InvalidParamException
 
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
-boto3.set_stream_logger(name="zion", level=logging.DEBUG)
+boto3.set_stream_logger(name="aws_iatk", level=logging.DEBUG)
 
 
 @dataclass
@@ -45,39 +39,32 @@ class EbEvent:
         }
 
 
-def condition_func_0(received: str) -> bool:
+def assertion_func_0(received: str) -> None:
     LOG.debug("received: %s", received)
     payload = json.loads(received)
-    try:
-        detail = payload["detail"]
-        detail_type = payload["detail-type"]
-        source = payload["source"]
-        matched = (
-            detail["abc"] == "def"
-            and detail["id"] == "2"
-            and source == "com.test.0"
-            and detail_type == "foo"
-        )
-        LOG.debug("matched: %s", matched)
-        return matched
-    except Exception as e:
-        LOG.debug("error: %s", e)
-        return False
+    detail = payload["detail"]
+    detail_type = payload["detail-type"]
+    source = payload["source"]
+    assert detail["abc"] == "def"
+    assert detail["id"] == "2"
+    assert source == "com.test.0"
+    assert detail_type == "foo"
+    LOG.debug("matched: %s", True)
 
 
-def condition_func_1(received: str) -> bool:
+def assertion_func_1(received: str) -> None:
     LOG.debug("received: %s", received)
-    return received == '"hello, world!"'
+    assert received == '"hello, world!"'
 
 
-def condition_func_2(received: str) -> bool:
+def assertion_func_2(received: str) -> None:
     LOG.debug("received: %s", received)
-    return received == '"xyz"'
+    assert received == '"xyz"'
 
 
-def condition_func_3(received: str) -> bool:
+def assertion_func_3(received: str) -> None:
     LOG.debug("received: %s", received)
-    return received == '{"source": "com.test.3", "foo": "bar"}'
+    assert received == '{"source": "com.test.3", "foo": "bar"}'
 
 @dataclass
 class EbConfiguration:
@@ -91,8 +78,8 @@ class EbConfiguration:
     input_path: str = None
 
 
-class TestZion_wait_until_event_matched(TestCase):
-    zion = Zion()
+class TestIatk_wait_until_event_matched(TestCase):
+    iatk = AwsIatk()
     eb_client = boto3.client("events")
     sqs_client = boto3.client("sqs")
     sns_client = boto3.client("sns")
@@ -166,12 +153,11 @@ class TestZion_wait_until_event_matched(TestCase):
                 Targets=[target]
             )
             
-            listener_params = AddEbListenerParams(
+            cls.add_listener(
                 event_bus_name=cls.event_bus_name,
                 rule_name=params.rule_name,
                 target_id=params.target_id
             )
-            cls.add_listener(listener_params)
 
         LOG.debug("created listeners: %s", cls.listener_ids)
         LOG.debug("queue urls: %s", cls.queue_urls)
@@ -226,7 +212,7 @@ class TestZion_wait_until_event_matched(TestCase):
                         detail={"id": "0", "abc": "def"},
                     ),
                 ],
-                condition_func_0,
+                assertion_func_0,
                 10,
             ),
             (
@@ -258,7 +244,7 @@ class TestZion_wait_until_event_matched(TestCase):
                         detail={"id": "0", "abc": "def"},
                     ),
                 ],
-                condition_func_1,
+                assertion_func_1,
                 5,
             ),
             (
@@ -290,7 +276,7 @@ class TestZion_wait_until_event_matched(TestCase):
                         detail={"id": "2", "abc": "def"},
                     ),
                 ],
-                condition_func_2,
+                assertion_func_2,
                 5,
             ),
             (
@@ -322,7 +308,7 @@ class TestZion_wait_until_event_matched(TestCase):
                         detail={"id": "0", "abc": "def", "foo": "bar"},
                     ),
                 ],
-                condition_func_3,
+                assertion_func_3,
                 5,
             ),
         ]
@@ -331,7 +317,7 @@ class TestZion_wait_until_event_matched(TestCase):
         self,
         listener_idx: int,
         events: List[EbEvent],
-        condition_func: Callable[[str], bool],
+        assertion_func: Callable[[str], bool],
         timeout_seconds: int,
     ):
         LOG.debug("purging listener to delete events from previous tests")
@@ -341,12 +327,10 @@ class TestZion_wait_until_event_matched(TestCase):
         self.send_events(events)
 
         LOG.debug("waiting for event")
-        found = self.zion.wait_until_event_matched(
-            params=WaitUntilEventMatchedParams(
-                listener_id=self.listener_ids[listener_idx],
-                condition=condition_func,
-                timeout_seconds=timeout_seconds,
-            )
+        found = self.iatk.wait_until_event_matched(
+            listener_id=self.listener_ids[listener_idx],
+            assertion_fn=assertion_func,
+            timeout_seconds=timeout_seconds
         )
         self.assertTrue(found)
 
@@ -355,7 +339,7 @@ class TestZion_wait_until_event_matched(TestCase):
             (  # no event is sent
                 0,
                 [],
-                condition_func_0,
+                assertion_func_0,
                 10,
             ),
             (  # all events don't match
@@ -382,7 +366,7 @@ class TestZion_wait_until_event_matched(TestCase):
                         detail={"id": "0", "abc": "def"},
                     ),
                 ],
-                condition_func_2,
+                assertion_func_2,
                 5,
             ),
         ]
@@ -391,7 +375,7 @@ class TestZion_wait_until_event_matched(TestCase):
         self,
         listener_idx: int,
         events: List[EbEvent],
-        condition_func: Callable[[str], bool],
+        assertion_func: Callable[[str], bool],
         timeout_seconds: int,
     ):
         LOG.debug("purging listener to delete events from previous tests")
@@ -401,53 +385,47 @@ class TestZion_wait_until_event_matched(TestCase):
         self.send_events(events)
 
         LOG.debug("waiting for event")
-        found = self.zion.wait_until_event_matched(
-            params=WaitUntilEventMatchedParams(
-                listener_id=self.listener_ids[listener_idx],
-                condition=condition_func,
-                timeout_seconds=timeout_seconds,
-            )
+        found = self.iatk.wait_until_event_matched(
+            listener_id=self.listener_ids[listener_idx],
+            assertion_fn=assertion_func,
+            timeout_seconds=timeout_seconds
         )
         self.assertFalse(found)
 
     def test_invalid_input(self):
         listener_idx = 0
         with self.assertRaises(InvalidParamException):
-            self.zion.wait_until_event_matched(
-                params=WaitUntilEventMatchedParams(
-                    listener_id=self.listener_ids[listener_idx],
-                    condition=condition_func_0,
-                    timeout_seconds=10000,
-                )
+            self.iatk.wait_until_event_matched(
+                listener_id=self.listener_ids[listener_idx],
+                assertion_fn=assertion_func_0,
+                timeout_seconds=10000
             )
 
     def purge_listener(self, listener_idx):
-        # TODO (hawflau): revisit if this should be baked into Zion
+        # TODO (hawflau): revisit if this should be baked into IATK
         # A listener might have leftover events from previous test cases and might affect current test run
         consecutive_empty_count = 0
-        params = PollEventsParams(
-            listener_id=self.listener_ids[listener_idx],
-            wait_time_seconds=0,
-            max_number_of_messages=10,
-        )
         while consecutive_empty_count < 5:
-            output = self.zion.poll_events(params=params)
+            output = self.iatk.poll_events(
+                listener_id=self.listener_ids[listener_idx],
+                wait_time_seconds=0,
+                max_number_of_messages=10,
+            )
             if not output.events:
                 consecutive_empty_count += 1
             else:
                 consecutive_empty_count = 0
 
     @classmethod
-    def add_listener(cls, params: AddEbListenerParams) -> str:
-        output = cls.zion.add_listener(params=params)
+    def add_listener(cls, event_bus_name, rule_name, target_id) -> str:
+        output = cls.iatk.add_listener(event_bus_name, rule_name, target_id)
         cls.listener_ids.append(output.id)
         cls.queue_urls.append(output.components[0].physical_id)
         return output.id
 
     @classmethod
     def remove_listeners(cls, ids: List[str]):
-        params = RemoveListenersParams(ids=ids)
-        output = cls.zion.remove_listeners(params=params)
+        output = cls.iatk.remove_listeners(ids=ids)
         LOG.debug(output)
 
     def send_events(self, events: List[EbEvent]):

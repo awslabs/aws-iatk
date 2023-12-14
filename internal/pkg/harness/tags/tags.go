@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"zion/internal/pkg/slice"
+	"iatk/internal/pkg/slice"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
@@ -17,10 +17,10 @@ import (
 type SystemTagKey string
 
 const (
-	TestHarnessID      SystemTagKey = "zion:TestHarness:ID"
-	TestHarnessType    SystemTagKey = "zion:TestHarness:Type"
-	TestHarnessTarget  SystemTagKey = "zion:TestHarness:Target"
-	TestHarnessCreated SystemTagKey = "zion:TestHarness:Created"
+	TestHarnessID      SystemTagKey = "iatk:TestHarness:ID"
+	TestHarnessType    SystemTagKey = "iatk:TestHarness:Type"
+	TestHarnessTarget  SystemTagKey = "iatk:TestHarness:Target"
+	TestHarnessCreated SystemTagKey = "iatk:TestHarness:Created"
 )
 
 // Validates if a given tags contains any reserved key
@@ -82,7 +82,7 @@ func GetTargetByTestHarnessID(ctx context.Context, api GetResourcesAPI, id strin
 // Find all resources with provided tag filters
 func GetTestHarnessIDsWithTagFilters(ctx context.Context, api GetResourcesAPI, tagFilters []tagtypes.TagFilter) ([]string, error) {
 	if !hasOneSystemTagKey(tagFilters) {
-		// NOTE (hawflau): to make sure only zion-created resources will be found
+		// NOTE (hawflau): to make sure only iatk-created resources will be found
 		tagFilters = append(tagFilters, tagtypes.TagFilter{Key: aws.String(string(TestHarnessID))})
 	}
 

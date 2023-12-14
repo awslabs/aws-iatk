@@ -7,11 +7,11 @@ import (
 	"log"
 	"reflect"
 
-	"zion/internal/pkg/aws/config"
-	"zion/internal/pkg/harness/eventbridge/listener"
-	"zion/internal/pkg/harness/tags"
-	"zion/internal/pkg/jsonrpc"
-	"zion/internal/pkg/public-rpc/types"
+	"iatk/internal/pkg/aws/config"
+	"iatk/internal/pkg/harness/eventbridge/listener"
+	"iatk/internal/pkg/harness/tags"
+	"iatk/internal/pkg/jsonrpc"
+	"iatk/internal/pkg/public-rpc/types"
 
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 	tagtypes "github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi/types"

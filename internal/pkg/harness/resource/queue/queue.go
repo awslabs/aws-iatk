@@ -6,9 +6,9 @@ package queue
 import (
 	"context"
 	"fmt"
+	"iatk/internal/pkg/harness"
+	"iatk/internal/pkg/harness/tags"
 	"log"
-	"zion/internal/pkg/harness"
-	"zion/internal/pkg/harness/tags"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"

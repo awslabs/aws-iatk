@@ -1,8 +1,8 @@
 package slice_test
 
 import (
+	"iatk/internal/pkg/slice"
 	"testing"
-	"zion/internal/pkg/slice"
 
 	"github.com/stretchr/testify/assert"
 )

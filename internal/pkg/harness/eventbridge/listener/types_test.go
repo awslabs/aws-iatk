@@ -8,12 +8,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"iatk/internal/pkg/harness"
+	"iatk/internal/pkg/harness/resource/eventbus"
+	"iatk/internal/pkg/harness/resource/eventrule"
+	"iatk/internal/pkg/harness/resource/queue"
 	"testing"
 	"time"
-	"zion/internal/pkg/harness"
-	"zion/internal/pkg/harness/resource/eventbus"
-	"zion/internal/pkg/harness/resource/eventrule"
-	"zion/internal/pkg/harness/resource/queue"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	ebtypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
@@ -27,7 +27,7 @@ import (
 func TestListener_ID(t *testing.T) {
 	id := xid.New().String()
 	lr := &Listener{id: id}
-	expect := fmt.Sprintf("zion_eb_%v", id)
+	expect := fmt.Sprintf("iatk_eb_%v", id)
 	actual := lr.ID()
 	assert.Equal(t, expect, actual)
 }
@@ -48,10 +48,10 @@ func TestListener_tags(t *testing.T) {
 	ts := time.Now()
 	actual := lr.tags(ts)
 	expect := map[string]string{
-		"zion:TestHarness:ID":      lr.ID(),
-		"zion:TestHarness:Type":    TestHarnessType,
-		"zion:TestHarness:Target":  eventBusARN.String(),
-		"zion:TestHarness:Created": ts.Format(time.RFC3339),
+		"iatk:TestHarness:ID":      lr.ID(),
+		"iatk:TestHarness:Type":    TestHarnessType,
+		"iatk:TestHarness:Target":  eventBusARN.String(),
+		"iatk:TestHarness:Created": ts.Format(time.RFC3339),
 		"foo":                      "bar",
 		"bax":                      "baz",
 	}
@@ -66,7 +66,7 @@ func TestListener_String(t *testing.T) {
 		eventBus: &eventbus.EventBus{Name: eventBusName},
 	}
 	actual := lr.String()
-	expect := fmt.Sprintf("eb listener id: zion_eb_%v", id)
+	expect := fmt.Sprintf("eb listener id: iatk_eb_%v", id)
 	assert.Equal(t, expect, actual)
 }
 
@@ -122,7 +122,7 @@ func TestListener_Deploy(t *testing.T) {
 			},
 			mockCreateRule: func(ctx context.Context, lr *Listener, rule *eventrule.Rule) *mockCreateRuleFunc {
 				m := newMockCreateRuleFunc(t)
-				description := fmt.Sprintf("rule for Listener %q; created by zion", lr.ID())
+				description := fmt.Sprintf("rule for Listener %q; created by iatk", lr.ID())
 				m.EXPECT().
 					Execute(ctx, lr.opts.ebClient, lr.ID(), lr.eventBus.Name, lr.eventPattern, description, mock.AnythingOfType("map[string]string")).
 					Return(rule, nil)
@@ -167,7 +167,7 @@ func TestListener_Deploy(t *testing.T) {
 			},
 			mockCreateRule: func(ctx context.Context, lr *Listener, rule *eventrule.Rule) *mockCreateRuleFunc {
 				m := newMockCreateRuleFunc(t)
-				description := fmt.Sprintf("rule for Listener %q; created by zion", lr.ID())
+				description := fmt.Sprintf("rule for Listener %q; created by iatk", lr.ID())
 				m.EXPECT().
 					Execute(ctx, lr.opts.ebClient, lr.ID(), lr.eventBus.Name, lr.eventPattern, description, mock.AnythingOfType("map[string]string")).
 					Return(rule, nil)
@@ -211,7 +211,7 @@ func TestListener_Deploy(t *testing.T) {
 			},
 			mockCreateRule: func(ctx context.Context, lr *Listener, rule *eventrule.Rule) *mockCreateRuleFunc {
 				m := newMockCreateRuleFunc(t)
-				description := fmt.Sprintf("rule for Listener %q; created by zion", lr.ID())
+				description := fmt.Sprintf("rule for Listener %q; created by iatk", lr.ID())
 				m.EXPECT().
 					Execute(ctx, lr.opts.ebClient, lr.ID(), lr.eventBus.Name, lr.eventPattern, description, mock.AnythingOfType("map[string]string")).
 					Return(nil, errors.New("create rule failed"))
@@ -255,7 +255,7 @@ func TestListener_Deploy(t *testing.T) {
 			},
 			mockCreateRule: func(ctx context.Context, lr *Listener, rule *eventrule.Rule) *mockCreateRuleFunc {
 				m := newMockCreateRuleFunc(t)
-				description := fmt.Sprintf("rule for Listener %q; created by zion", lr.ID())
+				description := fmt.Sprintf("rule for Listener %q; created by iatk", lr.ID())
 				m.EXPECT().
 					Execute(ctx, lr.opts.ebClient, lr.ID(), lr.eventBus.Name, lr.eventPattern, description, mock.AnythingOfType("map[string]string")).
 					Return(rule, nil)
@@ -627,7 +627,7 @@ func Test_queuePolicy(t *testing.T) {
 		ruleARN:  testRuleARN(),
 	}
 	actual := qp.String()
-	expect := `{"Version": "2012-10-17", "Id": "Write_Permission_for_Rule_rule/my-event-bus/zion_eb_9m4e2mr0ui3e8a215n4g", "Statement": [{"Sid": "eblistener", "Effect": "Allow", "Principal": {"Service": "events.amazonaws.com"}, "Action": "sqs:SendMessage", "Resource": "arn:aws:sqs:us-west-2:123456789012:zion_eb_9m4e2mr0ui3e8a215n4g", "Condition": {"ArnEquals": {"aws:SourceArn": "arn:aws:sqs:us-west-2:123456789012:rule/my-event-bus/zion_eb_9m4e2mr0ui3e8a215n4g"}}}]}`
+	expect := `{"Version": "2012-10-17", "Id": "Write_Permission_for_Rule_rule/my-event-bus/iatk_eb_9m4e2mr0ui3e8a215n4g", "Statement": [{"Sid": "eblistener", "Effect": "Allow", "Principal": {"Service": "events.amazonaws.com"}, "Action": "sqs:SendMessage", "Resource": "arn:aws:sqs:us-west-2:123456789012:iatk_eb_9m4e2mr0ui3e8a215n4g", "Condition": {"ArnEquals": {"aws:SourceArn": "arn:aws:sqs:us-west-2:123456789012:rule/my-event-bus/iatk_eb_9m4e2mr0ui3e8a215n4g"}}}]}`
 	assert.Equal(t, expect, actual)
 	var deserialized any
 	err := json.Unmarshal([]byte(actual), &deserialized)

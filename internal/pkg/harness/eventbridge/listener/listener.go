@@ -7,10 +7,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"iatk/internal/pkg/harness"
+	"iatk/internal/pkg/harness/resource/eventrule"
+	"iatk/internal/pkg/slice"
 	"log"
-	"zion/internal/pkg/harness"
-	"zion/internal/pkg/harness/resource/eventrule"
-	"zion/internal/pkg/slice"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/rs/xid"
@@ -18,7 +18,7 @@ import (
 
 const (
 	TestHarnessType = "EventBridge.Listener"
-	IDPrefix        = "zion_eb_"
+	IDPrefix        = "iatk_eb_"
 )
 
 // Creates a Listener for an event bus resource

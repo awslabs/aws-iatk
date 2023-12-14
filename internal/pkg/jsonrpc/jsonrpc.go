@@ -25,12 +25,13 @@ type Request struct {
 }
 
 type Metadata struct {
-	Client  string `json:"client"`
-	Version string `json:"version"`
-	Caller  string `json:"caller"`
+	Client        string `json:"client"`
+	Version       string `json:"version"`
+	Caller        string `json:"caller"`
+	ClientVersion string `json:"client_version"`
 }
 
-// Returns a string that serves as a user agent key, indicating the client version and the caller method, e.g. 0.0.3#retry_get_trace_tree_until
+// Returns a string that serves as a user agent key, indicating the language, language version,client version and the caller method, e.g. python#3.10.9#0.0.3#retry_get_trace_tree_until
 func (m *Metadata) UserAgentValue() string {
 	supportedClients := []string{"python"}
 	if !slices.Contains(supportedClients, strings.ToLower(m.Client)) {
@@ -51,7 +52,7 @@ func (m *Metadata) UserAgentValue() string {
 		log.Printf("invalid caller: %v", m.Caller)
 		return "unknown"
 	}
-	return strings.ToLower(m.Client) + "#" + m.Version + "#" + m.Caller
+	return strings.ToLower(m.Client) + "#" + m.ClientVersion + "#" + m.Version + "#" + m.Caller
 }
 
 type Response struct {
@@ -62,10 +63,10 @@ type Response struct {
 	// Result contains the payload of the response.
 	Result interface{} `json:"result,omitempty"`
 	// Error contains the error response details.
-	Error *ErrZion `json:"error,omitempty"`
+	Error *ErrIatk `json:"error,omitempty"`
 }
 
-type ErrZion struct {
+type ErrIatk struct {
 	Code    int    `json:"code,omitempty"`
 	Message string `json:"message,omitempty"`
 	// Data should be here but not sure about the type (jfuss)

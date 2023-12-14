@@ -7,16 +7,17 @@ import (
 	"reflect"
 	"strings"
 
-	"zion/internal/pkg/aws/config"
-	"zion/internal/pkg/jsonrpc"
-	"zion/internal/pkg/public-rpc/types"
-	zionxray "zion/internal/pkg/xray"
+	"iatk/internal/pkg/aws/config"
+	"iatk/internal/pkg/jsonrpc"
+	"iatk/internal/pkg/public-rpc/types"
+	iatkxray "iatk/internal/pkg/xray"
 )
 
 type GetTraceTreeParams struct {
-	TracingHeader string `json:"TracingHeader"`
-	Profile       string `json:"Profile,omitempty"`
-	Region        string `json:"Region,omitempty"`
+	TracingHeader    string `json:"TracingHeader"`
+	Profile          string `json:"Profile,omitempty"`
+	Region           string `json:"Region,omitempty"`
+	FetchChildTraces bool   `json:"FetchChildTraces,omitempty"`
 }
 
 func (p *GetTraceTreeParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Result, error) {
@@ -38,7 +39,7 @@ func (p *GetTraceTreeParams) RPCMethod(metadata *jsonrpc.Metadata) (*types.Resul
 		return nil, fmt.Errorf("error when loading AWS config: %v", err)
 	}
 
-	traceTree, err := zionxray.NewTree(ctx, zionxray.NewTreeOptions(cfg), *traceId)
+	traceTree, err := iatkxray.NewTree(ctx, iatkxray.NewTreeOptions(cfg), *traceId, p.FetchChildTraces)
 	if err != nil {
 		return nil, fmt.Errorf("error building trace tree: %w", err)
 	}
@@ -67,7 +68,7 @@ func getTracIdFromTracingHeader(tracingHeader string) (*string, error) {
 }
 
 func (p *GetTraceTreeParams) ReflectOutput() reflect.Value {
-	ft := reflect.TypeOf(zionxray.NewTree)
+	ft := reflect.TypeOf(iatkxray.NewTree)
 	out0 := ft.Out(0)
 	return reflect.New(out0).Elem()
 }

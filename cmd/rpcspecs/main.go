@@ -8,12 +8,12 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	publicrpc "iatk/internal/pkg/public-rpc"
 	"log"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
-	publicrpc "zion/internal/pkg/public-rpc"
 )
 
 var (
@@ -31,7 +31,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	log.Print("generating Zion RPC specs")
+	log.Print("generating IATK RPC specs")
 	methodMap := publicrpc.MethodMap
 	out := Output{Methods: map[string]Method{}}
 

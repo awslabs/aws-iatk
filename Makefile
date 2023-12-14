@@ -6,7 +6,7 @@ dev-test: generate-mocks lint test-internal
 test: generate-mocks test-internal
 
 build:
-	go build -o ./bin/zion ./cmd/zion/main.go
+	go build -o ./bin/iatk ./cmd/iatk/main.go
 
 integ-test: build
 	PATH=$(PWD)/bin:$(PATH) go test ./integration/...

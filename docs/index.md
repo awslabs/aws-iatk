@@ -1,28 +1,43 @@
 ---
-title: Homepage
-description: Zion
+title: AWS Integrated Application Test Kit Overview
+description: AWS Integrated Application Test Kit
 ---
 
-Zion is a framework that makes it easy for developers to write integration tests that run against their Event Driven Application in the cloud. Zion simplifies writing integration tests for serverless applications, providing utilities to generate test events to trigger an application, validate event flow and structure in EventBridge, and assert event flow against X-Ray traces. 
+!!! alert "Integrated Application Test Kit is in Public Preview"
+
+AWS Integrated Application Test Kit (AWS IATK) is a framework that developers can use to write integration tests to run against their event-driven applications in the AWS Cloud. AWS IATK simplifies the writing of integration tests for serverless applications by doing the following:
+
+- Providing utilities that generate test events to trigger an application.
+- Validating event flow and structure in Amazon EventBridge.
+- Asserting event flow against AWS X-Ray traces. 
 
 ## Install
 
-You can install Powertools for AWS Lambda (Python) using one of the following options:
+You can install AWS IATK for Python using one of the following options:
 
 Pip:
 ```bash
-pip install aws-zion
+pip install aws-iatk
 ```
 
 !!! question "Looking for Pip signed releases? [Learn more about verifying signed builds](./security.md#verifying-signed-builds)"
 
-## Quick getting started
+## Set up 
 
-```bash title="Hello world example using SAM CLI"
-sam init --app-template hello-world-zion --name sam-app --package-type Zip --runtime python3.11 --no-tracing
+### Credentials Configurations
+
+AWS IATK requires AWS credentials in order to interact with the AWS resources in your account. You can specify this in `AwsIatk` directly, as shown below. You can also set [Environment Variables](#environment-variables) instead.
+
+```
+from aws_iatk import AwsIatk
+
+iatk = AwsIatk(
+	profile=PROFILE,
+	region=REGION
+)
 ```
 
-## Environment variables
+### Environment variables
 
 ???+ info
 	Explicit parameters take precedence over environment variables
@@ -33,3 +48,21 @@ sam init --app-template hello-world-zion --name sam-app --package-type Zip --run
 | AWS_ACCESS_KEY_ID     | AWS Access Key to use |
 | AWS_SECRET_ACCESS_KEY | AWS Secret Access Key to use |
 | AWS_SESSION_TOKEN     | AWS Session Token to use (optional) |
+
+## Quick getting started
+
+To start using AWS IATK, see [Tutorial](./tutorial/index.md).
+
+## Concepts
+
+### System Under Test (SUT)
+
+The system being tested for correct operations (including happy and error paths).
+
+### Test Harness
+
+A group of AWS resources AWS IATK creates for the purpose of facilitating testing around an integration. These resources are intended to exist only for the duration of the test run, and should be destroyed after the test run completes.
+
+### Arrange, Act, Assert Testing Pattern
+
+AWS IATK enables testing done through the Arrange, Act, Assert testing pattern. AWS IATK will help setup and retrieve deployed resources (Arrange). Then, AWS IATK gives you the information in order to Assert on those resources.

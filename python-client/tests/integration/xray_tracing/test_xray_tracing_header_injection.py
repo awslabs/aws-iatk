@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Integration tests for zion.patch_aws_client
+Integration tests for aws_iatk.patch_aws_client
 """
 import json
 import logging
@@ -10,7 +10,7 @@ from uuid import uuid4
 from unittest import TestCase
 from typing import List, Dict, Callable
 from dataclasses import dataclass
-from zion import Zion
+from aws_iatk import AwsIatk
 from pathlib import Path
 import time
 import os
@@ -24,10 +24,10 @@ import random
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
-boto3.set_stream_logger(name="zion", level=logging.DEBUG)
+boto3.set_stream_logger(name="aws_iatk", level=logging.DEBUG)
 
-class TestZion_xray_tracing_lambda(TestCase):
-    zion = Zion(region="us-east-1")
+class TestIatk_xray_tracing_lambda(TestCase):
+    iatk = AwsIatk(region="us-east-1")
     lambda_client = boto3.client("lambda")
     iam_client = boto3.client("iam")
     lambda_function_name = "test_lambda" + str(random.randrange(0,100000))
@@ -65,7 +65,7 @@ class TestZion_xray_tracing_lambda(TestCase):
         )
     @pytest.mark.timeout(timeout=1000, method="thread")
     def test_sampled_xray_trace_lambda(self):
-        self.zion.patch_aws_client(self.lambda_client, 1)
+        self.iatk.patch_aws_client(self.lambda_client, 1)
         status = self.lambda_client.get_function(
             FunctionName=self.lambda_function_name
         )["Configuration"]["State"]
@@ -88,7 +88,7 @@ class TestZion_xray_tracing_lambda(TestCase):
 
     @pytest.mark.timeout(timeout=1000, method="thread")
     def test_unsampled_xray_trace_lambda(self):
-        self.zion.patch_aws_client(self.lambda_client, 0)
+        self.iatk.patch_aws_client(self.lambda_client, 0)
         status = self.lambda_client.get_function(
             FunctionName=self.lambda_function_name
         )["Configuration"]["State"]
@@ -110,8 +110,8 @@ class TestZion_xray_tracing_lambda(TestCase):
         self.assertEqual(sampled_string[len(sampled_string) - 1],"0")
 
 
-class TestZion_xray_tracing_sfn(TestCase):
-    zion = Zion(region="us-east-1")
+class TestIatk_xray_tracing_sfn(TestCase):
+    iatk = AwsIatk(region="us-east-1")
     sfn_client = boto3.client("stepfunctions")
     iam_client = boto3.client("iam")
     sfn_machine_name = "test_xray_tracing_state_machine" + str(random.randrange(0,100000))
@@ -163,7 +163,7 @@ class TestZion_xray_tracing_sfn(TestCase):
     
     def test_sampled_xray_trace_sfn(self):
         time.sleep(3)
-        self.zion.patch_aws_client(self.sfn_client, 1)
+        self.iatk.patch_aws_client(self.sfn_client, 1)
         
         start_response = self.sfn_client.start_execution(
             stateMachineArn=self.get_state_machine_arn(self.sfn_client),
@@ -179,7 +179,7 @@ class TestZion_xray_tracing_sfn(TestCase):
 
     def test_unsampled_xray_trace_sfn(self):
         time.sleep(3)
-        self.zion.patch_aws_client(self.sfn_client, 0)
+        self.iatk.patch_aws_client(self.sfn_client, 0)
         start_response = self.sfn_client.start_execution(
             stateMachineArn=self.get_state_machine_arn(self.sfn_client),
             input='{"IsHelloWorldExample": true}'
