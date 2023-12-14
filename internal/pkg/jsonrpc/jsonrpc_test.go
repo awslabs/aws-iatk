@@ -4,10 +4,12 @@ import (
 	"log"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMetadata_UserAgentValue(t *testing.T) {
+	id := uuid.NewString()
 	cases := []struct {
 		name   string
 		m      *Metadata
@@ -20,8 +22,9 @@ func TestMetadata_UserAgentValue(t *testing.T) {
 				ClientVersion: "3.10.9",
 				Version:       "0.0.1",
 				Caller:        "poll_events",
+				RequestId:     id,
 			},
-			expect: "python#3.10.9#0.0.1#poll_events",
+			expect: "python#3.10.9#0.0.1#poll_events#" + id,
 		},
 		{
 			name: "invalid client",
@@ -30,6 +33,7 @@ func TestMetadata_UserAgentValue(t *testing.T) {
 				ClientVersion: "3.10.9",
 				Version:       "0.0.1",
 				Caller:        "add_listener",
+				RequestId:     id,
 			},
 			expect: "unknown",
 		},
@@ -40,6 +44,7 @@ func TestMetadata_UserAgentValue(t *testing.T) {
 				ClientVersion: "3.10.9",
 				Version:       "x.0.3",
 				Caller:        "retry_get_trace_tree_until",
+				RequestId:     id,
 			},
 			expect: "unknown",
 		},
@@ -50,8 +55,9 @@ func TestMetadata_UserAgentValue(t *testing.T) {
 				ClientVersion: "3.10.9",
 				Version:       "1.0.0-beta",
 				Caller:        "retry_get_trace_tree_until",
+				RequestId:     id,
 			},
-			expect: "python#3.10.9#1.0.0-beta#retry_get_trace_tree_until",
+			expect: "python#3.10.9#1.0.0-beta#retry_get_trace_tree_until#" + id,
 		},
 		{
 			name: "invalid caller",
@@ -60,6 +66,18 @@ func TestMetadata_UserAgentValue(t *testing.T) {
 				ClientVersion: "3.10.9",
 				Version:       "0.0.2",
 				Caller:        "with space",
+				RequestId:     id,
+			},
+			expect: "unknown",
+		},
+		{
+			name: "invalid request_id",
+			m: &Metadata{
+				Client:        "python",
+				ClientVersion: "3.10.9",
+				Version:       "0.0.2",
+				Caller:        "with space",
+				RequestId:     "invalid uuid format",
 			},
 			expect: "unknown",
 		},
