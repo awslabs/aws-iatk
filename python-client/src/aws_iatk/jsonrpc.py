@@ -41,7 +41,7 @@ class Payload:
                 "version": self._version,
                 "caller": caller["caller"] if caller and caller["caller"] else self.method,
                 "client_version": self._client_version,
-                "request_id": caller["request_id"] if caller and caller["request_id"] else str(uuid4())
+                "dedup_key": caller["dedup_key"] if caller and caller["dedup_key"] else str(uuid4())
             }
         }
         return _dict

@@ -30,7 +30,7 @@ type Metadata struct {
 	Version       string `json:"version"`
 	Caller        string `json:"caller"`
 	ClientVersion string `json:"client_version"`
-	RequestId     string `json:"request_id"`
+	DedupKey      string `json:"dedup_key"`
 }
 
 // Returns a string that serves as a user agent key, indicating the language, language version,client version and the caller method, e.g. python#3.10.9#0.0.3#retry_get_trace_tree_until
@@ -48,9 +48,9 @@ func (m *Metadata) UserAgentValue() string {
 		return "unknown"
 	}
 
-	_, err = uuid.Parse(m.RequestId)
+	_, err = uuid.Parse(m.DedupKey)
 	if err != nil {
-		log.Printf("invalid request Id: %v", m.RequestId)
+		log.Printf("invalid request Id: %v", m.DedupKey)
 		return "unknown"
 	}
 	// NOTE: limit caller to has max length of 100 characters, and limit to alphabetical characters and . and _ only
@@ -59,7 +59,7 @@ func (m *Metadata) UserAgentValue() string {
 		log.Printf("invalid caller: %v", m.Caller)
 		return "unknown"
 	}
-	return strings.ToLower(m.Client) + "#" + m.ClientVersion + "#" + m.Version + "#" + m.Caller + "#" + m.RequestId
+	return strings.ToLower(m.Client) + "#" + m.ClientVersion + "#" + m.Version + "#" + m.Caller + "#" + m.DedupKey
 }
 
 type Response struct {

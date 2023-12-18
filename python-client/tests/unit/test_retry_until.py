@@ -9,6 +9,7 @@ from unittest import TestCase
 import time
 import aws_iatk
 import pytest
+from unittest.mock import MagicMock
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
 

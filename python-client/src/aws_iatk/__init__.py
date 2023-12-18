@@ -266,7 +266,7 @@ class AwsIatk:
         LOG.debug(f"Output: {output}")
         return output
 
-    def _poll_events(self, params: PollEventsParams, caller: dict = {}) -> PollEventsOutput:
+    def _poll_events(self, params: PollEventsParams, caller: dict = None) -> PollEventsOutput:
         """
         underlying implementation for poll_events and wait_until_event_matched
         """
@@ -350,7 +350,7 @@ class AwsIatk:
         start = datetime.now()
         elapsed = lambda _: (datetime.now() - start).total_seconds()
         while elapsed(None) < params.timeout_seconds:
-            out = self._poll_events(params=params._poll_event_params, caller={"caller": "wait_until_event_matched", "request_id": str(uuid.uuid4())})
+            out = self._poll_events(params=params._poll_event_params, caller={"caller": "wait_until_event_matched", "dedup_key": str(uuid.uuid4())})
             events = out.events
             if events:
                 for event in events:
@@ -365,7 +365,7 @@ class AwsIatk:
         LOG.debug("no matching event found")
         return False
 
-    def _get_trace_tree(self, params: GetTraceTreeParams, caller: dict = {}) -> GetTraceTreeOutput:
+    def _get_trace_tree(self, params: GetTraceTreeParams, caller: dict = None) -> GetTraceTreeOutput:
         """
         underlying implementation for get_trace_tree and retry_get_trace_tree_until
         """
@@ -575,7 +575,7 @@ class AwsIatk:
         return client
 
     @_log_duration
-    def _invoke_iatk(self, payload: Payload, caller: dict = {}) -> dict:
+    def _invoke_iatk(self, payload: Payload, caller: dict = None) -> dict:
         input_data = payload.dump_bytes(caller)
         LOG.debug("payload: %s", input_data)
         stdout_data = self._popen_iatk(input_data)
@@ -644,7 +644,7 @@ class AwsIatk:
             try:
                 response = self._get_trace_tree(
                     params=GetTraceTreeParams(tracing_header=params.tracing_header, fetch_child_traces=fetch_child_traces),
-                    caller={"caller" : "retry_get_trace_tree_until", "request_id": str(uuid.uuid4())}
+                    caller={"caller" : "retry_get_trace_tree_until", "dedup_key": str(uuid.uuid4())}
                 )
                 return response
             except IatkException as e:
