@@ -650,6 +650,9 @@ class AwsIatk:
                  if "trace not found" in str(e):
                     pass
                     raise RetryableException(e)
+                 elif "found a segment" in str(e) and "with no parent" in str(e):
+                    pass
+                    raise RetryableException(e)
                  else:
                     raise IatkException(e, 500)
         try:
