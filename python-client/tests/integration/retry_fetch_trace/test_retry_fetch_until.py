@@ -6,6 +6,7 @@ Integration tests for aws_iatk.retry_until
 """
 import logging
 from unittest import TestCase
+from unittest.mock import patch
 import time
 import boto3
 import random
@@ -152,4 +153,17 @@ class TestIatk_retry_fetch_until(TestCase):
         end = time.time()
         self.assertGreaterEqual(end - start, 10)
         self.assertFalse(response)        
-
+        
+    def test_retry_trace_segment_not_found(self):
+        patched_get_trace_tree = IatkException("found a segment 123456789 with no parent", 500)
+        with patch("aws_iatk.AwsIatk._get_trace_tree", return_value=patched_get_trace_tree):
+            def num_is_5(trace):
+                assert random.randrange(0,5) == 5
+            start = time.time()
+            response = self.iatk.retry_get_trace_tree_until(
+                tracing_header="Root=1-652850da-255d5ae071f55e4aef339837;Sampled=1",
+                assertion_fn=num_is_5,
+                timeout_seconds=10,
+            )
+            end = time.time()
+            self.assertGreaterEqual(end - start, 10)
