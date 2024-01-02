@@ -9,7 +9,8 @@ from unittest import TestCase
 import time
 import aws_iatk
 import pytest
-from unittest.mock import MagicMock
+import random
+from unittest.mock import patch
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
 
@@ -142,3 +143,18 @@ class TestIatk_retry_until_timeout(TestCase):
         self.assertGreater(self.num, 0)
         self.assertFalse(response)
         self.assertGreaterEqual(end - start, 5)
+
+    def test_retry_trace_segment_not_found(self):
+        patched_get_trace_tree = aws_iatk.IatkException("found a segment 123456789 with no parent", 500)
+        with patch("aws_iatk.AwsIatk._get_trace_tree", return_value=patched_get_trace_tree):
+            def num_is_5(trace):
+                assert random.randrange(0,5) == 5
+            start = time.time()
+            response = self.iatk.retry_get_trace_tree_until(
+                tracing_header="Root=1-652850da-255d5ae071f55e4aef339837;Sampled=1",
+                assertion_fn=num_is_5,
+                timeout_seconds=10,
+            )
+            end = time.time()
+            self.assertGreaterEqual(end - start, 10)
+            self.assertFalse(response)
