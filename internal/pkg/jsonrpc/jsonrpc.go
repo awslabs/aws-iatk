@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/google/uuid"
 	"golang.org/x/exp/slices"
 )
 
@@ -29,6 +30,7 @@ type Metadata struct {
 	Version       string `json:"version"`
 	Caller        string `json:"caller"`
 	ClientVersion string `json:"client_version"`
+	DedupKey      string `json:"dedup_key"`
 }
 
 // Returns a string that serves as a user agent key, indicating the language, language version,client version and the caller method, e.g. python#3.10.9#0.0.3#retry_get_trace_tree_until
@@ -46,13 +48,18 @@ func (m *Metadata) UserAgentValue() string {
 		return "unknown"
 	}
 
+	_, err = uuid.Parse(m.DedupKey)
+	if err != nil {
+		log.Printf("invalid request Id: %v", m.DedupKey)
+		return "unknown"
+	}
 	// NOTE: limit caller to has max length of 100 characters, and limit to alphabetical characters and . and _ only
 	match, err = regexp.Match(`^[a-zA-Z_][a-zA-Z0-9_.]{1,99}$`, []byte(m.Caller))
 	if err != nil || !match {
 		log.Printf("invalid caller: %v", m.Caller)
 		return "unknown"
 	}
-	return strings.ToLower(m.Client) + "#" + m.ClientVersion + "#" + m.Version + "#" + m.Caller
+	return strings.ToLower(m.Client) + "#" + m.ClientVersion + "#" + m.Version + "#" + m.Caller + "#" + m.DedupKey
 }
 
 type Response struct {

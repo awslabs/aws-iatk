@@ -30,7 +30,7 @@ class Payload:
         if profile:
             self.params["Profile"] = profile
 
-    def to_dict(self, caller: Optional[str]=None):
+    def to_dict(self, caller: dict):
         _dict = {
             "jsonrpc": self.jsonrpc,
             "id": self.id,
@@ -39,11 +39,12 @@ class Payload:
             "metadata": {
                 "client": self._client,
                 "version": self._version,
-                "caller": caller if caller else self.method,
-                "client_version": self._client_version
+                "caller": caller["caller"] if caller and caller["caller"] else self.method,
+                "client_version": self._client_version,
+                "dedup_key": caller["dedup_key"] if caller and caller["dedup_key"] else str(uuid4())
             }
         }
         return _dict
 
-    def dump_bytes(self, caller: Optional[str]=None):
+    def dump_bytes(self, caller: dict):
         return bytes(json.dumps(self.to_dict(caller)), "utf-8")
