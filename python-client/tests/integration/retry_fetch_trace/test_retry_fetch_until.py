@@ -152,7 +152,7 @@ class TestIatk_retry_fetch_until(TestCase):
         )
         end = time.time()
         self.assertGreaterEqual(end - start, 10)
-        self.assertFalse(response)        
+        self.assertFalse(response)
         
     def test_retry_trace_segment_not_found(self):
         patched_get_trace_tree = IatkException("found a segment 123456789 with no parent", 500)
@@ -167,3 +167,4 @@ class TestIatk_retry_fetch_until(TestCase):
             )
             end = time.time()
             self.assertGreaterEqual(end - start, 10)
+            self.assertFalse(response)
