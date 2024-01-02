@@ -151,5 +151,4 @@ class TestIatk_retry_fetch_until(TestCase):
         )
         end = time.time()
         self.assertGreaterEqual(end - start, 10)
-        self.assertFalse(response)
-        
+        self.assertFalse(response)        
