@@ -1,0 +1,14 @@
+name: "PR Integration Tests"
+
+on:
+  pull_request_target: {}
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integ-test:
+    uses: ./.github/workflows/reusable_integ-tests.yml
+    with:
+      ref: ${{ github.ref }}
